@@ -51,6 +51,8 @@ html,body { height:100%; background:#000; overflow:hidden;
   box-shadow:0 0 14px rgba(255,220,80,.35);
 }
 .char-card.selected .cc-name { color:#ffe95c; }
+.char-card.char-random { border-style:dashed; min-width:96px; }
+.char-card.char-random .cc-name { color:#9fd4ff; }
 
 .diff-select { display:flex; gap:8px; }
 .diff-card {
@@ -116,6 +118,11 @@ button:active { transform: translateY(3px); box-shadow:0 1px 0 #a34c12; }
 .trial-row.done { color:#5ad83a; }
 .trial-mark { width:12px; text-align:center; }
 .trial-status { margin-top:6px; color:#9fd4ff; font-size:11px; }
+.frame-data {
+  margin-top:6px; padding-top:6px; border-top:1px dashed rgba(126,200,255,.25);
+  color:#cfe3ff; font-size:11px; line-height:1.8; font-family:monospace;
+}
+.frame-data b { color:#ffe95c; }
 
 /* 手机竖屏旋转提示（仅触摸 + 竖屏时显示） */
 #rotate-hint {
