@@ -838,15 +838,15 @@ function startTraining() {
 function startRound() {
   const p1c = CHARACTERS[G.playerType];
   const ROSTER = ['fighter', 'blob', 'miko', 'monkey', 'nezha', 'gourd', 'demon', 'viper'];
-  const foes = ROSTER.filter(t => t !== G.playerType);    // 对手池：所选之外
-  let p2Type = foes[0];
+  const heroes = ROSTER.filter(t => CHARACTERS[t].side === 'H' && t !== G.playerType);
+  let p2Type = heroes[0] || 'blob';
   let aiScale = 1, hpBoost = 0, persona = 'balance';
   if (G.mode === 'arcade') {
-    // 街机：人格逐层分配（平衡→侵略→龟壳→侵略→Boss），对手池内交替
+    // 街机剧本：前4战英雄轮换（平衡→侵略→龟壳→侵略），第5战反派黑煞 Boss
     const personaOrder = ['balance', 'rush', 'guard', 'rush', 'bossRush'];
     const stage = G.arcade.stage;
     G.arcade.boss = stage === 5;
-    p2Type = foes[(stage - 1) % foes.length];
+    p2Type = G.arcade.boss ? 'demon' : heroes[(stage - 1) % heroes.length];
     aiScale = G.arcade.boss ? 1.95 : (1 + (stage - 1) * 0.22);
     hpBoost = Math.min(80, (stage - 1) * 12);
     persona = personaOrder[Math.min(4, stage - 1)];
@@ -1982,9 +1982,9 @@ if (location.search.includes('autotest=1')) {
         'stage=' + G.arcade.stage + ' p=' + G.p2.persona);
       koP2();
       mark('arcade_boss', G.arcade.stage === 5 && G.arcade.boss === true && G.p2.persona === 'bossRush' &&
-        G.p2.aiScale >= 1.9 && G.p2.hp === 173 && G.p2.maxHp === 173 && BGM_STATE.song === 'boss',
-        'stage=' + G.arcade.stage + ' boss=' + G.arcade.boss + ' p=' + G.p2.persona + ' scale=' + G.p2.aiScale +
-        ' hp=' + G.p2.hp + '/' + G.p2.maxHp + ' song=' + BGM_STATE.song);
+        G.p2.type === 'demon' && G.p2.aiScale >= 1.9 && G.p2.hp === 178 && G.p2.maxHp === 178 && BGM_STATE.song === 'boss',
+        'stage=' + G.arcade.stage + ' boss=' + G.arcade.boss + ' p=' + G.p2.type + '/' + G.p2.persona +
+        ' scale=' + G.p2.aiScale + ' hp=' + G.p2.hp + '/' + G.p2.maxHp + ' song=' + BGM_STATE.song);
 
       // Boss 战失败 → GAME OVER 结算 + 最佳纪录保存
       G.state = 'fight'; G.p1.x = 300; G.p2.x = 320; G.p1.facing = 1; G.p2.facing = -1;
