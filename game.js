@@ -451,6 +451,7 @@ class Fighter {
   }
 
   update(dt, foe, inp, pf) {
+    pf = pf || { punch: -999, kick: -999, special: -999 };
     // 冷却与能量自然恢复
     for (const k in this.cd) this.cd[k] = Math.max(0, this.cd[k] - dt);
     this.meter = clamp(this.meter + dt * 5, 0, this.maxMeter);
@@ -586,7 +587,7 @@ class Fighter {
     if (inp.jump && this.onGround) { this.vy = JUMP; sfx('jump'); }
 
     // 攻击输入：边沿捕获 + 缓冲消费（可行动立即出手，不可行则暂存）
-    this.captureAttackInput(inp);
+    this.captureAttackInput(inp, pf);
     for (const k of ['punch', 'kick', 'special']) {
       if (this.buf[k] > 0) {
         if (this.startAttack(k)) { this.buf[k] = 0; return; }  // 攻击建立，本帧结束（防后续覆盖 state）
