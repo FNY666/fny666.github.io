@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-title" content="像素乱斗">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
-<link rel="stylesheet" href="style.css?v=12">
+<link rel="stylesheet" href="style.css?v=13">
 </head>
 <body>
 <div id="wrap">
@@ -67,6 +67,7 @@
   </div>
   <button id="btn-pause" class="icon-btn hidden" aria-label="暂停" title="暂停">Ⅱ</button>
   <button id="btn-mute" class="icon-btn" aria-label="静音" title="静音(M)">♪</button>
+  <button id="btn-fullscreen" class="icon-btn" aria-label="全屏" title="全屏">⛶</button>
 
   <!-- 输入监视器（?debug=1 时显示，绿色=该键当前被系统识别按下） -->
   <div id="inp-monitor" class="inp-monitor hidden"></div>
@@ -114,6 +115,6 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
   });
 }
 </script>
-<script src="game.js?v=50"></script>
+<script src="game.js?v=51"></script>
 </body>
 </html>
