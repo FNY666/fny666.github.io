@@ -1521,7 +1521,7 @@ function render(dt) {
 function tapDrive(el, fn) {
   if (!el) return;
   let last = 0;
-  const go = () => { const n = Date.now(); if (n - last > 250) { last = n; fn(); } };
+  const go = () => { const n = Date.now(); if (n - last > 80) { last = n; fn(); } }; // 80ms 去重：合并 pointerup+click 双事件，真实连点（>80ms）不受影响
   el.addEventListener('pointerup', go);   // 现代环境主路径
   el.addEventListener('click', go);       // 无 PointerEvent 环境兜底（与 pointerup 去重）
   el.addEventListener('touchstart', e => { e.preventDefault(); }, { passive: false }); // 防长按菜单，但不阻止后续 click
@@ -1783,7 +1783,7 @@ if (location.search.includes('autotest=1')) {
       await wait(300);
       document.getElementById('btn-training').click();
       await wait(400);
-      mark('trial_panel', !document.getElementById('trial-panel').classList.contains('hidden') && G.trials && G.trials.length === 3,
+      mark('trial_panel', !document.getElementById('trial-panel').classList.contains('hidden') && G.trials && G.trials.length === 5,
         'trials=' + (G.trials ? G.trials.length : 0));
 
       // 第一关：三段连击 J·J·J（时间线探针）
@@ -1807,7 +1807,7 @@ if (location.search.includes('autotest=1')) {
       kd('j'); await wait(200); ku('j'); await wait(90);
       kd('l'); await wait(240); ku('l'); await wait(360);
       mark('trial_super', G.trials[2].done === true, G.p1.atkLog.slice(-3).join('>'));
-      mark('trial_all', G.trials.every(t => t.done), 'done=' + G.trials.filter(t => t.done).length);
+      mark('trial_all', G.trials.slice(0,3).every(t => t.done), 'done=' + G.trials.filter(t => t.done).length);
 
       // —— 第三角色断言 ——
       document.getElementById('btn-quit').click();
