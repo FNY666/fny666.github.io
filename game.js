@@ -104,8 +104,8 @@ const KEYMAP2 = {
 };
 function dispatchKey(e, isDown) {
   const k = e.key.toLowerCase();
-  if (KEYMAP[k]) { input[KEYMAP[k]] = isDown; if (isDown && pressFrame1[KEYMAP[k]]) pressFrame1[KEYMAP[k]] = GFRAME; e.preventDefault(); }
-  if (KEYMAP2[k]) { input2[KEYMAP2[k]] = isDown; if (isDown && pressFrame2[KEYMAP2[k]]) pressFrame2[KEYMAP2[k]] = GFRAME; e.preventDefault(); }
+  if (KEYMAP[k]) { input[KEYMAP[k]] = isDown; if (isDown) pressFrame1[KEYMAP[k]] = GFRAME; e.preventDefault(); }
+  if (KEYMAP2[k]) { input2[KEYMAP2[k]] = isDown; if (isDown) pressFrame2[KEYMAP2[k]] = GFRAME; e.preventDefault(); }
 }
 addEventListener('keydown', e => { dispatchKey(e, true); });
 addEventListener('keyup', e => { dispatchKey(e, false); });
@@ -357,12 +357,11 @@ class Fighter {
     return { x: this.x - w/2, y: this.y - (slim ? 48 : 46), w: w, h: slim ? 48 : 46 };
   }
 
-  // 攻击输入捕获：帧号按下判定（消费式，快速连按不丢）
+  // 攻击输入捕获：帧号按下判定（消费式，快速连按不丢，无需"仍按住"）
   captureAttackInput(inp, pf) {
     for (const k of ['punch', 'kick', 'special']) {
-      const cur = !!inp[k];
-      this.prev[k] = cur;
-      if (cur && pf[k] >= 0 && GFRAME - pf[k] <= 1) {
+      // 核心修复：只要帧号记录有效（<=1帧前按下），就算当前已松手也消费
+      if (pf[k] >= 0 && GFRAME - pf[k] <= 1) {
         this.buf[k] = 25;
         pf[k] = -999;   // 消费本次按下
       }
@@ -505,19 +504,17 @@ class Fighter {
 
       // —— 可取消窗口（街霸引擎取消语义）：activeTo 之后可按其他攻击/波动取消 ——
       if (a.cancelFrom !== undefined && this.stateT >= a.cancelFrom) {
-        // 边沿检测：攻击键用"刚按下"（帧号判定）而非"按住"
-        const edge = (k, v) => {
-          const cur = !!v;
-          this.prev[k] = cur;
-          if (cur && pf[k] >= 0 && GFRAME - pf[k] <= 1) {
+        // 边沿检测：只判定帧号，不要求"仍按住"（手机快点已松手）
+        const edge = (k) => {
+          if (pf[k] >= 0 && GFRAME - pf[k] <= 1) {
             pf[k] = -999;   // 消费本次按下（取消路径）
             return true;
           }
           return false;
         };
-        const kickP = edge('kick', inp.kick) && this.cd.kick <= 0;
-        const specialP = edge('special', inp.special) && this.meter >= 35;
-        const punchP = edge('punch', inp.punch);
+        const kickP = edge('kick') && this.cd.kick <= 0;
+        const specialP = edge('special') && this.meter >= 35;
+        const punchP = edge('punch');
         if (kickP) { this.attack = 'kick'; this.stateT = 0; this.hitDone = false; this.cd.kick = ATTACKS.kick.cd; sfx('block'); this.atkLog.push('kick'); }
         else if (specialP) {
           const sup = this.meter >= 100;
