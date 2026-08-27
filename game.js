@@ -1601,7 +1601,9 @@ tapDrive(document.getElementById('diff-hard'), () => selectDifficulty('hard'));
 
 // 仅在显式 debug 查询参数下暴露测试句柄
 if (location.search.includes('debug=1')) {
-  window.G = G; window.input = input; window.Fighter = Fighter;
+  window.G = G; window.input = input; window.input2 = input2;
+  window.__PF1 = pressFrame1; window.__PF2 = pressFrame2; window.__PFAI = pressFrameAI;
+  window.Fighter = Fighter;
   // 输入监视器：实时显示 1P/2P 各键的识别状态（帮助定位按键问题）
   const mon = document.getElementById('inp-monitor');
   if (mon) {
