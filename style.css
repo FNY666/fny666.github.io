@@ -36,14 +36,20 @@ html,body { height:100%; background:#000; overflow:hidden;
   border:1px solid rgba(170,220,255,.5); box-shadow:0 3px 0 #263f61;
 }
 
-.char-select { display:flex; gap:10px; justify-content:center; }
+.char-select { display:flex; gap:8px; justify-content:flex-start; max-width:92vw; overflow-x:auto; padding:4px 6px; scrollbar-width:none; }
+.char-select::-webkit-scrollbar { display:none; }
 .char-card {
   display:flex; flex-direction:column; align-items:center; gap:2px;
-  min-width:116px; padding:10px 14px;
+  min-width:100px; padding:10px 12px;
   color:#cfe3ff; letter-spacing:0; font-size:14px;
   background:rgba(20,34,56,.85); border:2px solid rgba(255,255,255,.14);
   box-shadow:0 2px 0 #0c1526;
+  flex-shrink:0;
 }
+.cc-side { font-size:9px; letter-spacing:.15em; padding:1px 6px; border-radius:8px; margin-bottom:2px; }
+.side-h { color:#ffe95c; background:rgba(120,90,10,.4); }
+.side-v { color:#d89aff; background:rgba(70,30,110,.45); }
+.side-r { color:#9fd4ff; background:rgba(30,60,100,.4); }
 .char-card .cc-name { font-size:17px; font-weight:800; color:#fff; letter-spacing:.15em; }
 .char-card .cc-desc { font-size:10px; color:#8fb4d8; letter-spacing:.05em; }
 .char-card.selected {
