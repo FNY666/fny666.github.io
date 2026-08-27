@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-title" content="像素乱斗">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
-<link rel="stylesheet" href="style.css?v=14">
+<link rel="stylesheet" href="style.css?v=15">
 </head>
 <body>
 <div id="wrap">
@@ -37,6 +37,10 @@
       <button id="char-miko" class="char-card">
         <span class="cc-name">小桃</span>
         <span class="cc-desc">迅捷 · 连打型</span>
+      </button>
+      <button id="char-random" class="char-card char-random">
+        <span class="cc-name">随机</span>
+        <span class="cc-desc">🎲 交给命运</span>
       </button>
     </div>
     <div class="diff-select">
@@ -80,6 +84,7 @@
     <div class="trial-title">连段挑战</div>
     <div id="trial-list"></div>
     <div id="trial-status" class="trial-status"></div>
+    <div id="frame-data" class="frame-data"></div>
   </div>
 
   <!-- 触屏控制（1P 下部 / 2P 上部，div + 容器级事件委托） -->
@@ -118,6 +123,6 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
   });
 }
 </script>
-<script src="game.js?v=52"></script>
+<script src="game.js?v=53"></script>
 </body>
 </html>
