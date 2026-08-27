@@ -294,7 +294,8 @@ function renderTrialPanel() {
 // 可用角色参数表（胜负手差异：速度/血量/伤害倍率）
 const CHARACTERS = {
   fighter: { name:'小烈', hp:100, speed:105, dmg:1.00, desc:'均衡 · 速度型' },
-  blob:    { name:'阿蓝', hp:125, speed:88,  dmg:1.25, desc:'重装 · 血厚攻高' }
+  blob:    { name:'阿蓝', hp:125, speed:88,  dmg:1.25, desc:'重装 · 血厚攻高' },
+  miko:    { name:'小桃', hp:108, speed:97,  dmg:1.12, desc:'迅捷 · 连打型' }
 };
 
 // AI 难度参数（反应间隔 / 格挡概率 / 后撤倾向）
@@ -345,8 +346,9 @@ class Fighter {
 
   get onGround() { return this.y >= GROUND - 0.5; }
   get hurtbox() {
-    const w = this.type === 'blob' ? 30 : 22;
-    return { x: this.x - w/2, y: this.y - (this.type==='blob'?46:48), w: w, h: this.type==='blob'?46:48 };
+    const slim = this.type === 'fighter' || this.type === 'miko';
+    const w = slim ? 22 : 30;
+    return { x: this.x - w/2, y: this.y - (slim ? 48 : 46), w: w, h: slim ? 48 : 46 };
   }
 
   // 攻击输入捕获：帧号按下判定（消费式，快速连按不丢）
@@ -751,15 +753,16 @@ function startTraining() {
 
 function startRound() {
   const p1c = CHARACTERS[G.playerType];
-  let p2Type = G.playerType === 'fighter' ? 'blob' : 'fighter';
+  const ROSTER = ['fighter', 'blob', 'miko'];
+  const foes = ROSTER.filter(t => t !== G.playerType);    // 对手池：所选之外
+  let p2Type = foes[0];
   let aiScale = 1, hpBoost = 0, persona = 'balance';
   if (G.mode === 'arcade') {
-    // 街机：人格逐层分配（平衡→侵略→龟壳→侵略→Boss），逐层强化
+    // 街机：人格逐层分配（平衡→侵略→龟壳→侵略→Boss），对手池内交替
     const personaOrder = ['balance', 'rush', 'guard', 'rush', 'bossRush'];
     const stage = G.arcade.stage;
     G.arcade.boss = stage === 5;
-    p2Type = (stage % 2 === 1) ? (G.playerType === 'fighter' ? 'blob' : 'fighter')
-                               : (G.playerType === 'fighter' ? 'fighter' : 'blob');
+    p2Type = foes[(stage - 1) % foes.length];
     aiScale = G.arcade.boss ? 1.95 : (1 + (stage - 1) * 0.22);
     hpBoost = Math.min(80, (stage - 1) * 12);
     persona = personaOrder[Math.min(4, stage - 1)];
@@ -1018,6 +1021,7 @@ function drawFighter(f, time) {
   const S = f.type;
 
   if (S === 'blob') drawBlob(f, t, bob);
+  else if (S === 'miko') drawMiko(f, t, bob);
   else drawMartial(f, t, bob);
 
   if (f.state === 'win') {
@@ -1038,6 +1042,62 @@ function drawFighter(f, time) {
     px(12, -43, 2, 24, 'rgba(220,255,255,.9)');
   }
 
+  ctx.restore();
+}
+
+function drawMiko(f, t, bob) {
+  const ko = f.state === 'ko';
+  ctx.save();
+  if (ko) { ctx.rotate(-Math.PI/2 * Math.min(1, f.stateT*3)); ctx.translate(0, -8); }
+  const SK = '#ffe2d0', HAIR = '#3a2a3a', GI = '#ff9ec4', GI_D = '#d86a9e', BELT = '#6a3ac8';
+
+  const legSpread = f.state === 'walk' ? Math.sin(f.walkPhase)*3 : 0;
+  // 腿（白袜）
+  px(-8 + legSpread, -14, 6, 14, '#f4f0f0');
+  px(2 - legSpread, -14, 6, 14, '#f4f0f0');
+  px(-9 + legSpread, -3, 8, 3, '#d8382a');    // 红鞋
+  px(1 - legSpread, -3, 8, 3, '#d8382a');
+  // 躯干（桃色和服）
+  px(-9, -34+bob, 18, 21, GI);
+  px(-2, -34+bob, 4, 21, '#fff8f4');          // 白襟
+  px(-9, -20+bob, 18, 3, BELT);               // 紫腰带
+  px(-9, -34+bob, 18, 4, GI_D);               // 领阴影
+  // 头
+  px(-8, -50+bob, 16, 16, SK);
+  // 丸子头（双丸）
+  px(-11, -56+bob, 7, 7, HAIR);
+  px(4, -56+bob, 7, 7, HAIR);
+  px(-9, -54+bob, 18, 6, HAIR);
+  // 眉眼
+  if (f.state === 'hit' || f.state === 'ko') {
+    px(-6, -44+bob, 5, 2, '#222'); px(1, -44+bob, 5, 2, '#222');
+  } else if (f.state === 'attack') {
+    px(-6, -46+bob, 12, 2, '#a03020');
+    px(-6, -43+bob, 4, 3, '#222'); px(2, -43+bob, 4, 3, '#222');
+  } else {
+    px(-6, -44+bob, 4, 4, '#222'); px(2, -44+bob, 4, 4, '#222');
+  }
+  // 嘴
+  px(-2, -38+bob, 5, 2, '#c86a5a');
+
+  // 手臂
+  if (f.state === 'attack' && f.attack === 'punch') {
+    const ext = f.stateT > ATTACKS.punch.activeFrom ? 1 : 0;
+    px(6, -30+bob, 12+10*ext, 5, GI);
+    px(17+10*ext, -31+bob, 6, 6, SK);
+  } else if (f.state === 'attack' && f.attack === 'special') {
+    px(6, -30+bob, 12, 5, GI);
+    px(16, -32+bob, 6, 8, SK);
+    px(6, -26+bob, 12, 5, GI);
+    px(16, -26+bob, 6, 6, SK);
+  } else {
+    px(-13, -32+bob, 5, 13, GI); px(9, -32+bob, 5, 13, GI);
+    px(-14, -20+bob, 6, 5, SK);  px(9, -20+bob, 6, 5, SK);
+  }
+  // 踢腿
+  if (f.state === 'attack' && f.attack === 'kick' && f.stateT > ATTACKS.kick.activeFrom) {
+    px(2, -18, 22, 6, GI); px(22, -20, 7, 7, '#d8382a');
+  }
   ctx.restore();
 }
 
@@ -1202,6 +1262,13 @@ function drawPortrait(x, y, type) {
     px(6,8,6,7,'#f4f4f0'); px(14,8,6,7,'#f4f4f0');
     px(8,10,3,4,'#222'); px(16,10,3,4,'#222');
     px(11,17,5,3,'#d8382a');
+  } else if (type === 'miko') {
+    px(0,0,26,26,'#2a3a55');
+    px(3,8,20,15,'#ffe2d0');
+    px(6,3,6,6,'#3a2a3a'); px(14,3,6,6,'#3a2a3a');   // 双丸子
+    px(3,5,20,5,'#3a2a3a');
+    px(6,12,5,4,'#222'); px(15,12,5,4,'#222');
+    px(10,19,6,3,'#ff9ec4');
   } else {
     px(0,0,26,26,'#2a3a55');
     px(3,6,20,17,'#ffcf9e');
@@ -1483,11 +1550,12 @@ document.getElementById('btn-quit').addEventListener('click', quitToTitle);
 // 角色选择
 function selectCharacter(type) {
   G.playerType = type;
-  document.getElementById('char-fighter').classList.toggle('selected', type === 'fighter');
-  document.getElementById('char-blob').classList.toggle('selected', type === 'blob');
+  ['fighter', 'blob', 'miko'].forEach(k =>
+    document.getElementById('char-' + k).classList.toggle('selected', k === type));
 }
 document.getElementById('char-fighter').addEventListener('click', () => selectCharacter('fighter'));
 document.getElementById('char-blob').addEventListener('click', () => selectCharacter('blob'));
+document.getElementById('char-miko').addEventListener('click', () => selectCharacter('miko'));
 
 // 难度选择
 function selectDifficulty(level) {
@@ -1732,6 +1800,19 @@ if (location.search.includes('autotest=1')) {
       kd('l'); await wait(240); ku('l'); await wait(360);
       mark('trial_super', G.trials[2].done === true, G.p1.atkLog.slice(-3).join('>'));
       mark('trial_all', G.trials.every(t => t.done), 'done=' + G.trials.filter(t => t.done).length);
+
+      // —— 第三角色断言 ——
+      document.getElementById('btn-quit').click();
+      await wait(300);
+      document.getElementById('char-miko').click();
+      document.getElementById('btn-start').click();
+      await wait(400);
+      mark('miko_select', G.p1.type === 'miko' && G.p1.hp === 108 && G.p1.maxHp === 108 && G.p1.speed === 97,
+        'hp=' + G.p1.hp + '/' + G.p1.maxHp + ' sp=' + G.p1.speed);
+      mark('miko_foe', G.p2.type !== 'miko', 'p2=' + G.p2.type);
+      G.state = 'fight'; G.p1.state = 'idle'; G.p1.attack = null; G.p1.cd.special = 0; G.p1.meter = 100;
+      const mikoSuper = G.p1.startAttack('special');
+      mark('miko_super', mikoSuper && G.p1.attack === 'super', 'atk=' + G.p1.attack);
     } catch (e) { log.push('ERROR ' + e.message); }
     document.title = 'AUTOTEST|' + log.join('|');
   })();
