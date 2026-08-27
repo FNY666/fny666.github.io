@@ -249,13 +249,14 @@ function hideTouch() { document.getElementById('touch').classList.add('hidden');
 // ---------- 招式表 ----------
 const ATTACKS = {
   // cancelFrom：命中帧后可被其他攻击取消（参考街霸引擎的可中断窗口）
-  punch:   { dmg:6,  total:.28, activeFrom:.06, activeTo:.14, reach:26, h:14,  kb:70,  stun:.28, cd:.30, oy:-26, combo:true, cancelFrom:.14 },
-  punch2:  { dmg:7,  total:.24, activeFrom:.04, activeTo:.10, reach:30, h:14,  kb:90,  stun:.30, cd:.02, oy:-28, combo:true, cancelFrom:.10 },
-  kick3:   { dmg:12, total:.36, activeFrom:.10, activeTo:.20, reach:34, h:16,  kb:150, stun:.48, cd:.02, oy:-14, last:true, cancelFrom:.20 },
-  kick:    { dmg:10, total:.40, activeFrom:.12, activeTo:.24, reach:32, h:16,  kb:120, stun:.42, cd:.55, oy:-16, cancelFrom:.24 },
-  airpunch:{ dmg:8,  total:.30, activeFrom:.06, activeTo:.14, reach:28, h:14,  kb:90,  stun:.35, cd:.02, oy:-26, air:true },
-  special: { dmg:14, total:.50, activeFrom:.22, activeTo:.30, cd:2.2, projectile:true },
-  super:   { dmg:30, total:.70, activeFrom:.25, activeTo:.35, cd:3.0, projectile:true, super:true }
+  // hitStop：受击顿帧（大厂手感分级：轻攻短顿/重攻长顿/超必杀最强顿）
+  punch:   { dmg:6,  total:.28, activeFrom:.06, activeTo:.14, reach:26, h:14,  kb:70,  stun:.28, cd:.30, oy:-26, combo:true, cancelFrom:.14, hitStop:.045 },
+  punch2:  { dmg:7,  total:.24, activeFrom:.04, activeTo:.10, reach:30, h:14,  kb:90,  stun:.30, cd:.02, oy:-28, combo:true, cancelFrom:.10, hitStop:.05 },
+  kick3:   { dmg:12, total:.36, activeFrom:.10, activeTo:.20, reach:34, h:16,  kb:150, stun:.48, cd:.02, oy:-14, last:true, cancelFrom:.20, hitStop:.075 },
+  kick:    { dmg:10, total:.40, activeFrom:.12, activeTo:.24, reach:32, h:16,  kb:120, stun:.42, cd:.55, oy:-16, cancelFrom:.24, hitStop:.06 },
+  airpunch:{ dmg:8,  total:.30, activeFrom:.06, activeTo:.14, reach:28, h:14,  kb:90,  stun:.35, cd:.02, oy:-26, air:true, hitStop:.05 },
+  special: { dmg:14, total:.50, activeFrom:.22, activeTo:.30, cd:2.2, projectile:true, hitStop:.08 },
+  super:   { dmg:30, total:.70, activeFrom:.25, activeTo:.35, cd:3.0, projectile:true, super:true, hitStop:.14 }
 };
 const COMBO_NEXT = { punch: 'punch2', punch2: 'kick3' };
 
@@ -278,6 +279,25 @@ function initTrials() {
   G.trials = TRIALS.map(t => ({ seq: t.seq, name: t.name, done: false }));
   renderTrialPanel();
 }
+// 帧数据面板（SF6 训练房简化版）：实时显示当前招式的启动/判定/总帧
+function updateFrameData() {
+  const el = document.getElementById('frame-data');
+  if (!el) return;
+  const p = G.p1;
+  if (!p || !p.attack) {
+    if (el.dataset.empty !== '1') { el.dataset.empty = '1'; el.innerHTML = '空闲 · 出招查看帧数'; }
+    return;
+  }
+  const a = ATTACKS[p.attack];
+  const F = (s) => Math.round(s * 60);
+  el.dataset.empty = '0';
+  el.innerHTML = '<b>' + attackLabel(p.attack) + '</b> 启动 ' + F(a.activeFrom) + 'f 判定 ' + F(a.activeTo) + 'f 总 ' + F(a.total) + 'f';
+}
+function attackLabel(name) {
+  const map = { punch:'直拳', punch2:'快拳', kick3:'上踢', kick:'回旋踢', airpunch:'空中拳', special:'波动拳', super:'超必杀' };
+  return map[name] || name;
+}
+
 function updateTrials() {
   if (!G.trials || !G.p1 || G.trials.every(t => t.done)) return;
   const log = G.p1.atkLog;
@@ -347,6 +367,7 @@ class Fighter {
       meter: 50, maxMeter: 100,
       blocking: false,
       lowWarned: false,
+      squash: 0,
       flash: 0,
       isAI: false,
       aiTimer: 0, aiMove: 0, aiAct: null,
@@ -441,7 +462,8 @@ class Fighter {
       this.state = 'block'; this.stateT = 0;
       this.vx = dir * kb * 0.18;
       this.flash = .08;
-      G.hitStop = .025; G.shake = 1;
+      G.hitStop = .02; G.shake = 1;
+      this.squash = .07;
       spawnSparks(this.x, this.y - 30, dir, true);
       sfx('block');
       if (this.hp <= 0) {
@@ -461,7 +483,11 @@ class Fighter {
     this.flash = .12;
     attacker.combo++;
     attacker.comboDmg += finalDmg;
-    G.hitStop = .05; G.shake = 3;
+    // 分级顿帧（大厂手感：轻/重/必杀各不同时长）+ 受击挤压
+    const attAtk = attacker.attack ? ATTACKS[attacker.attack] : null;
+    G.hitStop = Math.min(.18, (attAtk && attAtk.hitStop) || .05);
+    this.squash = .16;
+    G.shake = attAtk && attAtk.hitStop > .1 ? 5 : 3;
     spawnSparks(this.x, this.y - 30, dir);
     sfx(dmg >= 10 ? 'kick' : 'hit');
     if (this.hp <= 0) {
@@ -477,6 +503,7 @@ class Fighter {
     for (const k in this.cd) this.cd[k] = Math.max(0, this.cd[k] - dt);
     this.meter = clamp(this.meter + dt * 5, 0, this.maxMeter);
     this.flash = Math.max(0, this.flash - dt);
+    this.squash = Math.max(0, this.squash - dt * 2.6);   // 受击挤压衰减
 
     // 胜利姿势：动作展示，不受输入影响
     if (this.state === 'win') {
@@ -710,6 +737,16 @@ function spawnSuperBurst(x, y) {
 }
 
 // 超必杀释放金光
+// KO 白闪（全屏白闪 0.3s，GGST/SF6 KO 演出风格）
+function whiteFlash() {
+  const el = document.createElement('div');
+  el.style.cssText = 'position:fixed;inset:0;z-index:31;pointer-events:none;background:#fff;animation:wfade .3s ease-out forwards;';
+  document.head.appendChild(document.createElement('style')).textContent =
+    '@keyframes wfade{from{opacity:.9}to{opacity:0}}';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 320);
+}
+
 function goldenFlash() {
   const el = document.createElement('div');
   el.style.cssText = 'position:fixed;inset:0;z-index:30;pointer-events:none;' +
@@ -868,7 +905,7 @@ function finishRound(winner, cause) {
     G.roundCause = cause;
     G.koTimer = 0;
     G.state = 'training-ko';
-    sfx('ko'); G.shake = 6;
+    sfx('ko'); G.shake = 6; G.hitStop = .16; whiteFlash();
     return;
   }
   G.roundCause = cause;
@@ -877,7 +914,7 @@ function finishRound(winner, cause) {
   if (winner === G.p2) G.wins.p2++;
   if (cause === 'ko') {
     G.state = 'ko';
-    sfx('ko'); G.shake = 6;
+    sfx('ko'); G.shake = 6; G.hitStop = .16; whiteFlash();
   } else {
     G.state = 'timeup';
     G.shake = 2;
@@ -1040,6 +1077,8 @@ function px(x, y, w, h, c) { ctx.fillStyle = c; ctx.fillRect(Math.round(x), Math
 function drawFighter(f, time) {
   ctx.save();
   ctx.translate(Math.round(f.x), Math.round(f.y));
+  // 受击挤压（Squash & Stretch）：横向拉宽+纵向压扁，随 squash 衰减回正
+  if (f.squash > 0) ctx.scale(1 + f.squash * 1.4, 1 - f.squash * 0.75);
   ctx.scale(f.facing, 1);
   if (f.flash > 0) ctx.globalAlpha = .5 + Math.sin(time*60)*.4;
 
@@ -1422,7 +1461,7 @@ function frame(now) {
     } else {
       G.p1.update(dt, G.p2, input, pressFrame1);
       G.p2.update(dt, G.p1, G.training ? NO_INPUT : (G.mode === 'pvp' ? input2 : G.p2.aiInput(dt, G.p1)), G.training ? pressFrameAI : (G.mode === 'pvp' ? pressFrame2 : pressFrameAI));
-      if (G.training) updateTrials();
+      if (G.training) { updateTrials(); updateFrameData(); }
     }
   } else if (G.state === 'ko' || G.state === 'training-ko' || G.state === 'timeup') {
     G.koTimer += rawDt;
@@ -1620,6 +1659,7 @@ function selectCharacter(type) {
 tapDrive(document.getElementById('char-fighter'), () => selectCharacter('fighter'));
 tapDrive(document.getElementById('char-blob'), () => selectCharacter('blob'));
 tapDrive(document.getElementById('char-miko'), () => selectCharacter('miko'));
+tapDrive(document.getElementById('char-random'), () => selectCharacter(['fighter','blob','miko'][Math.floor(Math.random()*3)]));
 
 // 难度选择
 function selectDifficulty(level) {
@@ -1904,6 +1944,22 @@ if (location.search.includes('autotest=1')) {
       const saved = JSON.parse(localStorage.getItem('pixelbrawl_settings') || '{}');
       mark('settings_save', saved.playerType === 'miko' && saved.difficulty === 'hard', JSON.stringify(saved));
       mark('rotate_hint', !!document.getElementById('rotate-hint'), 'el=' + !!document.getElementById('rotate-hint'));
+
+      // —— 大厂手感吸收断言：分级顿帧 / 受击挤压 / 帧数据面板 / 随机角色 ——
+      const hs = ['punch','kick','special','super'].map(k => ATTACKS[k].hitStop);
+      mark('hitstop_tiered', hs[3] > hs[2] && hs[2] > hs[0], 'p=' + hs[0] + ' k=' + hs[1] + ' s=' + hs[2] + ' U=' + hs[3]);
+      G.p1.hp = 100; G.p1.squash = 0;
+      G.p1.takeHit(10, 1, 100, .3, G.p2);
+      mark('squash_flash', G.p1.squash > 0.1 && G.hitStop > 0, 'sq=' + G.p1.squash.toFixed(2) + ' hs=' + G.hitStop);
+      document.getElementById('btn-quit').click();
+      await wait(300);
+      document.getElementById('btn-training').click();
+      await wait(400);
+      mark('frame_data', !!document.getElementById('frame-data'), 'el=' + !!document.getElementById('frame-data'));
+      const rndBefore = G.playerType;
+      document.getElementById('char-random').dispatchEvent(new PointerEvent('pointerup', { pointerId: 93, bubbles: true }));
+      await wait(300);
+      mark('char_random', ['fighter','blob','miko'].includes(G.playerType), rndBefore + '->' + G.playerType);
 
       // —— 标题按钮 pointerup 主路径（iOS Safari 无 click 时的驱动方式）——
       document.getElementById('btn-quit').click();
