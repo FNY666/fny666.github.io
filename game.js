@@ -219,12 +219,9 @@ function bindKeys(containerSel, keySel, target) {
   }
 }
 
-// 全局触摸手势拦截：capture 阶段阻止 Safari 双击缩放/双指手势/长按菜单识别，
-// 保证第二个手指与快速连打的事件不被浏览器吞掉（游戏全屏无滚动，无副作用）
-if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
-  document.addEventListener('touchstart', e => { e.preventDefault(); }, { passive: false, capture: true });
-  document.addEventListener('touchmove',  e => { e.preventDefault(); }, { passive: false, capture: true });
-}
+// 触摸手势拦截：只覆盖触屏键区域（.tk/.tk2 已各自 touch-action:none + preventDefault）。
+// 切勿全局 preventDefault touchstart——iOS Safari 会因此不再生成 click，标题按钮将失灵。
+// 此处兜底：触屏键容器内的 touchmove 也不允许滚动（键区外的滚动由页面本身禁止）。
 bindKeys('#touch', '.tk', input);   // 1P：下半区
 bindKeys('#touch', '.tk2', input2); // 2P：上半区
 // 触屏层仅在真正的触屏设备显示（防桌面 Chrome 误判）
@@ -249,7 +246,9 @@ const COMBO_NEXT = { punch: 'punch2', punch2: 'kick3' };
 const TRIALS = [
   { seq: ['punch', 'punch2', 'kick3'], name: '三段连击（快速连按 J）' },
   { seq: ['punch', 'kick'],            name: '拳→脚取消（J·K）' },
-  { seq: ['punch', 'super'],           name: '拳→超必杀（满能量 J·L）' }
+  { seq: ['punch', 'super'],           name: '拳→超必杀（满能量 J·L）' },
+  { seq: ['airpunch'],                 name: '空中拳（跳起按 J）' },
+  { seq: ['super'],                    name: '超必杀（满能量按 L）' }
 ];
 function endsWithSeq(arr, seq) {
   if (arr.length < seq.length) return false;
@@ -1518,34 +1517,43 @@ function render(dt) {
 }
 
 // ---------- 启动 ----------
-document.getElementById('btn-start').addEventListener('click', () => {
+// 按钮驱动：pointerup 优先（iOS 可用），click 兜底，250ms 去重防双触发
+function tapDrive(el, fn) {
+  if (!el) return;
+  let last = 0;
+  const go = () => { const n = Date.now(); if (n - last > 250) { last = n; fn(); } };
+  el.addEventListener('pointerup', go);   // 现代环境主路径
+  el.addEventListener('click', go);       // 无 PointerEvent 环境兜底（与 pointerup 去重）
+  el.addEventListener('touchstart', e => { e.preventDefault(); }, { passive: false }); // 防长按菜单，但不阻止后续 click
+}
+tapDrive(document.getElementById('btn-start'), () => {
   document.getElementById('title').classList.add('hidden');
   startMatch('vsai');
 });
-document.getElementById('btn-pvp').addEventListener('click', () => {
+tapDrive(document.getElementById('btn-pvp'), () => {
   document.getElementById('title').classList.add('hidden');
   startMatch('pvp');
 });
-document.getElementById('btn-arcade').addEventListener('click', () => {
+tapDrive(document.getElementById('btn-arcade'), () => {
   document.getElementById('title').classList.add('hidden');
   startMatch('arcade');
 });
-document.getElementById('btn-training').addEventListener('click', () => {
+tapDrive(document.getElementById('btn-training'), () => {
   document.getElementById('title').classList.add('hidden');
   startTraining();
 });
-document.getElementById('btn-rematch').addEventListener('click', () => {
+tapDrive(document.getElementById('btn-rematch'), () => {
   if (G.mode === 'train') startTraining();
   else startMatch(G.mode);
 });
-document.getElementById('btn-pause').addEventListener('click', togglePause);
-document.getElementById('btn-mute').addEventListener('click', toggleMute);
-document.getElementById('btn-resume').addEventListener('click', togglePause);
-document.getElementById('btn-restart').addEventListener('click', () => {
+tapDrive(document.getElementById('btn-mute'), toggleMute);
+tapDrive(document.getElementById('btn-resume'), togglePause);
+tapDrive(document.getElementById('btn-restart'), () => {
   if (G.training) startTraining();
   else startRound();
 });
-document.getElementById('btn-quit').addEventListener('click', quitToTitle);
+tapDrive(document.getElementById('btn-quit'), quitToTitle);
+tapDrive(document.getElementById('btn-pause'), togglePause);
 
 // 角色选择
 function selectCharacter(type) {
@@ -1553,9 +1561,9 @@ function selectCharacter(type) {
   ['fighter', 'blob', 'miko'].forEach(k =>
     document.getElementById('char-' + k).classList.toggle('selected', k === type));
 }
-document.getElementById('char-fighter').addEventListener('click', () => selectCharacter('fighter'));
-document.getElementById('char-blob').addEventListener('click', () => selectCharacter('blob'));
-document.getElementById('char-miko').addEventListener('click', () => selectCharacter('miko'));
+tapDrive(document.getElementById('char-fighter'), () => selectCharacter('fighter'));
+tapDrive(document.getElementById('char-blob'), () => selectCharacter('blob'));
+tapDrive(document.getElementById('char-miko'), () => selectCharacter('miko'));
 
 // 难度选择
 function selectDifficulty(level) {
@@ -1563,9 +1571,9 @@ function selectDifficulty(level) {
   ['easy','normal','hard'].forEach(k =>
     document.getElementById('diff-'+k).classList.toggle('selected', k === level));
 }
-document.getElementById('diff-easy').addEventListener('click', () => selectDifficulty('easy'));
-document.getElementById('diff-normal').addEventListener('click', () => selectDifficulty('normal'));
-document.getElementById('diff-hard').addEventListener('click', () => selectDifficulty('hard'));
+tapDrive(document.getElementById('diff-easy'), () => selectDifficulty('easy'));
+tapDrive(document.getElementById('diff-normal'), () => selectDifficulty('normal'));
+tapDrive(document.getElementById('diff-hard'), () => selectDifficulty('hard'));
 
 // 循环启动：rAF 若不触发（部分 WebView 会挂起）自动降级 setInterval
 (function startLoop() {
@@ -1813,6 +1821,13 @@ if (location.search.includes('autotest=1')) {
       G.state = 'fight'; G.p1.state = 'idle'; G.p1.attack = null; G.p1.cd.special = 0; G.p1.meter = 100;
       const mikoSuper = G.p1.startAttack('special');
       mark('miko_super', mikoSuper && G.p1.attack === 'super', 'atk=' + G.p1.attack);
+
+      // —— 标题按钮 pointerup 主路径（iOS Safari 无 click 时的驱动方式）——
+      document.getElementById('btn-quit').click();
+      await wait(300);
+      document.getElementById('btn-start').dispatchEvent(new PointerEvent('pointerup', { pointerId: 1, bubbles: true }));
+      await wait(350);
+      mark('btn_pointerup', G.mode === 'vsai' && G.state === 'vs', 'mode=' + G.mode + ' state=' + G.state);
     } catch (e) { log.push('ERROR ' + e.message); }
     document.title = 'AUTOTEST|' + log.join('|');
   })();
