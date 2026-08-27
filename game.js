@@ -81,6 +81,7 @@ function sfx(kind) {
     else if (kind === 'block'){ o.type='triangle';o.frequency.setValueAtTime(520,t); o.frequency.exponentialRampToValueAtTime(740,t+.06); g.gain.setValueAtTime(.10,t); g.gain.exponentialRampToValueAtTime(.001,t+.09); o.start(t); o.stop(t+.1); }
     else if (kind === 'super'){ o.type='sawtooth'; o.frequency.setValueAtTime(180,t); o.frequency.exponentialRampToValueAtTime(820,t+.4); g.gain.setValueAtTime(.16,t); g.gain.exponentialRampToValueAtTime(.001,t+.45); o.start(t); o.stop(t+.46); }
     else if (kind === 'win')  { o.type='square';   o.frequency.setValueAtTime(440,t); o.frequency.setValueAtTime(660,t+.09); o.frequency.setValueAtTime(880,t+.18); g.gain.setValueAtTime(.12,t); g.gain.exponentialRampToValueAtTime(.001,t+.3); o.start(t); o.stop(t+.31); }
+    else if (kind === 'alarm'){ o.type='sawtooth'; o.frequency.setValueAtTime(120,t); o.frequency.setValueAtTime(110,t+.15); o.frequency.setValueAtTime(120,t+.3); g.gain.setValueAtTime(.12,t); g.gain.exponentialRampToValueAtTime(.001,t+.45); o.start(t); o.stop(t+.46); }
     else if (kind === 'ko')  { o.type='sawtooth'; o.frequency.setValueAtTime(400,t); o.frequency.exponentialRampToValueAtTime(50,t+.5); g.gain.setValueAtTime(.2,t); g.gain.exponentialRampToValueAtTime(.001,t+.55); o.start(t); o.stop(t+.56); }
   } catch(e) {}
 }
@@ -345,6 +346,7 @@ class Fighter {
       cd: { punch:0, kick:0, special:0 },
       meter: 50, maxMeter: 100,
       blocking: false,
+      lowWarned: false,
       flash: 0,
       isAI: false,
       aiTimer: 0, aiMove: 0, aiAct: null,
@@ -422,6 +424,11 @@ class Fighter {
     const guarded = this.blocking && this.onGround && foeInFront && this.state !== 'attack';
     const finalDmg = guarded ? Math.max(1, Math.ceil(dmg * 0.28)) : dmg;
     this.hp = Math.max(0, this.hp - finalDmg);
+    // 低血量警示（每回合首次跌破 25% 播一次）
+    if (this.hp > 0 && this.hp < this.maxHp * 0.25 && !this.lowWarned) {
+      this.lowWarned = true;
+      sfx('alarm');
+    }
     hitNums.push({
       x: this.x + rand(-8, 8), y: this.y - 48, vy: -32, t: 0, life: guarded ? .55 : .7,
       txt: guarded ? 'GUARD ' + finalDmg : '-' + finalDmg,
@@ -1303,12 +1310,16 @@ function drawHUD() {
   const p1 = G.p1, p2 = G.p2;
   // 血条底
   function bar(x, w, pct, flip) {
-    px(x, 8, w, 10, '#1a1a22');
+    // 低血量预警：pct<0.25 时血条闪烁红色边框
+    const low = pct < 0.25;
+    const blink = low && Math.floor(gameTime * 6) % 2 === 0;
+    px(x, 8, w, 10, low ? '#2a0f12' : '#1a1a22');
     px(x+1, 9, w-2, 8, '#3a1a10');
     const fw = Math.round((w-2) * pct);
     if (pct > .5) px(flip ? x+1+(w-2-fw) : x+1, 9, fw, 8, '#5ad83a');
     else if (pct > .25) px(flip ? x+1+(w-2-fw) : x+1, 9, fw, 8, '#ffd83a');
     else px(flip ? x+1+(w-2-fw) : x+1, 9, fw, 8, '#ff4b2e');
+    if (low && blink) px(x, 8, w, 10, 'rgba(255,60,40,.55)');
     px(x, 8, w, 2, 'rgba(255,255,255,.25)');
   }
   bar(34, 170, p1.hp / p1.maxHp, false);
@@ -1589,10 +1600,22 @@ tapDrive(document.getElementById('btn-quit'), quitToTitle);
 tapDrive(document.getElementById('btn-pause'), togglePause);
 
 // 角色选择
+const SETTINGS_KEY = 'pixelbrawl_settings';
+function saveSettings() {
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ playerType: G.playerType, difficulty: G.difficulty })); } catch (e) {}
+}
+function loadSettings() {
+  try {
+    const s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+    if (s.playerType && CHARACTERS[s.playerType]) selectCharacter(s.playerType);
+    if (s.difficulty && DIFFICULTY[s.difficulty]) selectDifficulty(s.difficulty);
+  } catch (e) {}
+}
 function selectCharacter(type) {
   G.playerType = type;
   ['fighter', 'blob', 'miko'].forEach(k =>
     document.getElementById('char-' + k).classList.toggle('selected', k === type));
+  saveSettings();
 }
 tapDrive(document.getElementById('char-fighter'), () => selectCharacter('fighter'));
 tapDrive(document.getElementById('char-blob'), () => selectCharacter('blob'));
@@ -1603,6 +1626,7 @@ function selectDifficulty(level) {
   G.difficulty = level;
   ['easy','normal','hard'].forEach(k =>
     document.getElementById('diff-'+k).classList.toggle('selected', k === level));
+  saveSettings();
 }
 tapDrive(document.getElementById('diff-easy'), () => selectDifficulty('easy'));
 tapDrive(document.getElementById('diff-normal'), () => selectDifficulty('normal'));
@@ -1626,6 +1650,9 @@ tapDrive(document.getElementById('diff-hard'), () => selectDifficulty('hard'));
     }
   }, 350);
 })();
+
+// 恢复上次设置（角色/难度）
+loadSettings();
 
 // 仅在显式 debug 查询参数下暴露测试句柄
 if (location.search.includes('debug=1')) {
@@ -1868,6 +1895,15 @@ if (location.search.includes('autotest=1')) {
       G.state = 'fight'; G.p1.state = 'idle'; G.p1.attack = null; G.p1.cd.special = 0; G.p1.meter = 100;
       const mikoSuper = G.p1.startAttack('special');
       mark('miko_super', mikoSuper && G.p1.attack === 'super', 'atk=' + G.p1.attack);
+
+      // —— 低血量预警 / 设置记忆 / 旋转提示 ——
+      G.p1.hp = 100; G.p1.maxHp = 100; G.p1.lowWarned = false;
+      G.p1.takeHit(80, 1, 100, .3, G.p2);
+      mark('low_warn', G.p1.hp < 25 && G.p1.lowWarned === true, 'hp=' + G.p1.hp + ' warned=' + G.p1.lowWarned);
+      selectCharacter('miko'); selectDifficulty('hard');
+      const saved = JSON.parse(localStorage.getItem('pixelbrawl_settings') || '{}');
+      mark('settings_save', saved.playerType === 'miko' && saved.difficulty === 'hard', JSON.stringify(saved));
+      mark('rotate_hint', !!document.getElementById('rotate-hint'), 'el=' + !!document.getElementById('rotate-hint'));
 
       // —— 标题按钮 pointerup 主路径（iOS Safari 无 click 时的驱动方式）——
       document.getElementById('btn-quit').click();
