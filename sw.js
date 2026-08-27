@@ -1,14 +1,14 @@
 // 像素乱斗 Service Worker：安装后可离线游玩
 'use strict';
 
-const VERSION = 'pixel-brawl-v51';
+const VERSION = 'pixel-brawl-v52';
 const CACHE_NAME = VERSION;
 // 注意：必须与 index.html 中的资源版本号一致
 const ASSETS = [
   './',
   './index.html',
-  './style.css?v=13',
-  './game.js?v=51',
+  './style.css?v=14',
+  './game.js?v=52',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png'
