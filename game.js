@@ -88,9 +88,11 @@ function sfx(kind) {
 // ---------- 输入 ----------
 const input = { left:false, right:false, jump:false, block:false, punch:false, kick:false, special:false };
 const input2 = { left:false, right:false, jump:false, block:false, punch:false, kick:false, special:false };
-// 帧号按下记录：keydown 记当前帧号，update 据此判断"刚按下"（防快速连按丢键）
+// 每个输入源独立记录按下帧，避免1P/2P/AI互相覆盖
 let GFRAME = 0;
-const pressFrame = { punch: 0, kick: 0, special: 0 };
+const pressFrame1 = { punch: -999, kick: -999, special: -999 };
+const pressFrame2 = { punch: -999, kick: -999, special: -999 };
+const pressFrameAI = { punch: -999, kick: -999, special: -999 };
 // 1P：ASDW + J/K/L；2P：方向键 + 4/5/6
 const KEYMAP = {
   a:'left', d:'right', w:'jump', s:'block',
@@ -102,8 +104,8 @@ const KEYMAP2 = {
 };
 function dispatchKey(e, isDown) {
   const k = e.key.toLowerCase();
-  if (KEYMAP[k]) { input[KEYMAP[k]] = isDown; if (isDown) pressFrame[KEYMAP[k]] = GFRAME; e.preventDefault(); }
-  if (KEYMAP2[k]) { input2[KEYMAP2[k]] = isDown; if (isDown) pressFrame[KEYMAP2[k]] = GFRAME; e.preventDefault(); }
+  if (KEYMAP[k]) { input[KEYMAP[k]] = isDown; if (isDown && pressFrame1[KEYMAP[k]]) pressFrame1[KEYMAP[k]] = GFRAME; e.preventDefault(); }
+  if (KEYMAP2[k]) { input2[KEYMAP2[k]] = isDown; if (isDown && pressFrame2[KEYMAP2[k]]) pressFrame2[KEYMAP2[k]] = GFRAME; e.preventDefault(); }
 }
 addEventListener('keydown', e => { dispatchKey(e, true); });
 addEventListener('keyup', e => { dispatchKey(e, false); });
@@ -137,7 +139,7 @@ function toggleMute() {
 // ===== 触屏输入：容器级事件委托（1P/2P 共用）=====
 // - 多点独立跟踪（每根手指/指针独立）
 // - 滑动联动：按住方向键滑到攻击键 → 边移动边出招（多点不可用的兜底）
-function bindKeys(containerSel, keySel, target) {
+function bindKeys(containerSel, keySel, target, pressFrames) {
   const touchEl = document.querySelector(containerSel);
   if (!touchEl) return;
   const keys = () => Array.from(touchEl.querySelectorAll(keySel));
@@ -162,18 +164,23 @@ function bindKeys(containerSel, keySel, target) {
         for (const kk of p.pressed) target[kk] = false;
         active.delete(id);
       } else {
-        target[k] = true; p.pressed.add(k); p.cur = k;
+        target[k] = true; 
+        if (pressFrames && pressFrames[k] !== undefined) pressFrames[k] = GFRAME;
+        p.pressed.add(k); p.cur = k;
         return;
       }
     }
     target[k] = true;
+    if (pressFrames && pressFrames[k] !== undefined) pressFrames[k] = GFRAME;
     active.set(id, { cur: k, pressed: new Set([k]) });
   }
   function moveTo(id, k) {
     const p = active.get(id);
     if (!p || !k || k === p.cur) return;
     // 滑入新键：按下并保持此前所有键（滑动联动：左→拳 = 边移动边出拳）
-    target[k] = true; p.pressed.add(k); p.cur = k;
+    target[k] = true; 
+    if (pressFrames && pressFrames[k] !== undefined) pressFrames[k] = GFRAME;
+    p.pressed.add(k); p.cur = k;
   }
   function release(id) {
     const p = active.get(id);
@@ -222,8 +229,8 @@ function bindKeys(containerSel, keySel, target) {
 // 触摸手势拦截：只覆盖触屏键区域（.tk/.tk2 已各自 touch-action:none + preventDefault）。
 // 切勿全局 preventDefault touchstart——iOS Safari 会因此不再生成 click，标题按钮将失灵。
 // 此处兜底：触屏键容器内的 touchmove 也不允许滚动（键区外的滚动由页面本身禁止）。
-bindKeys('#touch', '.tk', input);   // 1P：下半区
-bindKeys('#touch', '.tk2', input2); // 2P：上半区
+bindKeys('#touch', '.tk', input, pressFrame1);   // 1P：下半区
+bindKeys('#touch', '.tk2', input2, pressFrame2); // 2P：上半区
 // 触屏层仅在真正的触屏设备显示（防桌面 Chrome 误判）
 const IS_TOUCH = matchMedia('(pointer: coarse)').matches;
 function showTouch() { if (IS_TOUCH) document.getElementById('touch').classList.remove('hidden'); }
@@ -351,13 +358,13 @@ class Fighter {
   }
 
   // 攻击输入捕获：帧号按下判定（消费式，快速连按不丢）
-  captureAttackInput(inp) {
+  captureAttackInput(inp, pf) {
     for (const k of ['punch', 'kick', 'special']) {
       const cur = !!inp[k];
       this.prev[k] = cur;
-      if (cur && GFRAME - pressFrame[k] <= 1) {
+      if (cur && pf[k] >= 0 && GFRAME - pf[k] <= 1) {
         this.buf[k] = 25;
-        pressFrame[k] = -999;   // 消费本次按下
+        pf[k] = -999;   // 消费本次按下
       }
     }
   }
@@ -444,7 +451,7 @@ class Fighter {
     }
   }
 
-  update(dt, foe, inp) {
+  update(dt, foe, inp, pf) {
     // 冷却与能量自然恢复
     for (const k in this.cd) this.cd[k] = Math.max(0, this.cd[k] - dt);
     this.meter = clamp(this.meter + dt * 5, 0, this.maxMeter);
@@ -467,7 +474,7 @@ class Fighter {
 
     // 受击硬直
     if (this.state === 'hit') {
-      this.captureAttackInput(inp);
+      this.captureAttackInput(inp, pf);
       this.stateT += dt;
       this.vy += 500 * dt;
       this.x += this.vx * dt; this.y += this.vy * dt;
@@ -502,8 +509,8 @@ class Fighter {
         const edge = (k, v) => {
           const cur = !!v;
           this.prev[k] = cur;
-          if (cur && GFRAME - pressFrame[k] <= 1) {
-            pressFrame[k] = -999;   // 消费本次按下（取消路径）
+          if (cur && pf[k] >= 0 && GFRAME - pf[k] <= 1) {
+            pf[k] = -999;   // 消费本次按下（取消路径）
             return true;
           }
           return false;
@@ -533,7 +540,7 @@ class Fighter {
         }
       } else {
         // 未到取消窗口：提前按下先进缓冲，帧期结束自动出手
-        this.captureAttackInput(inp);
+        this.captureAttackInput(inp, pf);
       }
 
       if (!this.hitDone && this.stateT >= a.activeFrom && this.stateT <= a.activeTo) {
@@ -654,9 +661,9 @@ class Fighter {
     if (this.aiMove === 1) out.right = true;
     if (this.aiMove === -1) out.left = true;
     if (this.aiAct === 'jump') { out.jump = true; this.aiAct = null; }
-    if (this.aiAct === 'punch') { out.punch = true; this.aiAct = null; }
-    if (this.aiAct === 'kick') { out.kick = true; this.aiAct = null; }
-    if (this.aiAct === 'special') { out.special = true; this.aiAct = null; }
+    if (this.aiAct === 'punch') { out.punch = true; pressFrameAI.punch = GFRAME; this.aiAct = null; }
+    if (this.aiAct === 'kick') { out.kick = true; pressFrameAI.kick = GFRAME; this.aiAct = null; }
+    if (this.aiAct === 'special') { out.special = true; pressFrameAI.special = GFRAME; this.aiAct = null; }
     return out;
   }
 }
@@ -720,6 +727,7 @@ const G = {
 };
 
 const NO_INPUT = Object.freeze({ left:false, right:false, jump:false, block:false, punch:false, kick:false, special:false });
+const NO_PRESS_FRAME = Object.freeze({ punch: -999, kick: -999, special: -999 });
 function clearInput() { for (const k in input) input[k] = false; for (const k in input2) input2[k] = false; }
 function show2P() { if (IS_TOUCH) document.getElementById('tc-2p').classList.remove('hidden'); }
 function hide2P() { document.getElementById('tc-2p').classList.add('hidden'); }
@@ -1372,15 +1380,15 @@ function frame(now) {
 
   if (G.state === 'vs') {
     G.vsTimer += rawDt;
-    G.p1.update(dt, G.p2, NO_INPUT);
-    G.p2.update(dt, G.p1, NO_INPUT);
+    G.p1.update(dt, G.p2, NO_INPUT, NO_PRESS_FRAME);
+    G.p2.update(dt, G.p1, NO_INPUT, NO_PRESS_FRAME);
     const skip = Object.values(input).some(v => v);
     if (G.vsTimer >= 1.6 || (skip && G.vsTimer > 0.25)) { G.state = 'intro'; G.introT = 0; }
   } else if (G.state === 'intro') {
     G.introT += rawDt;
     if (G.introT >= 1.35) G.state = 'fight';
-    G.p1.update(dt, G.p2, NO_INPUT);
-    G.p2.update(dt, G.p1, NO_INPUT);
+    G.p1.update(dt, G.p2, NO_INPUT, NO_PRESS_FRAME);
+    G.p2.update(dt, G.p1, NO_INPUT, NO_PRESS_FRAME);
   } else if (G.state === 'fight') {
     G.time -= dt;
     if (G.time <= 0) {
@@ -1388,14 +1396,14 @@ function frame(now) {
       const winner = G.p1.hp === G.p2.hp ? null : (G.p1.hp > G.p2.hp ? G.p1 : G.p2);
       finishRound(winner, 'timeup');
     } else {
-      G.p1.update(dt, G.p2, input);
-      G.p2.update(dt, G.p1, G.training ? NO_INPUT : (G.mode === 'pvp' ? input2 : G.p2.aiInput(dt, G.p1)));
+      G.p1.update(dt, G.p2, input, pressFrame1);
+      G.p2.update(dt, G.p1, G.training ? NO_INPUT : (G.mode === 'pvp' ? input2 : G.p2.aiInput(dt, G.p1)), G.training ? pressFrameAI : (G.mode === 'pvp' ? pressFrame2 : pressFrameAI));
       if (G.training) updateTrials();
     }
   } else if (G.state === 'ko' || G.state === 'training-ko' || G.state === 'timeup') {
     G.koTimer += rawDt;
-    G.p1.update(dt, G.p2, NO_INPUT);
-    G.p2.update(dt, G.p1, NO_INPUT);
+    G.p1.update(dt, G.p2, NO_INPUT, NO_PRESS_FRAME);
+    G.p2.update(dt, G.p1, NO_INPUT, NO_PRESS_FRAME);
     const settleTime = G.state === 'ko' ? 2.2 : (G.state === 'training-ko' ? 1.1 : 1.35);
     if (G.koTimer > settleTime) advanceAfterRound();
   }
@@ -1639,6 +1647,18 @@ if (location.search.includes('autotest=1')) {
       await wait(700);
       window.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowLeft', bubbles: true }));
       mark('p2_move_left', G.p2.x < x0 - 3, x0 + '->' + Math.round(G.p2.x));
+
+      // ===== 触屏攻击真实建立验证（修复"按了没反应"） =====
+      // 1P 触屏拳键：模拟 pointerdown → 验证角色进入 attack 状态（非仅按钮亮）
+      G.p1.state = 'idle'; G.p1.attack = null; G.p1.cd.punch = 0; G.p1.buf = { punch: 0, kick: 0, special: 0 }; G.p1.prev = { punch: false, kick: false, special: false };
+      const punchBtn = document.querySelector('.tk[data-k="punch"]');
+      const rc = punchBtn.getBoundingClientRect();
+      punchBtn.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: rc.left + rc.width/2, clientY: rc.top + rc.height/2, pointerId: 9001 }));
+      await wait(80);
+      const touchPunchResult = { state: G.p1.state, attack: G.p1.attack };
+      punchBtn.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerId: 9001 }));
+      mark('touch_punch_attack', touchPunchResult.state === 'attack' && touchPunchResult.attack === 'punch', 
+        'st=' + touchPunchResult.state + ' atk=' + touchPunchResult.attack);
 
       // 2P 键盘：4=拳（断言攻击真实建立：state==='attack'）
       G.p2.state = 'idle'; G.p2.attack = null; G.p2.cd.punch = 0; G.p2.buf = { punch: 0, kick: 0, special: 0 }; G.p2.prev = { punch: false, kick: false, special: false };
