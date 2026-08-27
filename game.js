@@ -1529,7 +1529,6 @@ function tapDrive(el, fn) {
   const go = () => { const n = Date.now(); if (n - last > 80) { last = n; fn(); } }; // 80ms 去重：合并 pointerup+click 双事件，真实连点（>80ms）不受影响
   el.addEventListener('pointerup', go);   // 现代环境主路径
   el.addEventListener('click', go);       // 无 PointerEvent 环境兜底（与 pointerup 去重）
-  el.addEventListener('touchstart', e => { e.preventDefault(); }, { passive: false }); // 防长按菜单，但不阻止后续 click
 }
 tapDrive(document.getElementById('btn-start'), () => {
   document.getElementById('title').classList.add('hidden');
@@ -1757,7 +1756,7 @@ if (location.search.includes('autotest=1')) {
         G.p1.state = 'idle'; G.p1.attack = null; G.p1.cd.kick = 0;
         G.p2.state = 'idle'; G.p2.attack = null; G.p2.hp = 1; G.p2.blocking = false;
         G.p1.startAttack('kick');
-        for (let i = 0; i < 30; i++) G.p1.update(.02, G.p2, { left:false, right:false, jump:false, block:false, punch:false, kick:false, special:false });
+        for (let i = 0; i < 30; i++) G.p1.update(.02, G.p2, { left:false, right:false, jump:false, block:false, punch:false, kick:false, special:false }, NO_PRESS_FRAME);
         const s = G.state, w = G.p1.state;   // 记录 KO 态与胜利姿势（advance 前）
         G.koTimer = 2.3; advanceAfterRound();
         return { koAfter: s, winState: w };
@@ -1787,7 +1786,7 @@ if (location.search.includes('autotest=1')) {
       G.p1.state = 'idle'; G.p1.attack = null; G.p1.hp = 1;
       G.p2.state = 'idle'; G.p2.attack = null; G.p2.hp = 180; G.p2.blocking = false; G.p2.cd.kick = 0;
       G.p2.startAttack('kick');
-      for (let i = 0; i < 30; i++) G.p2.update(.02, G.p1, { left:false, right:false, jump:false, block:false, punch:false, kick:false, special:false });
+      for (let i = 0; i < 30; i++) G.p2.update(.02, G.p1, { left:false, right:false, jump:false, block:false, punch:false, kick:false, special:false }, NO_PRESS_FRAME);
       G.koTimer = 2.3; advanceAfterRound();
       mark('arcade_gameover', G.state === 'result' && document.getElementById('result-text').textContent === 'GAME OVER',
         document.getElementById('result-text').textContent + ' | ' + document.getElementById('result-detail').textContent);
