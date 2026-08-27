@@ -7,8 +7,8 @@ const CACHE_NAME = VERSION;
 const ASSETS = [
   './',
   './index.html',
-  './style.css?v=11',
-  './game.js?v=43',
+  './style.css?v=12',
+  './game.js?v=44',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png'
