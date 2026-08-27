@@ -136,6 +136,15 @@ function toggleMute() {
   btn.textContent = isMuted ? '♪' : '×';
 }
 
+async function toggleFullscreen() {
+  try {
+    if (document.fullscreenElement) await document.exitFullscreen();
+    else if (document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen();
+  } catch (e) {
+    // iOS Safari 不支持标准 Fullscreen API：页面本身仍按横向布局可玩
+  }
+}
+
 // ===== 触屏输入：容器级事件委托（1P/2P 共用）=====
 // - 多点独立跟踪（每根手指/指针独立）
 // - 滑动联动：按住方向键滑到攻击键 → 边移动边出招（多点不可用的兜底）
@@ -413,6 +422,11 @@ class Fighter {
     const guarded = this.blocking && this.onGround && foeInFront && this.state !== 'attack';
     const finalDmg = guarded ? Math.max(1, Math.ceil(dmg * 0.28)) : dmg;
     this.hp = Math.max(0, this.hp - finalDmg);
+    hitNums.push({
+      x: this.x + rand(-8, 8), y: this.y - 48, vy: -32, t: 0, life: guarded ? .55 : .7,
+      txt: guarded ? 'GUARD ' + finalDmg : '-' + finalDmg,
+      color: guarded ? '#7ad8ff' : (finalDmg >= 20 ? '#ffe95c' : '#ff8b2e')
+    });
     attacker.meter = clamp(attacker.meter + (guarded ? 5 : 14), 0, attacker.maxMeter);
     this.meter = clamp(this.meter + (guarded ? 9 : 5), 0, this.maxMeter);
 
@@ -668,6 +682,7 @@ class Fighter {
 
 // ---------- 特效 ----------
 let particles = [];
+let hitNums = [];   // 浮动伤害数字：{x,y,vy,txt,life,t,color}
 function spawnSparks(x, y, dir, guarded = false) {
   for (let i = 0; i < 10; i++) {
     particles.push({ x, y, vx: dir * rand(30,160) + rand(-40,40), vy: rand(-120,40),
@@ -777,7 +792,7 @@ function startRound() {
   const p2c = CHARACTERS[p2Type];
   G.p1 = new Fighter({ x: 140, facing: 1, type: G.playerType, name: p1c.name, hp: p1c.hp, isAI: false });
   G.p2 = new Fighter({ x: 340, facing: -1, type: p2Type, name: p2c.name, hp: p2c.hp + hpBoost, isAI: true, aiScale, persona });
-  G.projectiles = []; particles = [];
+  G.projectiles = []; particles = []; hitNums = [];
   G.time = G.training ? Infinity : 60;
   G.winner = null; G.roundCause = '';
   G.pausedFrom = null;
@@ -1422,6 +1437,8 @@ function frame(now) {
   // 粒子
   for (const pt of particles) { pt.t += rawDt; pt.x += pt.vx*rawDt; pt.y += pt.vy*rawDt; pt.vy += 300*rawDt; }
   particles = particles.filter(pt => pt.t < pt.life);
+  for (const n of hitNums) { n.t += rawDt; n.y += n.vy * rawDt; }
+  hitNums = hitNums.filter(n => n.t < n.life);
 
   // 连击显示计时
   const lastCombo = Math.max(G.p1.combo, G.p2.combo);
@@ -1481,6 +1498,16 @@ function render(dt) {
       px(pt.x, pt.y, pt.s, pt.s, pt.c);
       ctx.globalAlpha = 1;
     }
+    // 浮动伤害 / 格挡提示
+    ctx.save();
+    ctx.font = 'bold 10px monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (const n of hitNums) {
+      ctx.globalAlpha = Math.max(0, 1 - n.t / n.life);
+      ctx.strokeStyle = '#1a1720'; ctx.lineWidth = 2;
+      ctx.strokeText(n.txt, n.x, n.y);
+      ctx.fillStyle = n.color; ctx.fillText(n.txt, n.x, n.y);
+    }
+    ctx.restore();
     drawHUD();
   }
 
@@ -1552,6 +1579,7 @@ tapDrive(document.getElementById('btn-rematch'), () => {
   else startMatch(G.mode);
 });
 tapDrive(document.getElementById('btn-mute'), toggleMute);
+tapDrive(document.getElementById('btn-fullscreen'), toggleFullscreen);
 tapDrive(document.getElementById('btn-resume'), togglePause);
 tapDrive(document.getElementById('btn-restart'), () => {
   if (G.training) startTraining();
