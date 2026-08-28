@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-title" content="像素乱斗">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
-<link rel="stylesheet" href="style.css?v=16">
+<link rel="stylesheet" href="style.css?v=17">
 </head>
 <body>
 <div id="wrap">
@@ -23,6 +23,7 @@
     <p class="sub">PIXEL BRAWL · 复古格斗</p>
     <button id="btn-start">开始战斗</button>
     <button id="btn-arcade" class="btn-alt">街机模式</button>
+    <button id="btn-endless" class="btn-alt">无尽模式</button>
     <button id="btn-pvp" class="btn-alt">双人对战</button>
     <button id="btn-training" class="btn-alt">训练模式</button>
     <div class="char-select">
@@ -56,6 +57,16 @@
         <span class="cc-name">娃</span>
         <span class="cc-desc">葫芦娃 · 硬碰硬</span>
       </button>
+      <button id="char-cat" class="char-card">
+        <span class="cc-side side-h">英雄</span>
+        <span class="cc-name">猫警</span>
+        <span class="cc-desc">正义 · 快枪手</span>
+      </button>
+      <button id="char-ultra" class="char-card">
+        <span class="cc-side side-h">英雄</span>
+        <span class="cc-name">光侠</span>
+        <span class="cc-desc">光之巨人 · 能量</span>
+      </button>
       <button id="char-demon" class="char-card">
         <span class="cc-side side-v">反派</span>
         <span class="cc-name">黑煞</span>
@@ -80,7 +91,8 @@
     <div class="help">
       <b>1P 键盘</b>：A/D 移动 · W 跳 · S 格挡 · J 拳 · K 脚 · L 波动拳 · P 暂停<br>
       <b>2P 键盘</b>：方向键 移动/跳 · ↓ 格挡 · 4/5/6 拳/脚/波<br>
-      <b>连招</b>：拳×3 三连击 · 空中按拳 · 能量满时波动拳=超必杀
+      <b>连招</b>：拳×3 三连击 · 空中按拳 · 能量满时波动拳=超必杀<br>
+      <b>无尽</b>：无限波次，击败一个再来一个
     </div>
   </div>
 
@@ -152,6 +164,6 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
   });
 }
 </script>
-<script src="game.js?v=56"></script>
+<script src="game.js?v=57"></script>
 </body>
 </html>
