@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>星港游戏厅</title>
+<style>
+:root{--bg:#05070d;--neon:#ffd95c;--cyan:#8fd5ff;--pink:#ff7bc7;--green:#68ff9a;--violet:#b89cff}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;overflow-x:hidden;overflow-y:auto;font-family:system-ui,-apple-system,PingFang SC,Microsoft YaHei,sans-serif;color:#fff;background:radial-gradient(circle at 50% 0,#11223f 0%,#08101d 34%,#05070d 66%),linear-gradient(180deg,#0a1020 0%,#05070d 100%)}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle at 16% 20%,rgba(143,213,255,.16),transparent 18%),radial-gradient(circle at 84% 16%,rgba(255,123,199,.16),transparent 18%),radial-gradient(circle at 50% 34%,rgba(255,217,92,.11),transparent 16%),linear-gradient(90deg, rgba(120,170,255,.06) 1px, transparent 1px),linear-gradient(rgba(120,170,255,.06) 1px, transparent 1px);background-size:auto,auto,auto,64px 100%,100% 36px;opacity:.3;pointer-events:none}
+#wrap{position:relative;width:100%;height:100%}
+.brand{position:absolute;left:50%;top:16px;transform:translateX(-50%);text-align:center;z-index:10}
+.brand h1{margin:0;font-size:clamp(36px,7vw,72px);line-height:.95;font-weight:900;letter-spacing:.14em;color:var(--neon);text-shadow:0 0 12px rgba(255,217,92,.8),0 0 28px rgba(255,217,92,.35)}
+.brand .sub{margin-top:8px;font-size:12px;letter-spacing:.42em;color:#b9d5ff;opacity:.96}
+.brand .sub2{margin-top:6px;font-size:10px;letter-spacing:.28em;color:#7aa5e8;opacity:.82}
+.portal{position:absolute;left:50%;top:116px;transform:translateX(-50%);width:min(1240px,96vw);display:grid;grid-template-columns:repeat(4,minmax(180px,1fr));gap:16px}
+@media (max-width:1020px){.portal{grid-template-columns:repeat(2,minmax(180px,1fr));top:116px}.brand{top:14px}}
+@media (max-width:560px){
+  #wrap{height:auto;min-height:100vh;padding-bottom:84px}
+  .brand{position:relative;left:auto;top:auto;transform:none;padding:22px 12px 0}
+  .portal{position:relative;left:auto;top:auto;transform:none;width:92vw;margin:30px auto 0;grid-template-columns:1fr;gap:16px}
+  .brand .sub{font-size:10px;letter-spacing:.28em}.brand .sub2{font-size:9px}
+  .footer{position:relative;left:auto;bottom:auto;transform:none;margin:28px auto 0}
+  .floor,.haze,.scanline{position:fixed;z-index:-1}
+}
+.cab{position:relative;min-height:260px;border-radius:22px;background:linear-gradient(180deg,rgba(24,34,58,.96),rgba(10,14,24,.96));border:1px solid rgba(255,255,255,.08);box-shadow:0 18px 42px rgba(0,0,0,.42), inset 0 0 0 2px rgba(255,255,255,.03);overflow:hidden;cursor:pointer;transition:.18s ease;transform:translateY(0)}
+.cab:hover{transform:translateY(-6px) scale(1.01)}
+.cab::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 20%, rgba(255,255,255,.06), transparent 45%);pointer-events:none}
+.screen{position:absolute;left:50%;top:14px;transform:translateX(-50%);width:88%;height:140px;border-radius:16px;background:linear-gradient(180deg,#0b1322,#06101b);border:2px solid rgba(143,213,255,.18);box-shadow:inset 0 0 24px rgba(0,0,0,.4),0 0 24px rgba(143,213,255,.05)}
+.screen .scan{position:absolute;inset:0;background:repeating-linear-gradient(180deg,rgba(255,255,255,.035) 0 2px,transparent 2px 5px);opacity:.34;mix-blend-mode:screen}
+.screen .orb{position:absolute;border-radius:50%;filter:blur(.2px);box-shadow:0 0 18px currentColor}
+.screen .orb.o1{left:18px;top:18px;width:30px;height:30px;color:var(--cyan);background:radial-gradient(circle,#fff,rgba(255,255,255,.2) 45%, transparent 70%)}
+.screen .orb.o2{right:22px;bottom:20px;width:18px;height:18px;color:var(--pink);background:radial-gradient(circle,#fff,rgba(255,255,255,.15) 45%, transparent 70%)}
+.screen .grid{position:absolute;inset:18px;border-radius:12px;background:linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);background-size:100% 24px, 24px 100%;opacity:.14}
+.screen .c1{position:absolute;left:24%;top:18%;width:22%;height:42%;border-radius:12px;background:linear-gradient(180deg,rgba(255,217,92,.9),rgba(255,143,0,.55));box-shadow:0 0 30px rgba(255,217,92,.2)}
+.screen .c2{position:absolute;left:52%;top:20%;width:18%;height:40%;border-radius:12px;background:linear-gradient(180deg,rgba(143,213,255,.88),rgba(90,150,255,.54));box-shadow:0 0 30px rgba(143,213,255,.18)}
+.screen .c3{position:absolute;left:39%;top:58%;width:22%;height:12%;border-radius:999px;background:linear-gradient(90deg,rgba(255,123,199,.9),rgba(183,156,255,.4));box-shadow:0 0 24px rgba(255,123,199,.2)}
+.name{position:absolute;left:50%;top:172px;transform:translateX(-50%);font-size:20px;font-weight:900;letter-spacing:.08em;white-space:nowrap}
+.tag{position:absolute;left:50%;top:205px;transform:translateX(-50%);font-size:11px;color:#aac2e7;letter-spacing:.14em;white-space:nowrap}
+.desc{position:absolute;left:50%;top:225px;transform:translateX(-50%);font-size:11px;color:#7c8ea8;letter-spacing:.1em;white-space:nowrap}
+.btn{position:absolute;right:14px;bottom:14px;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);font-size:11px;letter-spacing:.15em;color:#d8e8ff}
+.pill{position:absolute;left:14px;bottom:14px;padding:6px 10px;border-radius:999px;font-size:11px;letter-spacing:.15em;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.1)}
+.c1 .name,.c1 .pill{color:var(--neon)} .c2 .name,.c2 .pill{color:var(--cyan)} .c3 .name,.c3 .pill{color:var(--pink)} .c4 .name,.c4 .pill{color:var(--green)} .c5 .name,.c5 .pill{color:var(--violet)} .c6 .name,.c6 .pill{color:#ffb45c} .c7 .name,.c7 .pill{color:#b4ffbf} .c8 .name,.c8 .pill{color:#ff9fd4}
+.footer{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);font-size:11px;color:#91a7d6;letter-spacing:.18em;opacity:.95;text-align:center;width:96vw;z-index:10}
+.floor{position:absolute;left:0;right:0;bottom:0;height:30%;background:linear-gradient(180deg, rgba(12,18,30,.08), rgba(6,10,16,.85) 34%, rgba(6,10,16,.96))}
+.haze{position:absolute;left:0;right:0;bottom:0;height:30%;background:radial-gradient(circle at 20% 0%, rgba(143,213,255,.08), transparent 26%),radial-gradient(circle at 80% 0%, rgba(255,123,199,.08), transparent 26%)}
+.scanline{position:absolute;left:0;right:0;bottom:0;height:30%;background:repeating-linear-gradient(180deg, rgba(255,255,255,.04) 0 1px, transparent 1px 7px);opacity:.12;mix-blend-mode:screen;transform:skewY(-8deg)}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div class="brand"><h1>星港游戏厅</h1><div class="sub">NEON ARCADE • SELECT • PLAY</div><div class="sub2">未来人造街区 / 全息机台 / 点哪玩哪</div></div>
+  <div class="portal">
+    <div class="cab c1" data-url="https://fny666.github.io/fight.html"><div class="screen"><div class="scan"></div><div class="grid"></div><div class="orb o1"></div><div class="orb o2"></div><div class="c1"></div><div class="c2"></div><div class="c3"></div></div><div class="name">像素乱斗</div><div class="tag">PIXEL BRAWL</div><div class="desc">格斗机台 · 连段 / 街机 / 无尽</div><div class="pill">ARCADE</div><div class="btn">ENTER</div></div>
+    <div class="cab c2" data-url="https://fny666.github.io/fight.html"><div class="screen"><div class="scan"></div><div class="grid"></div><div class="orb o1"></div><div class="orb o2"></div><div class="c1" style="left:18%;width:32%;background:linear-gradient(180deg,rgba(143,213,255,.9),rgba(90,150,255,.5))"></div><div class="c2" style="left:54%;width:26%;background:linear-gradient(180deg,rgba(255,217,92,.85),rgba(255,143,0,.45))"></div><div class="c3"></div></div><div class="name">像素乱斗</div><div class="tag">HARD MODE</div><div class="desc">正式厅 · 角色 / BGM / PWA</div><div class="pill">MAIN</div><div class="btn">ENTER</div></div>
+    <div class="cab c3" data-url="https://fny666.github.io/fight.html?mode=pvp"><div class="screen"><div class="scan"></div><div class="grid"></div><div class="orb o1"></div><div class="orb o2"></div><div class="c1" style="left:25%;top:25%;width:18%;height:28%;background:linear-gradient(180deg,rgba(255,123,199,.95),rgba(183,156,255,.45))"></div><div class="c2" style="left:56%;top:25%;width:18%;height:28%;background:linear-gradient(180deg,rgba(143,213,255,.95),rgba(90,150,255,.45))"></div><div class="c3"></div></div><div class="name">双人对战</div><div class="tag">2P BATTLE</div><div class="desc">本地双人 · 同屏对战</div><div class="pill">VERSUS</div><div class="btn">ENTER</div></div>
+    <div class="cab c4" data-url="https://fny666.github.io/fight.html?mode=endless"><div class="screen"><div class="scan"></div><div class="grid"></div><div class="orb o1"></div><div class="orb o2"></div><div class="c1" style="left:20%;top:18%;width:26%;height:46%;background:linear-gradient(180deg,rgba(104,255,154,.92),rgba(20,180,120,.45))"></div><div class="c2" style="left:54%;top:18%;width:26%;height:46%;background:linear-gradient(180deg,rgba(183,156,255,.9),rgba(120,90,255,.4))"></div><div class="c3"></div></div><div class="name">无尽模式</div><div class="tag">ENDLESS</div><div class="desc">无限波次 · 无限分数 · 冲榜</div><div class="pill">SCORE</div><div class="btn">ENTER</div></div>
+    <div class="cab c5" data-url="https://fny666.github.io/fight.html?mode=train"><div class="screen"><div class="scan"></div><div class="grid"></div><div class="orb o1"></div><div class="orb o2"></div><div class="c1" style="left:20%;top:23%;width:26%;height:34%;background:linear-gradient(180deg,rgba(255,180,92,.95),rgba(255,143,0,.45))"></div><div class="c2" style="left:54%;top:23%;width:26%;height:34%;background:linear-gradient(180deg,rgba(143,213,255,.95),rgba(90,150,255,.45))"></div><div class="c3"></div></div><div class="name">连段挑战</div><div class="tag">TRAINING</div><div class="desc">帧数据 / 取消 / 教学关卡</div><div class="pill">LAB</div><div class="btn">ENTER</div></div>
+    <div class="cab c6" data-url="https://fny666.github.io/novel/"><div class="screen"><div class="scan"></div><div class="grid"></div><div class="orb o1"></div><div class="orb o2"></div><div class="c1" style="left:16%;top:20%;width:28%;height:40%;background:linear-gradient(180deg,rgba(255,123,199,.95),rgba(140,123,255,.45))"></div><div class="c2" style="left:56%;top:20%;width:28%;height:40%;background:linear-gradient(180deg,rgba(143,213,255,.95),rgba(90,150,255,.45))"></div><div class="c3"></div></div><div class="name">星海彼岸</div><div class="tag">STORY MODE</div><div class="desc">视觉小说 · 多结局 · 叙事机台</div><div class="pill">NOVEL</div><div class="btn">ENTER</div></div>
+    <div class="cab c7" data-url="https://fny666.github.io/?hero=cat"><div class="screen"><div class="scan"></div><div class="grid"></div><div class="orb o1"></div><div class="orb o2"></div><div class="c1" style="left:18%;top:22%;width:24%;height:38%;background:linear-gradient(180deg,rgba(255,217,92,.95),rgba(255,173,0,.45))"></div><div class="c2" style="left:56%;top:22%;width:24%;height:38%;background:linear-gradient(180deg,rgba(255,123,199,.95),rgba(183,156,255,.45))"></div><div class="c3"></div></div><div class="name">猫警物语</div><div class="tag">KIDS HERO</div><div class="desc">童年台 · 正义快枪手</div><div class="pill">HERO</div><div class="btn">ENTER</div></div>
+    <div class="cab c8" data-url="https://fny666.github.io/?hero=ultra"><div class="screen"><div class="scan"></div><div class="grid"></div><div class="orb o1"></div><div class="orb o2"></div><div class="c1" style="left:22%;top:18%;width:22%;height:44%;background:linear-gradient(180deg,rgba(255,123,199,.95),rgba(255,255,255,.45))"></div><div class="c2" style="left:56%;top:18%;width:22%;height:44%;background:linear-gradient(180deg,rgba(143,213,255,.95),rgba(92,255,248,.45))"></div><div class="c3"></div></div><div class="name">光侠战记</div><div class="tag">ULTRA HERO</div><div class="desc">巨人台 · 光能量战斗</div><div class="pill">HERO</div><div class="btn">ENTER</div></div>
+    <div class="cab c5" data-url="https://fny666.github.io/neon-shift.html">
+      <div class="topbar"></div><div class="holo"></div>
+      <div class="name">霓虹跃迁</div><div class="tag">NEON SHIFT</div><div class="desc">未来跑酷 · 跳跃 / 核心 / 冲分</div><div class="badge">RUN</div><div class="btn">ENTER</div>
+    </div>
+    <div class="cab c9" data-url="https://fny666.github.io/starline-defense.html">
+      <div class="topbar"></div><div class="holo"></div>
+      <div class="name">星轨防线</div><div class="tag">STARLINE DEFENSE</div><div class="desc">轨道防卫 · 瞄准 / 射击 / 护盾</div><div class="pill">DEFENSE</div><div class="btn">ENTER</div>
+    </div>
+    <div class="cab c10" data-url="https://fny666.github.io/neon-beat.html">
+      <div class="topbar"></div><div class="holo"></div>
+      <div class="name">霓虹节拍</div><div class="tag">NEON BEAT</div><div class="desc">节奏机台 · 四轨 / 连击 / 音符</div><div class="pill">MUSIC</div><div class="btn">ENTER</div>
+    </div>
+    <div class="cab c11" data-url="https://fny666.github.io/quantum-corridor.html">
+      <div class="topbar"></div><div class="holo"></div>
+      <div class="name">量子回廊</div><div class="tag">QUANTUM CORRIDOR</div><div class="desc">线路解谜 · 节点 / 星门 / 航线</div><div class="pill">PUZZLE</div><div class="btn">ENTER</div>
+    </div>
+    <div class="cab c12" data-url="https://fny666.github.io/starport-transit.html">
+      <div class="topbar"></div><div class="holo"></div>
+      <div class="name">星港调度</div><div class="tag">STARPORT TRANSIT</div><div class="desc">资源管理 · 航线 / 拥堵 / 枢纽</div><div class="pill">SIMULATION</div><div class="btn">ENTER</div>
+    </div>
+  </div>
+  <div class="footer">点击任意全息机台进入游戏 · 未来科幻总店 / 可继续扩展更多机台</div>
+  <div class="floor"></div><div class="haze"></div><div class="scanline"></div>
+</div>
+<script>document.querySelectorAll('.cab').forEach(el=>el.addEventListener('click',()=>location.href=el.dataset.url));</script>
+</body></html>
