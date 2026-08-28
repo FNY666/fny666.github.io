@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>星海彼岸 — 视觉小说</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="game">
+  <!-- 背景层 -->
+  <div id="bg-layer"></div>
+  <!-- 角色立绘层 -->
+  <div id="char-layer">
+    <div id="char-left" class="char-slot"></div>
+    <div id="char-center" class="char-slot"></div>
+    <div id="char-right" class="char-slot"></div>
+  </div>
+  <!-- 特效层 -->
+  <div id="fx-layer"></div>
+
+  <!-- 标题画面 -->
+  <div id="title-screen">
+    <h1 class="game-title">星海彼岸</h1>
+    <p class="game-subtitle">— 一个小小的多结局视觉小说 —</p>
+    <button id="btn-new-game" class="btn-primary">新的故事</button>
+    <button id="btn-continue" class="btn-primary">继续故事</button>
+    <button id="btn-load-menu" class="btn-primary">读取存档</button>
+    <button id="btn-hidden" class="btn-primary hidden" style="background:linear-gradient(180deg,#ffe9a8,#ffd700)">✦ 星海的彼端 ✦</button>
+  </div>
+
+  <!-- 存档界面 -->
+  <div id="save-screen" class="overlay hidden">
+    <h2>存档</h2>
+    <div id="save-slots"></div>
+    <button id="btn-close-save" class="btn-secondary">返回</button>
+  </div>
+
+  <!-- 对话区 -->
+  <div id="dialogue-box" class="hidden">
+    <div id="speaker-name"></div>
+    <div id="dialogue-text"></div>
+    <div id="click-hint">▼</div>
+  </div>
+
+  <!-- 选项区 -->
+  <div id="choice-box" class="hidden">
+    <div id="choices"></div>
+  </div>
+
+  <!-- 结局画面 -->
+  <div id="ending-screen" class="hidden">
+    <h2 id="ending-title"></h2>
+    <p id="ending-desc"></p>
+    <button id="btn-back-title" class="btn-primary">回到标题</button>
+  </div>
+
+  <!-- UI 覆盖 -->
+  <div id="hud" class="hidden">
+    <button id="btn-save" class="hud-btn" title="保存">💾</button>
+    <button id="btn-menu" class="hud-btn" title="菜单">☰</button>
+  </div>
+  <div id="flag-display" class="hidden"></div>
+
+  <!-- 菜单覆盖 -->
+  <div id="menu-overlay" class="overlay hidden">
+    <button id="btn-save-slot">存档</button>
+    <button id="btn-load-slot">读档</button>
+    <button id="btn-return-title">返回标题</button>
+    <button id="btn-resume">继续游戏</button>
+  </div>
+</div>
+
+<script src="story.js"></script>
+<script src="engine.js"></script>
+</body>
+</html>
