@@ -327,26 +327,30 @@ function renderTrialPanel() {
   if (st) st.textContent = G.trials.filter(t => t.done).length + ' / ' + G.trials.length;
 }
         
-// 可用角色参数表（胜负手差异：速度/血量/伤害倍率）
+// 可用角色参数表（胜负手差异：速度/血量/伤害倍率/阵营/胜利台词）
 const CHARACTERS = {
-  fighter: { name:'小烈', hp:100, speed:105, dmg:1.00, desc:'均衡 · 速度型', side:'H' },
-  blob:    { name:'阿蓝', hp:125, speed:88,  dmg:1.25, desc:'重装 · 血厚攻高', side:'H' },
-  miko:    { name:'小桃', hp:108, speed:97,  dmg:1.12, desc:'迅捷 · 连打型', side:'H' },
-  monkey:  { name:'大圣', hp:95,  speed:115, dmg:1.15, desc:'齐天 · 高速棍', side:'H' },
-  nezha:   { name:'哪吒', hp:105, speed:100, dmg:1.06, desc:'三太子 · 火尖枪', side:'H' },
-  gourd:   { name:'娃',   hp:118, speed:92,  dmg:1.22, desc:'葫芦娃 · 硬碰硬', side:'H' },
-  demon:   { name:'黑煞', hp:130, speed:84,  dmg:1.32, desc:'魔尊 · 重锤', side:'V' },
-  viper:   { name:'蛇姬', hp:110, speed:108, dmg:1.18, desc:'蛊惑 · 高机动', side:'V' }
+  fighter: { name:'小烈', hp:100, speed:105, dmg:1.00, desc:'均衡 · 速度型', side:'H', taunt:'还没完呢！' },
+  blob:    { name:'阿蓝', hp:125, speed:88,  dmg:1.25, desc:'重装 · 血厚攻高', side:'H', taunt:'呼噜~ 我赢了！' },
+  miko:    { name:'小桃', hp:108, speed:97,  dmg:1.12, desc:'迅捷 · 连打型', side:'H', taunt:'承让了！' },
+  monkey:  { name:'大圣', hp:95,  speed:115, dmg:1.15, desc:'齐天 · 高速棍', side:'H', taunt:'俺老孙来也！' },
+  nezha:   { name:'哪吒', hp:105, speed:100, dmg:1.06, desc:'三太子 · 火尖枪', side:'H', taunt:'闹海归来！' },
+  gourd:   { name:'娃',   hp:118, speed:92,  dmg:1.22, desc:'葫芦娃 · 硬碰硬', side:'H', taunt:'七个葫芦一条心！' },
+  cat:     { name:'猫警', hp:102, speed:112, dmg:1.08, desc:'正义 · 快枪手', side:'H', taunt:'坏蛋，站住！' },
+  ultra:   { name:'光侠', hp:112, speed:95,  dmg:1.20, desc:'光之巨人 · 能量', side:'H', taunt:'我会守护这里！' },
+  demon:   { name:'黑煞', hp:130, speed:84,  dmg:1.32, desc:'魔尊 · 重锤', side:'V', taunt:'黑暗永存。' },
+  viper:   { name:'蛇姬', hp:110, speed:108, dmg:1.18, desc:'蛊惑 · 高机动', side:'V', taunt:'你上钩了~' }
 };
 // 通用人形角色外观配置（英雄/反派统一模板，各带特色装饰）
-const ROSTER = ['fighter', 'blob', 'miko', 'monkey', 'nezha', 'gourd', 'demon', 'viper'];
+const ROSTER = ['fighter', 'blob', 'miko', 'monkey', 'nezha', 'gourd', 'cat', 'ultra', 'demon', 'viper'];
 
 const CAST_CFG = {
   monkey: { hair:'#d8a020', style:'topknot', gi:'#ffcf5a', belt:'#e04828', face:'#ffcf9e', deco:'staff',  deco2:'#ffe95c' },
   nezha:  { hair:'#3a2a3a', style:'buns',    gi:'#e83838', belt:'#e0e0e0', face:'#ffe2d0', deco:'spear',  deco2:'#ffd8a0' },
   gourd:  { hair:'#1c1c22', style:'gourd',   gi:'#3a8a3a', belt:'#d8d8d8', face:'#ffd8b0', deco:'gourd',  deco2:'#ff9d2e' },
   demon:  { hair:'#14141c', style:'horns',   gi:'#3a2a52', belt:'#7a5ae8', face:'#b98a6a', deco:'cape',   deco2:'#d83858' },
-  viper:  { hair:'#4a9a4a', style:'flow',    gi:'#6a3a8a', belt:'#d8a030', face:'#d8b898', deco:'scales', deco2:'#8ae05a' }
+  viper:  { hair:'#4a9a4a', style:'flow',    gi:'#6a3a8a', belt:'#d8a030', face:'#d8b898', deco:'scales', deco2:'#8ae05a' },
+  cat:    { hair:'#1a1a22', style:'cap',     gi:'#2a4a8a', belt:'#e0b030', face:'#f4cf9e', deco:'whiskers', deco2:'#ffffff' },
+  ultra:  { hair:'#d8e0e8', style:'fin',     gi:'#d8e0e8', belt:'#e83838', face:'#ffd8a8', deco:'timer',   deco2:'#5ae8ff' }
 };
 
 // AI 难度参数（反应间隔 / 格挡概率 / 后撤倾向）
@@ -734,6 +738,7 @@ class Fighter {
 // ---------- 特效 ----------
 let particles = [];
 let hitNums = [];   // 浮动伤害数字：{x,y,vy,txt,life,t,color}
+let tauntTexts = []; // 胜利台词：{x,y,vy,txt,life,t,color,name}
 function spawnSparks(x, y, dir, guarded = false, heavy = false) {
   // Sakurai 式分级反馈：重击火花更多/更大/飞更远
   const n = heavy ? 22 : 10;
@@ -812,15 +817,17 @@ function show2P() { if (IS_TOUCH) document.getElementById('tc-2p').classList.rem
 function hide2P() { document.getElementById('tc-2p').classList.add('hidden'); }
 
 function startMatch(mode) {
-  G.mode = mode || 'vsai';       // vsai | pvp | train | arcade
+  G.mode = mode || 'vsai';       // vsai | pvp | train | arcade | endless
   G.training = (G.mode === 'train');
   if (G.mode === 'pvp') show2P(); else hide2P();
-  if (G.mode === 'arcade') {
+  if (G.mode === 'arcade' || G.mode === 'endless') {
+    const endless = G.mode === 'endless';
     G.arcade = {
       stage: 1,
       score: 0,
       boss: false,
-      best: parseInt(localStorage.getItem('pixelbrawl_best') || '0', 10) || 0
+      endless,
+      best: parseInt(localStorage.getItem(endless ? 'pixelbrawl_endless_best' : 'pixelbrawl_best') || '0', 10) || 0
     };
   }
   startBGM(G.mode === 'train' ? 'menu' : 'battle');
@@ -842,22 +849,33 @@ function startRound() {
   const heroes = ROSTER.filter(t => CHARACTERS[t].side === 'H' && t !== G.playerType);
   let p2Type = heroes[0] || 'blob';
   let aiScale = 1, hpBoost = 0, persona = 'balance';
-  if (G.mode === 'arcade') {
-    // 街机剧本：前4战英雄轮换（平衡→侵略→龟壳→侵略），第5战反派黑煞 Boss
-    const personaOrder = ['balance', 'rush', 'guard', 'rush', 'bossRush'];
+  if (G.mode === 'arcade' || G.mode === 'endless') {
     const stage = G.arcade.stage;
-    G.arcade.boss = stage === 5;
-    p2Type = G.arcade.boss ? 'demon' : heroes[(stage - 1) % heroes.length];
-    aiScale = G.arcade.boss ? 1.95 : (1 + (stage - 1) * 0.22);
-    hpBoost = Math.min(80, (stage - 1) * 12);
-    persona = personaOrder[Math.min(4, stage - 1)];
-    if (G.arcade.boss) startBGM('boss');
-    else startBGM('battle');
+    if (G.mode === 'endless') {
+      // 无尽模式：英雄/反派全池轮换，难度阶梯持续上升（scale封顶2.8）
+      const pool = ROSTER.filter(t => t !== G.playerType);
+      p2Type = pool[(stage - 1) % pool.length];
+      G.arcade.boss = false;
+      aiScale = Math.min(2.8, 1 + (stage - 1) * 0.16);
+      hpBoost = Math.min(120, (stage - 1) * 10);
+      persona = ['balance','rush','guard','rush','bossRush'][(stage - 1) % 5];
+      startBGM(stage % 5 === 0 ? 'boss' : 'battle');
+    } else {
+      // 街机剧本：前4战英雄轮换（平衡→侵略→龟壳→侵略），第5战反派黑煞 Boss
+      const personaOrder = ['balance', 'rush', 'guard', 'rush', 'bossRush'];
+      G.arcade.boss = stage === 5;
+      p2Type = G.arcade.boss ? 'demon' : heroes[(stage - 1) % heroes.length];
+      aiScale = G.arcade.boss ? 1.95 : (1 + (stage - 1) * 0.22);
+      hpBoost = Math.min(80, (stage - 1) * 12);
+      persona = personaOrder[Math.min(4, stage - 1)];
+      if (G.arcade.boss) startBGM('boss');
+      else startBGM('battle');
+    }
   }
   const p2c = CHARACTERS[p2Type];
   G.p1 = new Fighter({ x: 140, facing: 1, type: G.playerType, name: p1c.name, hp: p1c.hp, isAI: false });
   G.p2 = new Fighter({ x: 340, facing: -1, type: p2Type, name: p2c.name, hp: p2c.hp + hpBoost, isAI: true, aiScale, persona });
-  G.projectiles = []; particles = []; hitNums = [];
+  G.projectiles = []; particles = []; hitNums = []; tauntTexts = [];
   G.time = G.training ? Infinity : 60;
   G.winner = null; G.roundCause = '';
   G.pausedFrom = null;
@@ -867,7 +885,7 @@ function startRound() {
   G.vsTimer = 0;
   G.trialsAllDone = false;
   if (G.training && G.trials) initTrials();   // 每轮复位连段挑战
-  G.state = G.training ? 'fight' : ((G.mode === 'vsai' || G.mode === 'arcade') ? 'vs' : 'intro');
+  G.state = G.training ? 'fight' : ((G.mode === 'vsai' || G.mode === 'arcade' || G.mode === 'endless') ? 'vs' : 'intro');
   if (!G.training) document.getElementById('trial-panel').classList.add('hidden');
   clearInput();
   document.getElementById('result').classList.add('hidden');
@@ -921,7 +939,11 @@ function quitToTitle() {
 function finishRound(winner, cause) {
   if (G.state !== 'fight') return;
   G.winner = winner;
-  if (winner) { winner.state = 'win'; winner.stateT = 0; sfx('win'); }
+  if (winner) { winner.state = 'win'; winner.stateT = 0; sfx('win');
+    // 胜利台词
+    tauntTexts.push({ x: winner.x, y: winner.y - 60, vy: -20, life: 2.5, t: 0,
+      txt: winner.name + '：' + winner.taunt, color: winner.side === 'H' ? '#ffe95c' : '#d89aff', name: winner.name });
+  }
   if (G.training) {
     G.roundCause = cause;
     G.koTimer = 0;
@@ -949,6 +971,19 @@ function onKO(winner, loser) {
 function advanceAfterRound() {
   if (G.training) {
     resetTrainingPosition();
+    return;
+  }
+  if (G.mode === 'endless') {
+    if (!G.winner) { startRound(); return; }
+    if (G.winner === G.p2) {
+      G.matchWinner = G.p2;
+      endMatch();
+      return;
+    }
+    G.arcade.score += 1000 + Math.round(G.p1.hp) * 10;
+    G.arcade.stage++;
+    G.p1.hp = G.p1.maxHp;
+    startRound();
     return;
   }
   if (G.mode === 'arcade') {
@@ -996,6 +1031,14 @@ function endMatch() {
   if (!winner) {
     rt.textContent = 'DRAW';
     rd.textContent = '平局 — 本局重赛！';
+  } else if (G.mode === 'endless') {
+    if (G.arcade.score > G.arcade.best) {
+      G.arcade.best = G.arcade.score;
+      try { localStorage.setItem('pixelbrawl_endless_best', String(G.arcade.best)); } catch (e) {}
+    }
+    rt.textContent = 'ENDLESS OVER';
+    const bestTxt = G.arcade.score >= G.arcade.best && G.arcade.score > 0 ? ' · 新纪录!' : '';
+    rd.textContent = '坚持到第 ' + Math.max(1, G.arcade.stage) + ' 战 · 得分 ' + G.arcade.score + bestTxt + ' · 最佳 ' + G.arcade.best;
   } else if (G.mode === 'arcade') {
     const cleared = G.matchWinner === G.p1;          // 通关看胜者，不看舞台编号
     if (cleared) G.arcade.score += Math.round(G.p1.hp) * 2;
@@ -1031,6 +1074,7 @@ const SCENES = {
 const ARCADE_SCENE_ORDER = ['day', 'evening', 'night', 'dojo', 'starry'];
 function pickScene() {
   if (G.mode === 'arcade') return ARCADE_SCENE_ORDER[Math.min(4, G.arcade.stage - 1)];
+  if (G.mode === 'endless') return ARCADE_SCENE_ORDER[(G.arcade.stage - 1) % ARCADE_SCENE_ORDER.length];
   return 'day';
 }
   // 场景画布缓存（每个主题预渲染一次）
@@ -1215,6 +1259,7 @@ function drawCast(f, t, bob, c) {
   px(-9, -34+bob, 18, 21, c.gi);
   px(-9, -20+bob, 18, 3, c.belt);
   if (c.deco === 'scales') { px(-6, -30+bob, 3, 3, c.deco2); px(0, -26+bob, 3, 3, c.deco2); px(3, -31+bob, 3, 3, c.deco2); }
+  if (c.deco === 'timer') { px(-3, -28+bob, 6, 6, '#1a2a3a'); px(-2, -27+bob, 4, 4, c.deco2); }  // 胸前能量灯
   // 头
   px(-8, -50+bob, 16, 16, c.face);
   // 发型
@@ -1236,6 +1281,14 @@ function drawCast(f, t, bob, c) {
   } else if (c.style === 'flow') {
     px(-12, -54+bob, 24, 8, c.hair);
     px(-12, -50+bob, 4, 14, c.hair); px(8, -50+bob, 4, 14, c.hair);     // 披肩发
+  } else if (c.style === 'cap') {
+    px(-9, -55+bob, 18, 5, c.hair);
+    px(-11, -57+bob, 22, 3, c.hair);                                     // 帽檐
+    px(-3, -59+bob, 6, 4, c.belt);                                       // 帽徽
+  } else if (c.style === 'fin') {
+    px(-9, -55+bob, 18, 6, c.hair);
+    px(-2, -62+bob, 4, 10, c.hair);                                      // 头冠鳍
+    px(-1, -60+bob, 2, 7, c.deco2);                                      // 鳍光条
   }
   // 眉眼
   if (f.state === 'hit' || f.state === 'ko') {
@@ -1247,6 +1300,11 @@ function drawCast(f, t, bob, c) {
     px(-6, -44+bob, 4, 4, '#222'); px(2, -44+bob, 4, 4, '#222');
   }
   px(-2, -38+bob, 5, 2, '#a05a40');
+  // 角色装饰（脸侧）
+  if (c.deco === 'whiskers') {
+    px(-14, -46+bob, 6, 1, c.deco2); px(-14, -43+bob, 6, 1, c.deco2);
+    px(8, -46+bob, 6, 1, c.deco2);   px(8, -43+bob, 6, 1, c.deco2);
+  }
   // 手臂
   if (f.state === 'attack' && f.attack === 'punch') {
     const ext = f.stateT > ATTACKS.punch.activeFrom ? 1 : 0;
@@ -1410,9 +1468,9 @@ function drawVS() {
   ctx.strokeText('VS', 0, 0);
   ctx.fillStyle = '#ffe95c'; ctx.fillText('VS', 0, 0);
   ctx.restore();
-  if (G.mode === 'arcade') {
+  if (G.mode === 'arcade' || G.mode === 'endless') {
     ctx.font = 'bold 10px monospace'; ctx.fillStyle = G.arcade.boss ? '#ff4b2e' : '#9fd4ff';
-    ctx.fillText(G.arcade.boss ? 'FINAL BOSS' : 'STAGE ' + G.arcade.stage + ' / 5', W / 2, 128);
+    ctx.fillText(G.mode === 'endless' ? 'WAVE ' + G.arcade.stage : (G.arcade.boss ? 'FINAL BOSS' : 'STAGE ' + G.arcade.stage + ' / 5'), W / 2, 128);
   }
   ctx.font = 'bold 8px monospace'; ctx.fillStyle = '#6a7d92';
   ctx.fillText('按任意键跳过', W / 2, 158);
@@ -1437,6 +1495,8 @@ function drawPortrait(x, y, type) {
     if (c.style==='gourd'){ px(10,0,6,6,'#ff9d2e'); px(11,-1,4,2,'#3a8a3a'); }
     if (c.style==='horns'){ px(2,0,3,5,'#c8b8e8'); px(21,0,3,5,'#c8b8e8'); }
     if (c.style==='flow'){ px(2,4,4,9,c.hair); px(20,4,4,9,c.hair); }
+    if (c.style==='cap'){ px(3,2,20,5,'#1a1a22'); px(10,0,6,3,'#e0b030'); px(0,9,5,1,'#fff'); px(21,9,5,1,'#fff'); }
+    if (c.style==='fin'){ px(10,-1,6,6,'#e83838'); px(6,12,5,4,'#222'); px(15,12,5,4,'#222'); px(10,18,6,3,'#e83838'); }
     px(6,12,5,4,'#222'); px(15,12,5,4,'#222');
     px(10,19,6,3,c.gi);
   } else {
@@ -1593,6 +1653,8 @@ function frame(now) {
   particles = particles.filter(pt => pt.t < pt.life);
   for (const n of hitNums) { n.t += rawDt; n.y += n.vy * rawDt; }
   hitNums = hitNums.filter(n => n.t < n.life);
+  for (const q of tauntTexts) { q.t += rawDt; q.y += q.vy * rawDt; }
+  tauntTexts = tauntTexts.filter(q => q.t < q.life);
 
   // 连击显示计时
   const lastCombo = Math.max(G.p1.combo, G.p2.combo);
@@ -1661,6 +1723,14 @@ function render(dt) {
       ctx.strokeText(n.txt, n.x, n.y);
       ctx.fillStyle = n.color; ctx.fillText(n.txt, n.x, n.y);
     }
+    // 胜利台词
+    ctx.font = 'bold 11px monospace';
+    for (const q of tauntTexts) {
+      ctx.globalAlpha = Math.max(0, 1 - q.t / q.life);
+      ctx.strokeStyle = '#17131d'; ctx.lineWidth = 3;
+      ctx.strokeText(q.txt, q.x, q.y);
+      ctx.fillStyle = q.color; ctx.fillText(q.txt, q.x, q.y);
+    }
     ctx.restore();
     drawHUD();
   }
@@ -1668,8 +1738,8 @@ function render(dt) {
   // 回合标识与倒计时提示
   ctx.font = 'bold 8px monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
   ctx.fillStyle = '#fff';
-  ctx.fillText('ROUND ' + G.round + (G.mode === 'arcade' ? ' · STAGE ' + G.arcade.stage + (G.arcade.boss ? ' FINAL' : '/5') : ''), W / 2, 32);
-  if (G.mode === 'arcade' && G.state !== 'intro') {
+  ctx.fillText('ROUND ' + G.round + (G.mode === 'arcade' ? ' · STAGE ' + G.arcade.stage + (G.arcade.boss ? ' FINAL' : '/5') : (G.mode === 'endless' ? ' · WAVE ' + G.arcade.stage : '')), W / 2, 32);
+  if ((G.mode === 'arcade' || G.mode === 'endless') && G.state !== 'intro') {
     ctx.fillStyle = '#9fd4ff';
     ctx.fillText('SCORE ' + G.arcade.score + ' · BEST ' + G.arcade.best, W / 2, 44);
   }
@@ -1724,6 +1794,10 @@ tapDrive(document.getElementById('btn-arcade'), () => {
   document.getElementById('title').classList.add('hidden');
   startMatch('arcade');
 });
+tapDrive(document.getElementById('btn-endless'), () => {
+  document.getElementById('title').classList.add('hidden');
+  startMatch('endless');
+});
 tapDrive(document.getElementById('btn-training'), () => {
   document.getElementById('title').classList.add('hidden');
   startTraining();
@@ -1767,6 +1841,8 @@ tapDrive(document.getElementById('char-miko'), () => selectCharacter('miko'));
 tapDrive(document.getElementById('char-monkey'), () => selectCharacter('monkey'));
 tapDrive(document.getElementById('char-nezha'), () => selectCharacter('nezha'));
 tapDrive(document.getElementById('char-gourd'), () => selectCharacter('gourd'));
+tapDrive(document.getElementById('char-cat'), () => selectCharacter('cat'));
+tapDrive(document.getElementById('char-ultra'), () => selectCharacter('ultra'));
 tapDrive(document.getElementById('char-demon'), () => selectCharacter('demon'));
 tapDrive(document.getElementById('char-viper'), () => selectCharacter('viper'));
 tapDrive(document.getElementById('char-random'), () => selectCharacter(ROSTER[Math.floor(Math.random()*ROSTER.length)]));
