@@ -339,6 +339,8 @@ const CHARACTERS = {
   viper:   { name:'蛇姬', hp:110, speed:108, dmg:1.18, desc:'蛊惑 · 高机动', side:'V' }
 };
 // 通用人形角色外观配置（英雄/反派统一模板，各带特色装饰）
+const ROSTER = ['fighter', 'blob', 'miko', 'monkey', 'nezha', 'gourd', 'demon', 'viper'];
+
 const CAST_CFG = {
   monkey: { hair:'#d8a020', style:'topknot', gi:'#ffcf5a', belt:'#e04828', face:'#ffcf9e', deco:'staff',  deco2:'#ffe95c' },
   nezha:  { hair:'#3a2a3a', style:'buns',    gi:'#e83838', belt:'#e0e0e0', face:'#ffe2d0', deco:'spear',  deco2:'#ffd8a0' },
@@ -837,7 +839,6 @@ function startTraining() {
 
 function startRound() {
   const p1c = CHARACTERS[G.playerType];
-  const ROSTER = ['fighter', 'blob', 'miko', 'monkey', 'nezha', 'gourd', 'demon', 'viper'];
   const heroes = ROSTER.filter(t => CHARACTERS[t].side === 'H' && t !== G.playerType);
   let p2Type = heroes[0] || 'blob';
   let aiScale = 1, hpBoost = 0, persona = 'balance';
