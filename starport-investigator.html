@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>星港调查员</title>
+<style>
+:root{--bg:#03070f;--cyan:#63f7e0;--green:#6effa8;--amber:#ffd95c;--pink:#ff7bc7;--ink:#aacbe0;--dim:#6f93ad}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);overflow-x:hidden;overflow-y:auto;font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",monospace;color:#eaf6ff;touch-action:manipulation}
+body::before{content:"";position:fixed;inset:0;background:radial-gradient(circle at 18% 12%,rgba(99,247,224,.12),transparent 22%),radial-gradient(circle at 82% 16%,rgba(255,123,199,.12),transparent 22%),linear-gradient(90deg,rgba(99,247,224,.05) 1px,transparent 1px),linear-gradient(rgba(99,247,224,.05) 1px,transparent 1px);background-size:auto,auto,52px 100%,100% 34px;opacity:.35;pointer-events:none}
+#app{position:relative;max-width:980px;margin:0 auto;padding:14px}
+.top{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.logo{font-size:clamp(22px,5vw,34px);font-weight:900;letter-spacing:.14em;color:var(--cyan);text-shadow:0 0 16px rgba(99,247,224,.55)}
+.sub{font-size:11px;letter-spacing:.34em;color:var(--dim);margin-top:4px}
+.hud{display:flex;gap:8px;flex-wrap:wrap}
+.stat{padding:6px 10px;border:1px solid rgba(99,247,224,.35);border-radius:999px;font:11px monospace;color:var(--ink);background:rgba(8,20,30,.7)}
+.stat b{color:var(--amber)}
+.back{position:fixed;top:12px;right:12px;z-index:30;padding:8px 14px;border:1px solid rgba(99,247,224,.4);border-radius:999px;background:rgba(8,20,30,.85);color:var(--cyan);font:12px monospace;cursor:pointer}
+.layout{display:grid;grid-template-columns:1fr 320px;gap:14px}
+.panel{background:rgba(7,15,26,.92);border:1px solid rgba(99,247,224,.2);border-radius:16px;padding:14px}
+.panel h2{margin:0 0 10px;font-size:16px;letter-spacing:.16em;color:var(--green);border-left:3px solid var(--cyan);padding-left:10px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.tab{padding:7px 12px;border:1px solid rgba(99,247,224,.3);border-radius:999px;background:rgba(10,22,34,.8);color:var(--ink);font:12px monospace;cursor:pointer}
+.tab.active{color:#04121a;background:linear-gradient(180deg,var(--cyan),#2bb8a6);border-color:transparent;font-weight:700}
+.view{display:flex;flex-direction:column;gap:10px}
+.places{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.place{padding:12px 10px;border:1px solid rgba(99,247,224,.25);border-radius:12px;background:rgba(10,22,34,.7);color:#dff6ff;font:13px monospace;text-align:left;cursor:pointer;transition:.15s}
+.place:active{transform:scale(.97)}
+.place.done{border-color:rgba(110,255,168,.5);color:var(--green)}
+.place .pv{display:block;font-size:10px;color:var(--dim);margin-top:3px}
+.scene-desc{min-height:54px;padding:12px;border-radius:12px;border-left:3px solid var(--amber);background:#0b1a26;color:#bcd9e8;font:12px/1.7 monospace}
+.clue{border:1px solid rgba(110,255,168,.25);border-radius:10px;padding:10px 12px;background:rgba(8,20,16,.6)}
+.clue h4{margin:0 0 4px;font-size:13px;color:var(--green);letter-spacing:.05em}
+.clue p{margin:0;font:12px/1.7 monospace;color:#cfe6d6}
+.suspect{border:1px solid rgba(255,123,199,.25);border-radius:10px;padding:10px 12px;background:rgba(20,10,20,.5)}
+.suspect h4{margin:0 0 4px;font-size:13px;color:var(--pink);letter-spacing:.05em}
+.suspect .role{font-size:10px;color:var(--dim);margin-left:6px}
+.suspect p{margin:4px 0 0;font:12px/1.7 monospace;color:#e6cfe0}
+.deduce-row{display:flex;flex-direction:column;gap:6px}
+.deduce-row .lbl{font:12px monospace;color:var(--amber);letter-spacing:.1em;margin-bottom:2px}
+.opt{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid rgba(99,247,224,.22);border-radius:10px;background:rgba(10,22,34,.7);color:#dff6ff;font:13px monospace;cursor:pointer}
+.opt.sel{border-color:var(--cyan);background:rgba(20,60,60,.7);color:var(--cyan)}
+.opt input{accent-color:#2bb8a6}
+select{width:100%;padding:10px;border-radius:10px;background:#0b1a26;color:#dff6ff;border:1px solid rgba(99,247,224,.3);font:13px monospace}
+.submit{margin-top:10px;padding:12px;border:none;border-radius:999px;background:linear-gradient(180deg,var(--amber),#ff9d2e);color:#1a0d05;font:14px monospace;font-weight:900;letter-spacing:.2em;cursor:pointer;box-shadow:0 4px 0 #a34c12}
+.submit:active{transform:translateY(3px);box-shadow:0 1px 0 #a34c12}
+.notes .brief{font:12px/1.8 monospace;color:#bcd9e8}
+.notes hr{border:0;border-top:1px solid rgba(99,247,224,.2);margin:12px 0}
+.hint{margin-top:10px;font:11px/1.7 monospace;color:var(--dim)}
+.log{margin-top:12px;padding:10px 12px;border-radius:10px;border-left:3px solid var(--cyan);background:#0b1729;color:#9bc1d5;font:11px monospace;min-height:40px}
+.panel-ui{max-width:980px;margin:14px auto;display:flex;justify-content:space-between;gap:8px;color:#779bb3;font:11px monospace;flex-wrap:wrap}
+.panel-ui button{padding:8px 12px;border:1px solid #4c7088;border-radius:999px;background:#0c1d30;color:#b9deed;font:12px monospace;cursor:pointer}
+.overlay{position:fixed;inset:0;z-index:40;display:grid;place-items:center;background:#03050fdd;text-align:center;padding:18px}
+.box{width:min(92vw,460px);padding:30px;border:1px solid var(--cyan);border-radius:20px;background:linear-gradient(145deg,#102d2f,#070b18);box-shadow:0 0 44px rgba(99,247,224,.25)}
+.box h1{font-size:clamp(34px,9vw,60px);margin:0;color:var(--cyan);text-shadow:0 0 18px rgba(99,247,224,.6)}
+.box p{color:#aac5d5;line-height:1.8;font-size:13px}
+.box .truth{margin-top:14px;text-align:left;font:12px/1.8 monospace;color:#cfe6d6;background:rgba(8,20,16,.6);border:1px solid rgba(110,255,168,.25);border-radius:10px;padding:12px}
+.start{padding:13px 30px;margin-top:14px;border:1px solid var(--cyan);border-radius:999px;background:#0d5d54;color:#fff;font-weight:900;font-size:16px;cursor:pointer}
+.hidden{display:none!important}
+.rotate{display:none}@media(orientation:portrait) and (pointer:coarse){.rotate{display:block;position:fixed;top:10px;left:10px;z-index:8;padding:7px 10px;border:1px solid var(--cyan);border-radius:999px;background:#0b2934ee;font:11px monospace;color:var(--cyan)}}
+@media(max-width:760px){.layout{grid-template-columns:1fr}.panel.notes{order:2}}
+</style>
+</head>
+<body>
+<div class="rotate">横屏审查线索更清晰 ⟳</div>
+<button class="back" id="back">返回星港</button>
+<div id="app">
+  <div class="top">
+    <div><div class="logo">星港调查员</div><div class="sub">STARPORT INVESTIGATOR · CASE FILES</div></div>
+    <div class="hud">
+      <span class="stat">案件 <b id="hCase">0/0</b></span>
+      <span class="stat">得分 <b id="hScore">0</b></span>
+      <span class="stat">已破 <b id="hSolved">0</b></span>
+      <span class="stat">最高 <b id="hBest">0</b></span>
+    </div>
+  </div>
+  <main class="layout">
+    <section class="panel scene">
+      <h2 id="caseTitle">待命</h2>
+      <div class="tabs">
+        <div class="tab active" data-v="scene">现场</div>
+        <div class="tab" data-v="clues">线索档案</div>
+        <div class="tab" data-v="suspects">嫌疑人</div>
+        <div class="tab" data-v="deduce">推理定案</div>
+      </div>
+      <div id="view-scene" class="view">
+        <div class="places" id="places"></div>
+        <div class="scene-desc" id="sceneDesc">选择一处现场开始侦查。每处现场都藏着关键线索。</div>
+      </div>
+      <div id="view-clues" class="view hidden"><div id="clueList"></div></div>
+      <div id="view-suspects" class="view hidden"><div id="suspectList"></div></div>
+      <div id="view-deduce" class="view hidden">
+        <div class="deduce-row"><span class="lbl">谁是凶手 / 责任人？</span><div id="culpritOpts"></div></div>
+        <div class="deduce-row"><span class="lbl">动机是？</span><select id="motiveSel"></select></div>
+        <button class="submit" id="submitVerdict">提交定案</button>
+      </div>
+    </section>
+    <aside class="panel notes">
+      <h2>案件简报</h2>
+      <div class="brief" id="brief">点击「开始侦查」载入案件。</div>
+      <hr>
+      <div style="font:12px monospace;color:#9bc1d5">已收集线索 <b id="clueCount" style="color:var(--green)">0</b> / <span id="clueTotal">0</span></div>
+      <div class="hint">侦查要点：<br>• 走遍所有现场，别漏掉任何线索。<br>• 每个嫌疑人的陈述都要对照物证。<br>• 只有一个人是责任人，其余都有不在场证明或清白证据。<br>• 定案 = 选对责任人 + 选对动机。</div>
+    </aside>
+  </main>
+  <div class="log" id="log">等待第一起案件。</div>
+  <div class="panel-ui">
+    <span id="progress">CASE 0 / 0</span>
+    <button id="nextCase">下一案 ▸</button>
+  </div>
+</div>
+
+<div id="title" class="overlay">
+  <div class="box">
+    <h1>星港调查员</h1>
+    <p>你是星港总署的调查员。<br>每起案件都有一名责任人、一个动机。<br>走访现场、比对口供与物证，锁定真相。</p>
+    <button class="start" id="start">开始侦查</button>
+    <p>这是判断力游戏，不是反应力游戏。<br>证据不足时，宁可多走几处现场。</p>
+  </div>
+</div>
+<div id="over" class="overlay hidden">
+  <div class="box">
+    <h1 id="overTitle">定案完成</h1>
+    <p id="overResult"></p>
+    <div class="truth" id="overTruth"></div>
+    <button class="start" id="overNext">继续 ▸</button>
+    <button class="start" id="overHall" style="background:#0c1d30;border-color:#4c7088;color:#b9deed">返回星港</button>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const CASES=[
+ { id:1, title:"量子核心失窃", subtitle:"CARGO THEFT",
+   brief:"货舱里的原型量子核心，在一场 20 分钟的计划性断电期间被盗。要盗走它，必须：能制造断电、能进货舱、有动机。四名在港人员都有嫌疑，但只有一人留下了物证。",
+   locations:[
+     {name:"控制室", key:"ctl", desc:"调度中枢。所有断电记录都从这里写入。",
+      clues:["调度日志异常：日志里『计划维护断电』一栏是事后补录的，时间戳比盗窃发生晚 12 分钟，且笔迹与调度官凯拉不符 → 断电不是系统自动，是有人伪造记录来掩盖。"]},
+     {name:"货舱", key:"cargo", desc:"核心原本存放于此，门禁需专用卡。",
+      clues:["核心槽已空：原型量子核心不翼而飞，槽内残留低温霜痕。","工单碎片：地上有一张被撕碎的『货舱检修工单』，署名是机械师老周。","监控被手动关闭：货舱监控在断电前 30 秒由门禁卡手动关闭，需货舱权限。"]},
+     {name:"船员舱", key:"crew", desc:"船员的休息区。",
+      clues:["阿杰不在铺位：阿杰的铺位是空的，被褥是凉的，说明他没在睡觉。","餐厅小票：船员舱外的餐厅小票显示阿杰在断电时段点了夜宵 → 他在吃饭，不在货舱。"]},
+     {name:"休息室", key:"lounge", desc:"商人与访客的等候区，全程有监控。",
+      clues:["维拉的不在场证明：休息室监控完整拍到维拉整段时间都在等交易，有多名证人作证。"]},
+     {name:"维拉舱", key:"vera", desc:"商人的私舱，堆满交易账本。",
+      clues:["匿名转账：维拉的账本里有一笔给『维修组』的匿名大额转账，日期就在案发前三天。"]}
+   ],
+   suspects:[
+     {name:"凯拉", role:"调度官", stmt:"断电是系统自动触发的，我那会儿一直在控制室看日志，没离开过。"},
+     {name:"老周", role:"机械师", stmt:"我在甲板修推进器，货舱门我一下都没碰。"},
+     {name:"维拉", role:"商人", stmt:"我在休息室等交易，全程都有人能给我作证。"},
+     {name:"阿杰", role:"实习生", stmt:"断电那会儿我在船员舱睡觉，什么都不知道。"}
+   ],
+   motives:["抵债","复仇","贪婪","嫉妒","误杀","掩护他人"],
+   solution:{culprit:"老周", motive:"抵债"},
+   truth:"老周是机械师，持有货舱门禁卡，能在断电前手动关闭监控；现场工单碎片证明他进入过货舱。控制室的伪造日志是事后由无权限者补的，反而排除有日志权限的凯拉。维拉有休息室监控作证，阿杰有餐厅小票证明在吃饭。老周因欠维拉债务（维拉舱账本有匿名转账给『维修组』），偷核心抵债。"
+ },
+ { id:2, title:"医疗舱中毒", subtitle:"TOXIN DEATH",
+   brief:"首席工程师在医疗舱离奇死亡，尸检检出星尘毒素。凶手必须：能接触毒素、能进医疗舱、有动机。四人中一人撒了谎。",
+   locations:[
+     {name:"医疗舱", key:"med", desc:"死亡现场，门禁记录可查。",
+      clues:["死亡现场：首席倒在诊疗椅，旁边一杯未喝完的电解质水有星尘毒素残留。","门禁记录：案发前只有医疗官林涛和后勤官周野刷过医疗舱的门禁卡。"]},
+     {name:"实验室", key:"lab", desc:"工程师们调参的地方。",
+      clues:["参数记录：副工程师苏明的实验台参数记录完整，时间戳覆盖案发时段，他整段都在实验室。","清洁机器人日志：机器人技师阿岚的检修记录显示机器人当时在 B 区，离医疗舱很远。"]},
+     {name:"物资库", key:"store", desc:"毒素原料归这里管。",
+      clues:["毒素领用：星尘毒素原料的领用记录只有后勤官周野签过字，且数量少了一支。","匿名款项：周野的账户在案发前收到一笔来源不明的款项。"]},
+     {name:"医疗官舱", key:"doc", desc:"医疗官的休息舱。",
+      clues:["抢救与指纹：林涛确实第一时间抢救，但毒素杯上除了首席，还留有周野的指纹——周野声称自己没进过医疗舱。"]}
+   ],
+   suspects:[
+     {name:"苏明", role:"副工程师", stmt:"我和首席在争项目主导权，但那天我在实验室调参数，没离开。"},
+     {name:"林涛", role:"医疗官", stmt:"我是第一个冲进去抢救的，毒素不可能是我下的。"},
+     {name:"周野", role:"后勤官", stmt:"我负责物资，毒素原料归我管，但我没理由害他。"},
+     {name:"阿岚", role:"机器人技师", stmt:"我在检修清洁机器人，医疗舱我没进过。"}
+   ],
+   motives:["抵债","复仇","贪婪","嫉妒","误杀","掩护他人"],
+   solution:{culprit:"周野", motive:"贪婪"},
+   truth:"门禁显示只有林涛和周野进过医疗舱；林涛是抢救者。但毒素杯上出现周野指纹，与他『没进过』的说法矛盾。苏明在实验室、阿岚的机器人在 B 区都有不在场证明。毒素原料只有周野领用过且少了一支，加上匿名款项 → 周野被收买下毒，动机是贪婪。"
+ },
+ { id:3, title:"导航数据泄露", subtitle:"DATA LEAK",
+   brief:"星港导航核心数据库被泄露到暗网。凶手必须：有数据库权限、能避开审计、有动机。访问记录里藏着一道后门。",
+   locations:[
+     {name:"服务器机房", key:"srv", desc:"数据库所在，门禁与日志可查。",
+      clues:["访问日志：泄露时段的数据库访问来自一个内部管理员账号，但该账号当晚并无真人登录记录 → 用了被盗凭证或后门。","物理门禁：机房门禁显示当晚只有承包商科尔刷过卡进入（修空调）。"]},
+     {name:"程序员舱", key:"dev", desc:"接口开发者办公处。",
+      clues:["代码提交：程序员韩冰的接口代码近一周无改动，审计日志完整，无删除痕迹。","后门线索：韩冰代码里发现一个一年前遗留的调试后门，注释写『临时给运维用』，但运维名单里没有科尔。"]},
+     {name:"安保室", key:"sec", desc:"监控与权限审计中心。",
+      clues:["监控备份：雷克调取的监控显示，科尔在机房待了 40 分钟（远超修空调所需），离开时多带了一个 U 盘状物体。","权限审计：实习生小满的账号确为只读，当晚无任何访问。"]},
+     {name:"承包商舱", key:"con", desc:"外部承包商的临时舱。",
+      clues:["合同异常：科尔的承包合同里有一笔『数据咨询』额外报酬，付款方是竞争对手星航公司。"]}
+   ],
+   suspects:[
+     {name:"韩冰", role:"程序员", stmt:"我写的接口有日志，任何访问都会留痕，我没删过记录。"},
+     {name:"雷克", role:"安保主管", stmt:"安保系统归我管，但我没必要偷自己守的数据。"},
+     {name:"小满", role:"实习生", stmt:"我只有只读权限，连导出都被禁了。"},
+     {name:"科尔", role:"外部承包商", stmt:"我是来修空调的，碰不到数据库。"}
+   ],
+   motives:["抵债","复仇","贪婪","嫉妒","误杀","掩护他人"],
+   solution:{culprit:"科尔", motive:"贪婪"},
+   truth:"访问来自内部管理员账号但无真人登录，说明用了遗留后门（韩冰代码里的调试后门，运维名单无科尔，但科尔作为承包商有机会发现）。门禁证明科尔当晚进过机房且超时；监控显示他带 U 盘离开；合同里的『数据咨询』额外报酬来自竞争对手 → 科尔被收买，用后门偷数据。韩冰、雷克、小满均有清白证据。"
+ }
+];
+
+let order=[], idx=0, current=null, active=false;
+let score=0, solved=0, attempts=0;
+let visited={}, cluesFound=0, clueTotal=0;
+let selCulprit=null, selMotive=null;
+let best=Number(localStorage.starportInvestBest||0);
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+function hud(){
+  $('hCase').textContent=(idx+1)+'/'+order.length;
+  $('hScore').textContent=score;
+  $('hSolved').textContent=solved;
+  $('hBest').textContent=best;
+  $('progress').textContent='CASE '+(idx+1)+' / '+order.length;
+}
+function log(s){$('log').textContent=s;}
+
+function loadCase(){
+  current=CASES[order[idx]];
+  visited={}; cluesFound=0; clueTotal=current.locations.reduce((n,l)=>n+l.clues.length,0);
+  selCulprit=null; selMotive=null;
+  $('caseTitle').textContent=current.title;
+  $('brief').innerHTML='<b style="color:var(--cyan)">'+current.subtitle+'</b><br><br>'+current.brief;
+  $('clueCount').textContent='0'; $('clueTotal').textContent=clueTotal;
+  // places
+  const pl=$('places'); pl.innerHTML='';
+  current.locations.forEach(l=>{
+    const b=document.createElement('button');
+    b.className='place'; b.dataset.k=l.key;
+    b.innerHTML=l.name+'<span class="pv">'+l.clues.length+' 条线索</span>';
+    b.addEventListener('click',()=>visitPlace(l,b));
+    pl.appendChild(b);
+  });
+  $('sceneDesc').textContent='选择一处现场开始侦查。每处现场都藏着关键线索。';
+  // suspects
+  const sl=$('suspectList'); sl.innerHTML='';
+  current.suspects.forEach(s=>{
+    const d=document.createElement('div'); d.className='suspect';
+    d.innerHTML='<h4>'+s.name+'<span class="role">'+s.role+'</span></h4><p>「'+s.stmt+'」</p>';
+    sl.appendChild(d);
+  });
+  // deduce
+  const co=$('culpritOpts'); co.innerHTML='';
+  current.suspects.forEach(s=>{
+    const o=document.createElement('div'); o.className='opt'; o.dataset.name=s.name;
+    o.innerHTML='<input type="radio" name="culprit" value="'+s.name+'"> '+s.name+' <span style="color:var(--dim);font-size:11px">'+s.role+'</span>';
+    o.addEventListener('click',()=>{selCulprit=s.name;co.querySelectorAll('.opt').forEach(x=>x.classList.toggle('sel',x.dataset.name===s.name));});
+    co.appendChild(o);
+  });
+  const ms=$('motiveSel'); ms.innerHTML='';
+  const ph=document.createElement('option'); ph.value=''; ph.textContent='— 选择动机 —'; ms.appendChild(ph);
+  current.motives.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;ms.appendChild(o);});
+  ms.addEventListener('change',()=>selMotive=ms.value);
+  renderClues();
+  hud(); log('案件载入：'+current.title+'。开始走访现场。');
+}
+
+function visitPlace(l,btn){
+  if(!active)return;
+  if(!visited[l.key]){
+    visited[l.key]=true; cluesFound+=l.clues.length;
+    btn.classList.add('done');
+    $('clueCount').textContent=cluesFound;
+    log('勘查 '+l.name+'：发现 '+l.clues.length+' 条线索。');
+    renderClues();
+  }
+  $('sceneDesc').textContent=l.name+' — '+l.desc;
+}
+
+function renderClues(){
+  const cl=$('clueList'); cl.innerHTML='';
+  let any=false;
+  current.locations.forEach(l=>{
+    if(visited[l.key]){
+      any=true;
+      l.clues.forEach(c=>{
+        const d=document.createElement('div'); d.className='clue';
+        d.innerHTML='<h4>'+l.name+'</h4><p>'+c+'</p>';
+        cl.appendChild(d);
+      });
+    }
+  });
+  if(!any) cl.innerHTML='<div class="clue"><p>还没有收集到线索。回到「现场」走访各处。</p></div>';
+}
+
+function submitVerdict(){
+  if(!active)return;
+  if(!selCulprit){log('先选择责任人。');return;}
+  if(!selMotive){log('先选择动机。');return;}
+  attempts++;
+  const okC=selCulprit===current.solution.culprit;
+  const okM=selMotive===current.solution.motive;
+  let gain=0;
+  if(okC&&okM){gain=100;solved++;}
+  else if(okC){gain=50;}
+  else if(okM){gain=30;}
+  score+=gain;
+  if(score>best){best=score;localStorage.starportInvestBest=best;}
+  hud();
+  const head=okC&&okM?'真相大白':(okC?'责任人正确，动机偏差':'定案有误');
+  $('overTitle').textContent=head;
+  $('overResult').textContent='责任人 '+(okC?'✓':'✗')+' · 动机 '+(okM?'✓':'✗')+' · 本案 +'+gain+' 分';
+  $('overTruth').innerHTML='<b style="color:var(--green)">真相：</b>'+current.truth;
+  $('over').classList.remove('hidden');
+}
+
+function nextCase(){
+  $('over').classList.add('hidden');
+  idx++;
+  if(idx>=order.length){
+    active=false;
+    $('overTitle').textContent='全部结案';
+    $('overResult').textContent='共 '+order.length+' 案 · 破获 '+solved+' 案 · 总分 '+score+' · 最高 '+best;
+    $('overTruth').innerHTML='<b style="color:var(--green)">评价：</b>'+(solved===order.length?'全部侦破，星港因你而安全。':'有部分案件未能定案，重玩可换个思路。');
+    $('overNext').textContent='重新侦查';
+    $('overHall').style.display='';
+    $('over').classList.remove('hidden');
+    return;
+  }
+  loadCase();
+}
+function reset(){
+  order=shuffle([0,1,2]); idx=0; score=0; solved=0; attempts=0;
+  active=true;
+  $('title').classList.add('hidden');
+  $('over').classList.add('hidden');
+  loadCase();
+}
+
+// tabs
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===t));
+  const v=t.dataset.v;
+  ['scene','clues','suspects','deduce'].forEach(name=>{
+    $('view-'+name).classList.toggle('hidden',name!==v);
+  });
+}));
+$('submitVerdict').addEventListener('click',submitVerdict);
+$('start').addEventListener('click',reset);
+$('nextCase').addEventListener('click',()=>{if(active)nextCase();});
+$('overNext').addEventListener('click',()=>{
+  if(idx>=order.length){reset();} else {nextCase();}
+});
+$('back').addEventListener('click',()=>location.href='https://fny666.github.io/arcade.html');
+$('overHall').addEventListener('click',()=>location.href='https://fny666.github.io/arcade.html');
+hud();
+</script>
+</body>
+</html>
