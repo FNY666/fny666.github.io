@@ -50,11 +50,31 @@ select{width:100%;padding:10px;border-radius:10px;background:#0b1a26;color:#dff6
 .log{margin-top:12px;padding:10px 12px;border-radius:10px;border-left:3px solid var(--cyan);background:#0b1729;color:#9bc1d5;font:11px monospace;min-height:40px}
 .panel-ui{max-width:980px;margin:14px auto;display:flex;justify-content:space-between;gap:8px;color:#779bb3;font:11px monospace;flex-wrap:wrap}
 .panel-ui button{padding:8px 12px;border:1px solid #4c7088;border-radius:999px;background:#0c1d30;color:#b9deed;font:12px monospace;cursor:pointer}
-.overlay{position:fixed;inset:0;z-index:40;display:grid;place-items:center;background:#03050fdd;text-align:center;padding:18px}
-.box{width:min(92vw,460px);padding:30px;border:1px solid var(--cyan);border-radius:20px;background:linear-gradient(145deg,#102d2f,#070b18);box-shadow:0 0 44px rgba(99,247,224,.25)}
+.overlay{position:fixed;inset:0;z-index:40;display:grid;place-items:center;background:rgba(2,5,12,.88);text-align:left;padding:18px}
+.box{width:min(92vw,460px);max-height:calc(100vh - 24px);overflow:auto;padding:30px;border:1px solid var(--cyan);border-radius:20px;background:linear-gradient(145deg,#102d2f,#070b18);box-shadow:0 0 44px rgba(99,247,224,.25)}
 .box h1{font-size:clamp(34px,9vw,60px);margin:0;color:var(--cyan);text-shadow:0 0 18px rgba(99,247,224,.6)}
 .box p{color:#aac5d5;line-height:1.8;font-size:13px}
+.title-shell{position:relative;width:min(1060px,calc(100vw - 28px));min-height:min(650px,88vh);padding:clamp(24px,5vw,58px);overflow:hidden;border:1px solid rgba(99,247,224,.48);background:#07131d;box-shadow:0 24px 90px rgba(0,0,0,.65),inset 0 0 70px rgba(99,247,224,.07)}
+.title-shell:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 0 69%,rgba(99,247,224,.08) 69.1%,transparent 69.3%),linear-gradient(180deg,transparent 0 74%,rgba(255,217,92,.08) 74.2%,transparent 74.4%),repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 5px);pointer-events:none}
+.title-kicker{position:relative;color:var(--amber);font:11px monospace;letter-spacing:.32em;text-transform:uppercase}
+.title-shell h1{position:relative;max-width:610px;margin:20px 0 8px;font-size:clamp(44px,9vw,94px);line-height:.95;letter-spacing:.08em;color:#e8fff7;text-shadow:0 0 24px rgba(99,247,224,.35)}
+.title-shell .lead{position:relative;max-width:520px;margin:0;color:#9fc0ca;font:15px/1.8 monospace}
+.case-preview{position:absolute;right:5%;top:17%;width:29%;min-width:170px;aspect-ratio:1.05;padding:16px;border:1px solid rgba(255,217,92,.5);background:rgba(10,23,30,.86);transform:rotate(3deg);box-shadow:12px 16px 0 rgba(0,0,0,.22),0 0 35px rgba(255,217,92,.12)}
+.case-preview .stamp{display:inline-block;padding:4px 7px;border:1px solid var(--pink);color:var(--pink);font:10px monospace;letter-spacing:.12em;transform:rotate(-5deg)}
+.case-preview h3{margin:18px 0 8px;color:var(--amber);font:18px monospace}.case-preview p{margin:0;color:#b6d5dc;font:11px/1.7 monospace}.case-lines{height:1px;margin:12px 0;background:rgba(255,217,92,.3);box-shadow:0 9px 0 rgba(255,217,92,.14),0 18px 0 rgba(255,217,92,.1)}
+.title-actions{position:relative;display:flex;align-items:center;gap:18px;margin-top:34px}.title-actions .start{margin-top:0;padding:15px 25px}.title-actions .micro{color:#7594a5;font:10px/1.6 monospace;max-width:190px}
+.title-stats{position:absolute;left:clamp(24px,5vw,58px);right:clamp(24px,5vw,58px);bottom:24px;display:flex;gap:24px;padding-top:14px;border-top:1px solid rgba(99,247,224,.22);color:#7499a8;font:10px monospace;letter-spacing:.08em}.title-stats b{display:block;margin-top:4px;color:var(--green);font-size:14px}
+@media(max-width:700px){.title-shell{min-height:660px;padding:28px 22px}.title-shell h1{font-size:clamp(44px,14vw,70px);max-width:100%}.case-preview{position:relative;right:auto;top:auto;width:100%;min-width:0;margin:28px 0 0;transform:rotate(0);aspect-ratio:auto}.case-preview h3{margin:10px 0 5px}.title-actions{margin-top:22px}.title-stats{left:22px;right:22px;bottom:16px;gap:12px;flex-wrap:wrap}}
 .box .truth{margin-top:14px;text-align:left;font:12px/1.8 monospace;color:#cfe6d6;background:rgba(8,20,16,.6);border:1px solid rgba(110,255,168,.25);border-radius:10px;padding:12px}
+.review-wrap{margin-top:16px;text-align:left;border-top:1px solid rgba(99,247,224,.24);padding-top:12px}
+.review-head{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;color:var(--green);font:13px monospace;letter-spacing:.08em}
+.review-disclaimer{margin-top:5px;color:#7897a8;font:10px/1.6 monospace}
+.review-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:9px;max-height:260px;overflow:auto;padding-right:2px}
+.review-card{padding:9px;border:1px solid rgba(99,247,224,.2);border-radius:9px;background:rgba(8,20,30,.75)}
+.review-card.expert{border-color:rgba(255,217,92,.28);background:rgba(25,20,8,.55)}
+.review-card h4{margin:0 0 4px;color:#dff6ff;font:12px monospace}.review-card.expert h4{color:var(--amber)}
+.review-meta{display:flex;justify-content:space-between;color:#7897a8;font:10px monospace}.review-stars{color:var(--amber);letter-spacing:0}
+.review-focus{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}.focus-item{padding:8px 9px;border-left:2px solid var(--pink);background:rgba(35,12,28,.7);color:#f1cfe2;font:11px/1.55 monospace}.focus-item.next{border-left-color:var(--green);background:rgba(8,28,22,.7);color:#cfe6d6}.review-card p{margin:5px 0 0;color:#bcd9e8;font:11px/1.55 monospace}.review-card .review-want{color:var(--green)}
 .start{padding:13px 30px;margin-top:14px;border:1px solid var(--cyan);border-radius:999px;background:#0d5d54;color:#fff;font-weight:900;font-size:16px;cursor:pointer}
 .hidden{display:none!important}
 .rotate{display:none}@media(orientation:portrait) and (pointer:coarse){.rotate{display:block;position:fixed;top:10px;left:10px;z-index:8;padding:7px 10px;border:1px solid var(--cyan);border-radius:999px;background:#0b2934ee;font:11px monospace;color:var(--cyan)}}
@@ -111,11 +131,22 @@ select{width:100%;padding:10px;border-radius:10px;background:#0b1a26;color:#dff6
 </div>
 
 <div id="title" class="overlay">
-  <div class="box">
-    <h1>星港调查员</h1>
-    <p>你是星港总署的调查员。<br>每起案件都有一名责任人、一个动机。<br>走访现场、比对口供与物证，锁定真相。</p>
-    <button class="start" id="start">开始侦查</button>
-    <p>这是判断力游戏，不是反应力游戏。<br>证据不足时，宁可多走几处现场。</p>
+  <div class="title-shell">
+    <div class="title-kicker">STARPORT BUREAU / NIGHT SHIFT 07</div>
+    <h1>星港<br>调查员</h1>
+    <p class="lead">一枚核心、一段失真的记录、四个说法。<br>你负责把证据拼回真相。</p>
+    <div class="case-preview">
+      <span class="stamp">CASE FILES / CLASSIFIED</span>
+      <h3>今晚的案件</h3>
+      <p>八起港区异常事件<br>等待重新归档。</p>
+      <div class="case-lines"></div>
+      <p>现场记录 · 物证链<br>口供矛盾 · 最终定案</p>
+    </div>
+    <div class="title-actions">
+      <button class="start" id="start">接入案件系统</button>
+      <span class="micro">调查不是猜谜。<br>每一个结论都要有证据。</span>
+    </div>
+    <div class="title-stats"><span>ACTIVE CASES<b>08</b></span><span>SHIFT<b>NIGHT</b></span><span>ACCESS<b>AUTHORIZED</b></span></div>
   </div>
 </div>
 <div id="over" class="overlay hidden">
@@ -123,6 +154,12 @@ select{width:100%;padding:10px;border-radius:10px;background:#0b1a26;color:#dff6
     <h1 id="overTitle">定案完成</h1>
     <p id="overResult"></p>
     <div class="truth" id="overTruth"></div>
+    <div class="review-wrap hidden" id="reviewWrap">
+      <div class="review-head"><span>点评团队与玩家报告</span><span id="reviewScore">—</span></div>
+      <div class="review-disclaimer">以下 5 名玩家与 3 名专家均为规则驱动模拟，用于内部研发诊断，不代表真实用户研究。</div>
+      <div class="review-focus" id="reviewFocus"></div>
+      <div class="review-grid" id="reviewGrid"></div>
+    </div>
     <button class="start" id="overNext">继续 ▸</button>
     <button class="start" id="overHall" style="background:#0c1d30;border-color:#4c7088;color:#b9deed">返回星港</button>
   </div>
@@ -198,12 +235,122 @@ const CASES=[
    motives:["抵债","复仇","贪婪","嫉妒","误杀","掩护他人"],
    solution:{culprit:"科尔", motive:"贪婪"},
    truth:"访问来自内部管理员账号但无真人登录，说明用了遗留后门（韩冰代码里的调试后门，运维名单无科尔，但科尔作为承包商有机会发现）。门禁证明科尔当晚进过机房且超时；监控显示他带 U 盘离开；合同里的『数据咨询』额外报酬来自竞争对手 → 科尔被收买，用后门偷数据。韩冰、雷克、小满均有清白证据。"
+ },
+ { id:4, title:"冷冻舱失联", subtitle:"CRYO DISAPPEARANCE",
+   brief:"一名冷冻乘客在跃迁前从登记舱位消失，生命维持系统却显示他仍在舱内。有人篡改了身份记录，并把真正的乘客藏进了货运流线。",
+   locations:[
+     {name:"冷冻舱", key:"cryo", desc:"乘客的生命维持舱排列在环形甲板。",
+      clues:["舱体扫描：登记为顾南的冷冻舱里只有一具仿生替身，体温曲线是循环播放的。","维护锁痕：舱门曾用工程权限打开过，锁芯留下维护官韩岑的专用工具痕迹。"]},
+     {name:"身份台", key:"id", desc:"负责乘客登记、换舱与跃迁名单。",
+      clues:["换舱记录：顾南的身份在失联前 18 分钟被改到货运舱，修改人是值班文员米娅。","审计缺口：米娅的账号只改过目的舱位，没有删除生命体征记录的权限。"]},
+     {name:"货运流线", key:"cargo4", desc:"货箱在自动轨道上经过扫描门。",
+      clues:["异常货箱：一只标记为『医疗设备』的箱子重量比申报值高 72 公斤，内部有持续生命信号。","扫描回放：箱子进入货运流线时，韩岑的维修机器人替它申请了人工豁免。"]},
+     {name:"乘客休息区", key:"lounge4", desc:"跃迁前乘客等待区，有完整公共监控。",
+      clues:["监控证词：商人唐梨在失联时段一直在休息区直播，画面连续且没有离开。","账本线索：顾南曾举报韩岑私卖冷冻舱位，举报记录在顾南失联前一天被标记为『待处理』。"]}
+   ],
+   suspects:[
+     {name:"韩岑", role:"维护官", stmt:"我只负责修设备，冷冻舱里的乘客由系统自动管理。"},
+     {name:"米娅", role:"值班文员", stmt:"我按乘客申请改过货运目的地，但没有碰过冷冻舱。"},
+     {name:"唐梨", role:"商人", stmt:"我全程在休息区直播，任何人都能看到我。"},
+     {name:"顾南", role:"失联乘客", stmt:"我在登舱前没有和任何维护人员发生争执。"}
+   ],
+   motives:["抵债","复仇","贪婪","嫉妒","误杀","掩护他人"],
+   solution:{culprit:"韩岑", motive:"复仇"},
+   truth:"韩岑的工程权限能打开冷冻舱，专用工具痕迹与维修机器人豁免把他和异常货箱连在一起。顾南曾举报他私卖舱位，韩岑以仿生替身伪造生命体征，再把顾南藏进货箱，动机是报复举报。米娅只有改舱位权限，唐梨有连续直播证明。"
+ },
+ { id:5, title:"观测台误报", subtitle:"FALSE DISTRESS",
+   brief:"观测台连续发出无人船求救信号，救援队每次抵达都只发现空舱。有人利用假信号抽走港口燃料，真正的目标藏在信号间隔里。",
+   locations:[
+     {name:"观测台", key:"obs", desc:"所有深空求救信号都由此接收和转发。",
+      clues:["信号频谱：三次求救信号使用完全相同的 4 秒噪声片段，不像自然遇险。","转发权限：观测员季衡拥有编辑求救坐标的权限，但当晚的修改记录来自外接终端。"]},
+     {name:"燃料库", key:"fuel5", desc:"救援艇起飞前领取燃料的仓库。",
+      clues:["库存缺口：每次假救援都会少一箱氘燃料，缺口总量刚好能填满一艘短程货艇。","领用签名：后勤官白榆签过三次领料单，但签名笔压与她平时完全不同。"]},
+     {name:"救援码头", key:"dock5", desc:"救援艇停靠与回收的外环码头。",
+      clues:["推进器余温：一艘登记为检修的私人货艇，在第三次假信号后留下新鲜推进器余温。","门禁回放：商人赫洛在信号结束后才进入码头，无法解释推进器余温来源。"]},
+     {name:"通信室", key:"comms5", desc:"保存港口所有通信与终端接入记录。",
+      clues:["外接终端：假信号来自一台租用的维修终端，租用人是赫洛，租期覆盖三次误报。","交易记录：赫洛的货艇在外环站等待一批未申报燃料，付款方是黑市中介。"]}
+   ],
+   suspects:[
+     {name:"季衡", role:"观测员", stmt:"我只负责接收信号，坐标修改应该由自动协议完成。"},
+     {name:"白榆", role:"后勤官", stmt:"领料单是我签的，但我没有理由拿走救援燃料。"},
+     {name:"赫洛", role:"商人", stmt:"我的货艇只是例行检修，和求救信号没有关系。"},
+     {name:"宁真", role:"救援队长", stmt:"三次出发前我都按标准流程检查过，没有发现异常。"}
+   ],
+   motives:["抵债","复仇","贪婪","嫉妒","误杀","掩护他人"],
+   solution:{culprit:"赫洛", motive:"贪婪"},
+   truth:"相同噪声说明信号是伪造的；租用维修终端和三次误报完全重合，终端租用人赫洛。假救援制造了燃料领取记录，赫洛的货艇却在信号后留下推进器余温，黑市交易记录补上了动机。季衡的修改记录来自外接终端，白榆的签名是仿写，宁真按流程执行并无作案机会。"
+ },
+ { id:6, title:"生态舱换芯", subtitle:"BIOME SABOTAGE",
+   brief:"星港生态舱的净化核心被替换，氧气浓度在 40 分钟后会跌破安全线。凶手必须能进入维护层，并知道哪一枚核心最值钱。",
+   locations:[
+     {name:"生态穹顶", key:"dome", desc:"居民区的空气与水循环都从这里开始。",
+      clues:["核心标签：原装净化核心被换成了报废件，替换时间约在夜班交接后。","工具残留：固定螺栓上有实验员叶舟常用的陶瓷扳手刮痕。"]},
+     {name:"维护层", key:"maint6", desc:"只有工程与实验人员能进入的下层通道。",
+      clues:["门禁轨迹：案发窗口只有叶舟和保安岑野进入过维护层。","备用钥匙：叶舟登记的备用钥匙比系统记录多出 1 次开启，解释栏为空。"]},
+     {name:"实验舱", key:"lab6", desc:"生态材料实验室，保存核心报价与样品。",
+      clues:["报价单：叶舟三天前向外部买家询价一枚全新净化核心，价格足以抵消他的研究债务。","样品柜：报废核心原本准备销毁，却被提前转移到叶舟的个人样品柜。"]},
+     {name:"安保室", key:"sec6", desc:"维护层摄像头的备份中心。",
+      clues:["摄像头盲区：岑野为测试新镜头临时关闭了 90 秒画面，但关闭时间早于案发 2 小时。","巡逻记录：岑野在案发窗口持续巡逻，手环轨迹与门禁时间吻合。"]}
+   ],
+   suspects:[
+     {name:"叶舟", role:"实验员", stmt:"我只研究植物适应性，报废核心不是我的项目。"},
+     {name:"岑野", role:"保安", stmt:"我确实进过维护层，但只是巡逻，没接触设备。"},
+     {name:"苏棠", role:"居民代表", stmt:"我在生态穹顶参加会议，没法进入维护层。"},
+     {name:"罗奇", role:"供应商", stmt:"我只在白天送过样品，晚上没有港区通行权。"}
+   ],
+   motives:["抵债","复仇","贪婪","嫉妒","误杀","掩护他人"],
+   solution:{culprit:"叶舟", motive:"抵债"},
+   truth:"陶瓷扳手刮痕、备用钥匙多开一次、个人样品柜里的报废核心构成直接证据。叶舟还曾询价出售新核心，研究债务解释了抵债动机。岑野的盲区早于案发且巡逻轨迹完整，苏棠和罗奇没有维护层权限。"
+ },
+ { id:7, title:"跃迁舱的第二名乘客", subtitle:"GHOST MANIFEST",
+   brief:"一艘私人穿梭艇的乘客名单显示只有一人，但生物扫描读出两组心跳。有人试图把未登记乘客带过星港。",
+   locations:[
+     {name:"入港闸口", key:"gate7", desc:"所有跃迁艇在这里接受生物与身份扫描。",
+      clues:["生物扫描：艇内有两组心跳，其中一组被隔热毯压低了信号。","舱门记录：入港前 6 分钟，驾驶员陆沉的驾驶舱权限被短暂切换为维护模式。"]},
+     {name:"货舱夹层", key:"hidden7", desc:"私人艇货舱的夹层不在普通货单中。",
+      clues:["夹层痕迹：隔热毯和一只未登记的氧气瓶上有乘客闻溪的指纹。","氧气瓶序列：氧气瓶由港内医疗供应商出库，采购人是闻溪的担保人周岚。"]},
+     {name:"申报台", key:"decl7", desc:"乘客与货物申报由代理人提交。",
+      clues:["名单修改：周岚在起飞前 2 分钟把闻溪从乘客名单改为『地面接待』，但没有新的接待记录。","权限限制：周岚只能修改名单，无法切换驾驶舱或打开夹层。"]},
+     {name:"检疫室", key:"quar7", desc:"未登记入港者会在这里接受隔离。",
+      clues:["检疫预约：闻溪提前预约了入港检疫，却在名单被修改后取消，取消操作来自陆沉终端。","通讯截取：陆沉向周岚发送『过闸后再付款』，付款条件与偷渡成功绑定。"]}
+   ],
+   suspects:[
+     {name:"陆沉", role:"驾驶员", stmt:"驾驶舱切换维护模式是系统误触，我不知道艇内有第二个人。"},
+     {name:"周岚", role:"担保人", stmt:"我只是帮闻溪处理名单，没有参与任何偷渡安排。"},
+     {name:"闻溪", role:"未登记乘客", stmt:"我本来有合法检疫预约，不需要躲在夹层里。"},
+     {name:"岑夏", role:"检疫官", stmt:"我只负责入港后检查，没接触过这艘艇的驾驶系统。"}
+   ],
+   motives:["抵债","复仇","贪婪","嫉妒","误杀","掩护他人"],
+   solution:{culprit:"陆沉", motive:"贪婪"},
+   truth:"第二组心跳与夹层氧气瓶证明有人被藏在艇内；驾驶舱维护模式和检疫预约取消都来自陆沉终端。陆沉还与周岚约定按偷渡成功付款，说明他利用驾驶权限完成偷渡，动机是贪婪。周岚能改名单但不能开夹层，岑夏没有系统权限。"
+ },
+ { id:8, title:"静默的灯塔", subtitle:"BEACON SILENCE",
+   brief:"外环导航灯塔突然静默，三艘货船险些撞入碎片带。灯塔没有被破坏，而是被人设置成只对一条航线失效。",
+   locations:[
+     {name:"导航灯塔", key:"beacon8", desc:"外环唯一能标记碎片带边缘的自动灯塔。",
+      clues:["配置差异：灯塔只关闭了面向 7 号航线的警示频段，其余频段正常。","维护接口：配置修改需要灯塔管理员密钥，修改时间正好在货船改道前 9 分钟。"]},
+     {name:"航线调度台", key:"route8", desc:"货船路线由这里统一分配。",
+      clues:["改道记录：货船『白鲸』在灯塔静默后临时改入 7 号航线，申请人是调度员唐澈。","收益预测：唐澈的私人账户在案发前收到一笔与『白鲸』货主相关的预付款。"]},
+     {name:"灯塔维护站", key:"station8", desc:"管理员与维修人员的值班站。",
+      clues:["密钥日志：管理员沈弦的密钥在案发时被远程使用，沈弦本人正在医疗舱接受治疗。","远程终端：远程登录来源是调度台的旧终端，终端保管人是唐澈。"]},
+     {name:"碎片带边缘", key:"debris8", desc:"灯塔警示范围外的航道边缘。",
+      clues:["货物残片：白鲸货舱掉落一枚伪装成废料的导航芯片，芯片属于灯塔维护批次。","航迹分析：白鲸在无警示状态下偏离安全线，像是在寻找某个已知坐标。"]}
+   ],
+   suspects:[
+     {name:"沈弦", role:"灯塔管理员", stmt:"我的密钥不可能被使用，我人在医疗舱，无法远程操作。"},
+     {name:"唐澈", role:"调度员", stmt:"我只是按货主要求改道，没有权限碰灯塔配置。"},
+     {name:"白鲸船长", role:"货船船长", stmt:"改道是港口调度安排的，我不知道灯塔为什么静默。"},
+     {name:"洛因", role:"航道工程师", stmt:"我在外环检修另一座灯塔，没回过调度台。"}
+   ],
+   motives:["抵债","复仇","贪婪","嫉妒","误杀","掩护他人"],
+   solution:{culprit:"唐澈", motive:"贪婪"},
+   truth:"灯塔只对 7 号航线失效，远程终端来自唐澈保管的旧终端；唐澈账户收到白鲸货主预付款，白鲸又携带灯塔维护芯片并按隐藏坐标航行。沈弦的密钥被盗用，船长是执行者，唐澈负责制造无警示航道，动机是贪婪。"
  }
 ];
 
-let order=[], idx=0, current=null, active=false;
+let order=[], idx=0, current=null, active=false, caseClosed=false;
 let score=0, solved=0, attempts=0;
-let visited={}, cluesFound=0, clueTotal=0;
+let visited={}, cluesFound=0, clueTotal=0, clueRates=[];
 let selCulprit=null, selMotive=null;
 let best=Number(localStorage.starportInvestBest||0);
 
@@ -220,7 +367,8 @@ function log(s){$('log').textContent=s;}
 
 function loadCase(){
   current=CASES[order[idx]];
-  visited={}; cluesFound=0; clueTotal=current.locations.reduce((n,l)=>n+l.clues.length,0);
+  current={...current,locations:shuffle(current.locations.map(l=>({...l,clues:shuffle([...l.clues])}))),suspects:shuffle([...current.suspects]),motives:shuffle([...current.motives])};
+  caseClosed=false; visited={}; cluesFound=0; clueTotal=current.locations.reduce((n,l)=>n+l.clues.length,0);
   selCulprit=null; selMotive=null;
   $('caseTitle').textContent=current.title;
   $('brief').innerHTML='<b style="color:var(--cyan)">'+current.subtitle+'</b><br><br>'+current.brief;
@@ -253,7 +401,7 @@ function loadCase(){
   const ms=$('motiveSel'); ms.innerHTML='';
   const ph=document.createElement('option'); ph.value=''; ph.textContent='— 选择动机 —'; ms.appendChild(ph);
   current.motives.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;ms.appendChild(o);});
-  ms.addEventListener('change',()=>selMotive=ms.value);
+  ms.onchange=()=>{selMotive=ms.value;};
   renderClues();
   hud(); log('案件载入：'+current.title+'。开始走访现场。');
 }
@@ -286,11 +434,46 @@ function renderClues(){
   if(!any) cl.innerHTML='<div class="clue"><p>还没有收集到线索。回到「现场」走访各处。</p></div>';
 }
 
+function buildReviewReport(metrics){
+  const total=Math.max(1,metrics.total||8);
+  const solved=Math.max(0,metrics.solved||0);
+  const score=metrics.score||0;
+  const attempts=metrics.attempts||total;
+  const clueRate=Math.max(0,Math.min(1,metrics.clueRate||0));
+  const solvedRate=solved/total;
+  const crowded=attempts>total;
+  const clueText=clueRate<.9?'有些关键线索被漏掉了，现场需要更强的搜证提示。':'线索收集完整，但找到证据后的反馈仍然偏轻。';
+  const playerBase=[
+    {name:'林七',tag:'第一次玩',rating:solvedRate>=.75?4:3,text:clueText,want:'希望：发现线索时有更明显的现场反馈。'},
+    {name:'折光',tag:'找隐藏线索',rating:clueRate>=.9?4:3,text:'线索内容能读懂，但答案常被直接写在描述里，推理空间不够。',want:'希望：把“结论”藏起来，让玩家自己连证据。'},
+    {name:'快班',tag:'十分钟试玩',rating:crowded?3:4,text:crowded?'错误定案后需要重走流程，节奏会被打断。':'流程清楚，但每案都是同一种调查节奏。',want:'希望：加入短案或更快的复盘入口。'},
+    {name:'硬核档案员',tag:'重玩玩家',rating:solvedRate===1&&clueRate>=.9?3:4,text:'八案数量比原型好，但案件答案固定，第二轮仍然只是背答案。',want:'希望：加入变量、分支证据或不同结局。'},
+    {name:'小屏侦查',tag:'手机玩家',rating:3,text:'信息密度可以接受，但现场、线索和定案之间需要来回切页。',want:'希望：在同一屏保留当前证据摘要和下一步动作。'}
+  ];
+  const experts=[
+    {name:'机制评审',tag:'玩法结构',rating:solvedRate>=.75?3:2,text:'核心循环已经成立，但点击现场只是打开文字，缺少观察、取证和判断动作。',want:'优先：让至少一个案件拥有可操作的搜证环节。'},
+    {name:'叙事评审',tag:'案件设计',rating:clueRate>=.9?3:2,text:'八案扩大了内容量，不过动机选项与线索结构高度重复，案件个性还不够。',want:'优先：为每案加入独有的叙事机制，而不是只换名词。'},
+    {name:'可用性评审',tag:'界面与移动端',rating:3,text:'视觉识别比旧版清楚，但结案报告才出现评审信息，过程中的方向反馈仍然不足。',want:'优先：在调查过程中持续显示证据进度与明确的下一步。'}
+  ];
+  const average=[...playerBase,...experts].reduce((n,x)=>n+x.rating,0)/8;
+  return {players:playerBase.map(x=>({...x,kind:'player'})),experts:experts.map(x=>({...x,kind:'expert'})),average,critical:solvedRate<.75?'玩家容易在证据不足时失去方向，先修调查反馈。':clueRate<.9?'部分线索会被漏掉，先修现场引导。':'案件逻辑可解，但重复游玩仍缺乏真正变化。',next:'下一步只做一件事：给案件加入可验证的变量，让同一案不能靠背答案通关。',metrics:{total,solved,score,attempts,clueRate}};
+}
+
+function renderReviewReport(report){
+  $('reviewScore').textContent='综合 '+report.average.toFixed(1)+'/5';
+  $('reviewFocus').innerHTML='<div class="focus-item"><b>最严重问题</b><br>'+report.critical+'</div><div class="focus-item next"><b>唯一下一步</b><br>'+report.next+'</div>';
+  const cards=[...report.players,...report.experts];
+  $('reviewGrid').innerHTML=cards.map(x=>'<article class="review-card '+(x.kind==='expert'?'expert':'')+'"><h4>'+x.name+' <span style="color:#7897a8;font-size:10px">'+x.tag+'</span></h4><div class="review-meta"><span class="review-stars">'+('★'.repeat(x.rating)+'☆'.repeat(5-x.rating))+'</span><span>'+(x.kind==='expert'?'专家模拟':'玩家模拟')+'</span></div><p>'+x.text+'</p><p class="review-want">'+x.want+'</p></article>').join('');
+  $('reviewWrap').classList.remove('hidden');
+}
+
 function submitVerdict(){
-  if(!active)return;
+  if(!active||caseClosed)return;
   if(!selCulprit){log('先选择责任人。');return;}
   if(!selMotive){log('先选择动机。');return;}
   attempts++;
+  caseClosed=true;
+  clueRates.push(clueTotal?cluesFound/clueTotal:0);
   const okC=selCulprit===current.solution.culprit;
   const okM=selMotive===current.solution.motive;
   let gain=0;
@@ -308,6 +491,7 @@ function submitVerdict(){
 }
 
 function nextCase(){
+  if(active&&!caseClosed){log('请先完成当前案件定案，再进入下一案。');return;}
   $('over').classList.add('hidden');
   idx++;
   if(idx>=order.length){
@@ -317,13 +501,15 @@ function nextCase(){
     $('overTruth').innerHTML='<b style="color:var(--green)">评价：</b>'+(solved===order.length?'全部侦破，星港因你而安全。':'有部分案件未能定案，重玩可换个思路。');
     $('overNext').textContent='重新侦查';
     $('overHall').style.display='';
+    renderReviewReport(buildReviewReport({solved,total:order.length,score,attempts,clueRate:clueRates.reduce((a,b)=>a+b,0)/Math.max(1,clueRates.length)}));
     $('over').classList.remove('hidden');
     return;
   }
   loadCase();
 }
 function reset(){
-  order=shuffle([0,1,2]); idx=0; score=0; solved=0; attempts=0;
+  order=shuffle([...Array(CASES.length).keys()]); idx=0; score=0; solved=0; attempts=0; clueRates=[];
+  $('reviewWrap').classList.add('hidden'); $('reviewGrid').innerHTML=''; $('reviewFocus').innerHTML='';
   active=true;
   $('title').classList.add('hidden');
   $('over').classList.add('hidden');
