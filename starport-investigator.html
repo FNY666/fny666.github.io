@@ -29,7 +29,7 @@ body::before{content:"";position:fixed;inset:0;background:radial-gradient(circle
 .place.done{border-color:rgba(110,255,168,.5);color:var(--green)}
 .place .pv{display:block;font-size:10px;color:var(--dim);margin-top:3px}
 .scene-desc{min-height:54px;padding:12px;border-radius:12px;border-left:3px solid var(--amber);background:#0b1a26;color:#bcd9e8;font:12px/1.7 monospace}
-.search-console{padding:11px;border:1px solid rgba(255,217,92,.28);background:rgba(23,20,12,.68);border-radius:12px}.search-console-head{display:flex;justify-content:space-between;color:var(--amber);font:11px monospace;letter-spacing:.08em}.search-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}.search-btn{min-height:54px;padding:7px;border:1px solid rgba(255,217,92,.3);border-radius:8px;background:#141b22;color:#e7dca9;font:11px monospace;cursor:pointer}.search-btn strong{display:block;color:var(--cyan);font-size:12px;margin-bottom:4px}.search-btn:disabled{opacity:.38;cursor:not-allowed}.search-empty{grid-column:1/-1;color:var(--dim);font:11px monospace;padding:8px}.search-found{padding:8px;border-left:2px solid var(--green);background:rgba(8,28,22,.72);color:#cfe6d6;font:11px/1.6 monospace}
+.search-console{padding:11px;border:1px solid rgba(255,217,92,.28);background:rgba(23,20,12,.68);border-radius:12px}.search-console-head{display:flex;justify-content:space-between;color:var(--amber);font:11px monospace;letter-spacing:.08em}.search-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}.search-btn{min-height:54px;padding:7px;border:1px solid rgba(255,217,92,.3);border-radius:8px;background:#141b22;color:#e7dca9;font:11px monospace;cursor:pointer}.search-btn strong{display:block;color:var(--cyan);font-size:12px;margin-bottom:4px}.search-btn:disabled{opacity:.38;cursor:not-allowed}.search-empty{grid-column:1/-1;color:var(--dim);font:11px monospace;padding:8px}.search-found{padding:8px;border-left:2px solid var(--green);background:rgba(8,28,22,.72);color:#cfe6d6;font:11px/1.6 monospace}.timeline-view{padding:9px;border:1px solid rgba(99,247,224,.22);background:rgba(5,15,25,.92);border-radius:9px}.timeline-title{display:flex;justify-content:space-between;color:var(--cyan);font:11px monospace}.timeline-rail{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin:12px 0 8px}.timeline-point{min-height:44px;padding:6px 3px;border:1px solid rgba(143,213,255,.28);border-radius:6px;background:#0b1a26;color:#9fc0ca;font:10px monospace;cursor:pointer}.timeline-point:hover,.timeline-point:focus-visible{border-color:var(--amber);color:var(--amber);outline:none}.timeline-readout{min-height:54px;padding:8px;background:#08151f;border-left:2px solid var(--amber);color:#bcd9e8;font:11px/1.55 monospace}.timeline-hint{color:#7897a8;font:10px/1.5 monospace;margin-top:7px}
 .clue{border:1px solid rgba(110,255,168,.25);border-radius:10px;padding:10px 12px;background:rgba(8,20,16,.6)}
 .clue h4{margin:0 0 4px;font-size:13px;color:var(--green);letter-spacing:.05em}
 .clue p{margin:0;font:12px/1.7 monospace;color:#cfe6d6}
@@ -111,6 +111,12 @@ select{width:100%;padding:10px;border-radius:10px;background:#0b1a26;color:#dff6
           <div class="search-console-head"><span>调查工具 / 选择现场后使用</span><span id="searchBudget">行动 0/0</span></div>
           <div class="search-actions" id="searchActions"><span class="search-empty">先选择现场，再决定如何搜证。不同工具会得到不同信息。</span></div>
           <div class="search-found" id="searchFeedback">搜证终端待命。</div>
+          <div class="timeline-view hidden" id="timelineView">
+            <div class="timeline-title"><span>监控录像 / FRAME SELECT</span><span id="timelineStatus">未接入</span></div>
+            <div class="timeline-rail" id="timelineRail"></div>
+            <div class="timeline-readout" id="timelineReadout">选择一个时间点查看画面。</div>
+            <div class="timeline-hint">不要只看时间戳：找到画面里的异常，再把它归档为证据。</div>
+          </div>
         </div>
       </div>
       <div id="view-clues" class="view hidden"><div id="clueList"></div></div>
@@ -358,7 +364,7 @@ if(typeof globalThis!=='undefined')globalThis.CASES=CASES;
 let order=[], idx=0, current=null, active=false, caseClosed=false;
 let score=0, solved=0, attempts=0;
 let visited={}, cluesFound=0, clueTotal=0, clueRates=[];
-let evidence=[], selectedLocation=null, searchPlans={}, searchedActions={}, searchUsed=0, searchBudget=0, sessionSeed=0;
+let evidence=[], selectedLocation=null, searchPlans={}, searchedActions={}, timelineSeen={}, timelines={}, activeTimeline=null, searchUsed=0, searchBudget=0, sessionSeed=0;
 let selCulprit=null, selMotive=null;
 let best=Number(localStorage.starportInvestBest||0);
 
@@ -429,9 +435,9 @@ function loadCase(){
   sessionSeed=Math.floor(Math.random()*1000000);
   current=buildCaseVariant(CASES[order[idx]],sessionSeed);
   current={...current,locations:shuffle(current.locations.map(l=>({...l,clues:shuffle([...l.clues])}))),suspects:shuffle([...current.suspects]),motives:shuffle([...current.motives])};
-  caseClosed=false; visited={}; evidence=[]; selectedLocation=null; searchedActions={}; searchUsed=0;
+  caseClosed=false; visited={}; evidence=[]; selectedLocation=null; searchedActions={}; timelineSeen={}; activeTimeline=null; searchUsed=0;
   searchBudget=Math.max(4,Math.min(7,current.locations.length+2));
-  searchPlans={}; current.locations.forEach(l=>{searchPlans[l.key]=buildSearchPlan({id:current.id,locations:[l]},sessionSeed+l.key.length);});
+  searchPlans={}; timelines={}; current.locations.forEach(l=>{searchPlans[l.key]=buildSearchPlan({id:current.id,locations:[l]},sessionSeed+l.key.length); if((current.id===1&&l.key==='ctl')||(current.id===8&&l.key==='beacon8'))timelines[l.key]=buildTimeline(current,l.key,sessionSeed+l.key.length);});
   clueTotal=searchBudget;
   $('caseTitle').textContent=current.title;
   $('brief').innerHTML='<b style="color:var(--cyan)">'+current.subtitle+'</b><br><span style="color:var(--amber);font-size:11px">'+current.variantLabel+'</span><br><br>'+current.brief;
@@ -449,6 +455,7 @@ function loadCase(){
   $('searchBudget').textContent='行动 0/'+searchBudget;
   $('searchActions').innerHTML='<span class="search-empty">先选择现场，再决定如何搜证。每次工具使用都会消耗行动。</span>';
   $('searchFeedback').textContent='搜证终端待命。';
+  $('timelineView').classList.add('hidden'); $('timelineRail').innerHTML=''; $('timelineReadout').textContent='选择一个时间点查看画面。'; $('timelineStatus').textContent='未接入';
   // suspects
   const sl=$('suspectList'); sl.innerHTML='';
   current.suspects.forEach(s=>{
@@ -475,13 +482,34 @@ function loadCase(){
 function visitPlace(l,btn){
   if(!active)return;
   selectedLocation=l;
+  activeTimeline=(timelines[l.key]&&searchedActions[l.key+':scan'])?timelines[l.key]:null;
   if(!visited[l.key]){visited[l.key]=true;btn.classList.add('done');}
   $('sceneDesc').textContent=l.name+' — '+l.desc+' 选择一个工具调查，结果才会进入档案。';
   renderSearchActions();
 }
+function updateEvidenceHud(){
+  cluesFound=evidence.length; $('clueCount').textContent=cluesFound; $('searchBudget').textContent='行动 '+searchUsed+'/'+searchBudget;
+}
+function renderTimeline(){
+  const view=$('timelineView'); const timeline=selectedLocation&&timelines[selectedLocation.key];
+  if(!timeline){view.classList.add('hidden');return;}
+  view.classList.remove('hidden'); const unlocked=!!searchedActions[selectedLocation.key+':scan'];
+  $('timelineStatus').textContent=unlocked?'已接入 · 选择时间点':'先接入录像';
+  const rail=$('timelineRail'); rail.innerHTML='';
+  timeline.forEach(frame=>{const b=document.createElement('button');b.className='timeline-point';b.dataset.frame=frame.id;b.disabled=!unlocked;b.innerHTML=frame.time+'<br>'+frame.frame.replace(' / ','<br>');b.addEventListener('click',()=>inspectCurrentTimeline(frame.id));rail.appendChild(b);});
+  if(!unlocked)$('timelineReadout').textContent='选择“深度扫描”接入录像，再逐帧查看。';
+}
+function inspectCurrentTimeline(id){
+  if(!active||!activeTimeline)return;
+  const result=inspectTimeline(activeTimeline,id); const frame=activeTimeline.find(x=>x.id===id); if(!frame)return;
+  $('timelineReadout').innerHTML='<b style="color:'+(result.critical?'var(--amber)':'var(--cyan)')+'">'+result.frame+'</b><br>'+result.clue+'<br><span style="color:var(--green)">'+result.variantEffect+'</span>';
+  if(result.critical&&!timelineSeen[selectedLocation.key+':'+id]){
+    timelineSeen[selectedLocation.key+':'+id]=true; evidence.push({location:selectedLocation.name,action:'录像 '+frame.time,clue:result.clue,effect:result.variantEffect}); updateEvidenceHud(); renderClues(); log('关键帧已归档：录像出现决定性异常。');
+  }else if(result.critical){log('关键帧已归档，继续交叉核对其他证据。');}else{log('普通帧：没有新增证据，继续查看其他时间点。');}
+}
 function renderSearchActions(){
   const box=$('searchActions'); box.innerHTML='';
-  if(!selectedLocation){box.innerHTML='<span class="search-empty">先选择现场，再决定如何搜证。</span>';return;}
+  if(!selectedLocation){box.innerHTML='<span class="search-empty">先选择现场，再决定如何搜证。</span>';renderTimeline();return;}
   const plan=searchPlans[selectedLocation.key];
   plan.actions.forEach(action=>{
     const key=selectedLocation.key+':'+action.id;
@@ -490,16 +518,18 @@ function renderSearchActions(){
     b.innerHTML='<strong>'+action.label+'</strong>'+action.hint+(searchedActions[key]?' · 已完成':'');
     b.addEventListener('click',()=>searchLocation(action.id)); box.appendChild(b);
   });
-  $('searchBudget').textContent='行动 '+searchUsed+'/'+searchBudget;
+  $('searchBudget').textContent='行动 '+searchUsed+'/'+searchBudget; renderTimeline();
 }
 function searchLocation(action){
   if(!active||!selectedLocation||searchUsed>=searchBudget)return;
   const key=selectedLocation.key+':'+action;
   if(searchedActions[key]){log('这个调查动作已经完成，换一种工具。');return;}
-  const plan=searchPlans[selectedLocation.key];
-  const result=resolveSearchAction(plan.location,action,plan.variant);
-  searchedActions[key]=true; searchUsed++; evidence.push({location:selectedLocation.name,action,clue:result.clue,effect:result.variantEffect});
-  cluesFound=evidence.length; $('clueCount').textContent=cluesFound; $('searchBudget').textContent='行动 '+searchUsed+'/'+searchBudget;
+  searchedActions[key]=true; searchUsed++;
+  if(action==='scan'&&timelines[selectedLocation.key]){
+    activeTimeline=timelines[selectedLocation.key]; $('searchFeedback').innerHTML='<b style="color:var(--cyan)">录像接入完成。</b><br>现在逐帧查看，不要只看第一眼。'; log('深度扫描：录像已接入，选择关键时间点。'); renderSearchActions(); return;
+  }
+  const plan=searchPlans[selectedLocation.key]; const result=resolveSearchAction(plan.location,action,plan.variant);
+  evidence.push({location:selectedLocation.name,action,clue:result.clue,effect:result.variantEffect}); updateEvidenceHud();
   $('searchFeedback').innerHTML='<b style="color:var(--green)">'+result.clue+'</b><br>'+result.variantEffect;
   log('使用'+SEARCH_ACTIONS.find(x=>x.id===action).label+'：证据已归档。');
   renderSearchActions(); renderClues();
@@ -543,6 +573,24 @@ function renderReviewReport(report){
   $('reviewWrap').classList.remove('hidden');
 }
 
+function buildTimeline(caseData,locationKey='ctl',seed=1){
+  const loc=(caseData.locations||[]).find(x=>x.key===locationKey)||caseData.locations?.[0]||{name:'监控区',clues:[]};
+  const source=loc.clues||[];
+  const n=Math.abs(Number(seed)||0)%5;
+  const criticalAt=n;
+  const variant=caseData.variantSeed||Math.abs(Number(seed)||0);
+  return Array.from({length:5},(_,i)=>({
+    id:i,time:['21:00','21:04','21:08','21:12','21:16'][i],
+    frame:i===criticalAt?'画面抖动 / 关键帧':'画面稳定 / 常规帧',critical:i===criticalAt,
+    clue:i===criticalAt?'关键画面：'+(source[(i+1)%Math.max(1,source.length)]||'发现异常动作。'):'普通画面：人员与设备状态暂未发现决定性异常。',
+    variantEffect:i===criticalAt?(VARIANT_CHAINS[caseData.id]?.[variant%3]||'关键帧显示一处需要交叉核对的异常。'):'这一帧没有新增证据。'
+  }));
+}
+function inspectTimeline(timeline,id){
+  const frame=timeline.find(x=>x.id===id)||timeline[0];
+  return {frame:frame.frame,clue:frame.clue,critical:!!frame.critical,variantEffect:frame.variantEffect};
+}
+if(typeof globalThis!=='undefined'){globalThis.buildTimeline=buildTimeline;globalThis.inspectTimeline=inspectTimeline;}
 function canSubmitVerdict(count=cluesFound){return Number(count)>=3;}
 function submitVerdict(){
   if(!active||caseClosed)return;
