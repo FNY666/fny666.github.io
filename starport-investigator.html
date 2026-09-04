@@ -29,6 +29,7 @@ body::before{content:"";position:fixed;inset:0;background:radial-gradient(circle
 .place.done{border-color:rgba(110,255,168,.5);color:var(--green)}
 .place .pv{display:block;font-size:10px;color:var(--dim);margin-top:3px}
 .scene-desc{min-height:54px;padding:12px;border-radius:12px;border-left:3px solid var(--amber);background:#0b1a26;color:#bcd9e8;font:12px/1.7 monospace}
+.search-console{padding:11px;border:1px solid rgba(255,217,92,.28);background:rgba(23,20,12,.68);border-radius:12px}.search-console-head{display:flex;justify-content:space-between;color:var(--amber);font:11px monospace;letter-spacing:.08em}.search-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}.search-btn{min-height:54px;padding:7px;border:1px solid rgba(255,217,92,.3);border-radius:8px;background:#141b22;color:#e7dca9;font:11px monospace;cursor:pointer}.search-btn strong{display:block;color:var(--cyan);font-size:12px;margin-bottom:4px}.search-btn:disabled{opacity:.38;cursor:not-allowed}.search-empty{grid-column:1/-1;color:var(--dim);font:11px monospace;padding:8px}.search-found{padding:8px;border-left:2px solid var(--green);background:rgba(8,28,22,.72);color:#cfe6d6;font:11px/1.6 monospace}
 .clue{border:1px solid rgba(110,255,168,.25);border-radius:10px;padding:10px 12px;background:rgba(8,20,16,.6)}
 .clue h4{margin:0 0 4px;font-size:13px;color:var(--green);letter-spacing:.05em}
 .clue p{margin:0;font:12px/1.7 monospace;color:#cfe6d6}
@@ -105,7 +106,12 @@ select{width:100%;padding:10px;border-radius:10px;background:#0b1a26;color:#dff6
       </div>
       <div id="view-scene" class="view">
         <div class="places" id="places"></div>
-        <div class="scene-desc" id="sceneDesc">选择一处现场开始侦查。每处现场都藏着关键线索。</div>
+        <div class="scene-desc" id="sceneDesc">选择一处现场开始侦查。先观察，再决定使用哪种调查工具。</div>
+        <div class="search-console" id="searchConsole">
+          <div class="search-console-head"><span>调查工具 / 选择现场后使用</span><span id="searchBudget">行动 0/0</span></div>
+          <div class="search-actions" id="searchActions"><span class="search-empty">先选择现场，再决定如何搜证。不同工具会得到不同信息。</span></div>
+          <div class="search-found" id="searchFeedback">搜证终端待命。</div>
+        </div>
       </div>
       <div id="view-clues" class="view hidden"><div id="clueList"></div></div>
       <div id="view-suspects" class="view hidden"><div id="suspectList"></div></div>
@@ -120,7 +126,7 @@ select{width:100%;padding:10px;border-radius:10px;background:#0b1a26;color:#dff6
       <div class="brief" id="brief">点击「开始侦查」载入案件。</div>
       <hr>
       <div style="font:12px monospace;color:#9bc1d5">已收集线索 <b id="clueCount" style="color:var(--green)">0</b> / <span id="clueTotal">0</span></div>
-      <div class="hint">侦查要点：<br>• 走遍所有现场，别漏掉任何线索。<br>• 每个嫌疑人的陈述都要对照物证。<br>• 只有一个人是责任人，其余都有不在场证明或清白证据。<br>• 定案 = 选对责任人 + 选对动机。</div>
+      <div class="hint">侦查要点：<br>• 先选现场，再决定使用哪种搜证工具。<br>• 每案行动有限，别把预算浪费在重复调查上。<br>• 每个嫌疑人的陈述都要对照物证。<br>• 定案 = 选对责任人 + 选对动机。</div>
     </aside>
   </main>
   <div class="log" id="log">等待第一起案件。</div>
@@ -347,15 +353,69 @@ const CASES=[
    truth:"灯塔只对 7 号航线失效，远程终端来自唐澈保管的旧终端；唐澈账户收到白鲸货主预付款，白鲸又携带灯塔维护芯片并按隐藏坐标航行。沈弦的密钥被盗用，船长是执行者，唐澈负责制造无警示航道，动机是贪婪。"
  }
 ];
+if(typeof globalThis!=='undefined')globalThis.CASES=CASES;
 
 let order=[], idx=0, current=null, active=false, caseClosed=false;
 let score=0, solved=0, attempts=0;
 let visited={}, cluesFound=0, clueTotal=0, clueRates=[];
+let evidence=[], selectedLocation=null, searchPlans={}, searchedActions={}, searchUsed=0, searchBudget=0, sessionSeed=0;
 let selCulprit=null, selMotive=null;
 let best=Number(localStorage.starportInvestBest||0);
 
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 
+const SEARCH_ACTIONS=[
+  {id:'observe',label:'现场观察',hint:'看表面痕迹'},
+  {id:'scan',label:'深度扫描',hint:'找隐藏物证'},
+  {id:'record',label:'调取记录',hint:'核对时间线'}
+];
+const SEARCH_VARIANTS=[
+  '本轮变量：传感器灵敏度偏低，只有近距离扫描能确认这条证据。',
+  '本轮变量：夜班记录出现一处时间漂移，必须结合现场观察才能排除误报。',
+  '本轮变量：港区临时协议已切换，调取记录会显示不同的审计字段。'
+];
+const VARIANT_CHAINS={
+  1:['断电波形与维修工具的磁痕吻合，手动断电不是系统故障。','货舱冷端残留带有维修组常用润滑剂，进入者不是普通访客。','门禁缓存出现一次短暂回写，关键时间点被人为改动过。'],
+  6:['报废核心的序列号曾在叶舟的实验记录里出现，替换不是临时起意。','固定螺栓上的刮痕只有陶瓷工具会留下，普通安保工具不匹配。','维护层的备用钥匙在交接前被单独取出，记录没有对应工单。']
+};
+function buildCaseVariant(caseData,seed=1){
+  const copy=JSON.parse(JSON.stringify(caseData));
+  const roll=Math.abs(Number(seed)||0)%2;
+  copy.variantSeed=Math.abs(Number(seed)||0);
+  copy.variantLabel=roll?'证据链 B':'证据链 A';
+  if(copy.id===1&&roll){
+    copy.solution.motive='贪婪';
+    const loc=copy.locations.find(l=>l.key==='vera');
+    if(loc)loc.clues=loc.clues.map(c=>c.replace('给『维修组』的匿名大额转账','给『维修组』的核心预付款'));
+    copy.truth+=' 本轮变量将匿名转账解释为预付款，关键动机从抵债切换为贪婪。';
+  }
+  if(copy.id===6&&roll){
+    copy.solution.motive='贪婪';
+    const loc=copy.locations.find(l=>l.key==='lab6');
+    if(loc)loc.clues=loc.clues.map(c=>c.replace('价格足以抵消他的研究债务','报价显示他准备倒卖核心牟利'));
+    copy.truth+=' 本轮变量将外部买家线索解释为倒卖牟利，关键动机从抵债切换为贪婪。';
+  }
+  return copy;
+}
+function buildSearchPlan(caseData,seed=1){
+  const source=caseData.locations&&caseData.locations[0]||caseData;
+  const location={...source,caseId:caseData.id||source.caseId,clues:[...(source.clues||[])],searchClues:{}};
+  const variant=Math.abs(Number(seed)||0)%SEARCH_VARIANTS.length;
+  const chain=VARIANT_CHAINS[location.caseId]||SEARCH_VARIANTS;
+  const fallback='没有发现足够清晰的证据，只记录下现场状态。';
+  SEARCH_ACTIONS.forEach((action,i)=>{
+    const base=location.clues[i%Math.max(1,location.clues.length)]||fallback;
+    const effect=action.id==='scan'?chain[variant]:(i===0?'先观察物证的空间位置，再判断它是否与口供相符。':'记录暂存于调查终端，可与其他证据交叉核对。');
+    location.searchClues[action.id]={clue:action.label+'：'+base,variantEffect:effect};
+  });
+  return {location,variant,actions:SEARCH_ACTIONS.map(x=>({...x})),maxActions:Math.max(2,Math.min(6,(caseData.locations||[]).length+2))};
+}
+function resolveSearchAction(location,action,variant=0){
+  const item=location.searchClues&&location.searchClues[action];
+  if(item)return {...item,variant:Number(variant)||0};
+  const fallback=(location.clues||[])[0]||'没有发现足够清晰的证据。';
+  return {clue:String(action)+'：'+fallback,variantEffect:SEARCH_VARIANTS[Math.abs(Number(variant)||0)%SEARCH_VARIANTS.length],variant:Number(variant)||0};
+}
 function hud(){
   $('hCase').textContent=(idx+1)+'/'+order.length;
   $('hScore').textContent=score;
@@ -366,23 +426,29 @@ function hud(){
 function log(s){$('log').textContent=s;}
 
 function loadCase(){
-  current=CASES[order[idx]];
+  sessionSeed=Math.floor(Math.random()*1000000);
+  current=buildCaseVariant(CASES[order[idx]],sessionSeed);
   current={...current,locations:shuffle(current.locations.map(l=>({...l,clues:shuffle([...l.clues])}))),suspects:shuffle([...current.suspects]),motives:shuffle([...current.motives])};
-  caseClosed=false; visited={}; cluesFound=0; clueTotal=current.locations.reduce((n,l)=>n+l.clues.length,0);
-  selCulprit=null; selMotive=null;
+  caseClosed=false; visited={}; evidence=[]; selectedLocation=null; searchedActions={}; searchUsed=0;
+  searchBudget=Math.max(4,Math.min(7,current.locations.length+2));
+  searchPlans={}; current.locations.forEach(l=>{searchPlans[l.key]=buildSearchPlan({id:current.id,locations:[l]},sessionSeed+l.key.length);});
+  clueTotal=searchBudget;
   $('caseTitle').textContent=current.title;
-  $('brief').innerHTML='<b style="color:var(--cyan)">'+current.subtitle+'</b><br><br>'+current.brief;
+  $('brief').innerHTML='<b style="color:var(--cyan)">'+current.subtitle+'</b><br><span style="color:var(--amber);font-size:11px">'+current.variantLabel+'</span><br><br>'+current.brief;
   $('clueCount').textContent='0'; $('clueTotal').textContent=clueTotal;
   // places
   const pl=$('places'); pl.innerHTML='';
   current.locations.forEach(l=>{
     const b=document.createElement('button');
     b.className='place'; b.dataset.k=l.key;
-    b.innerHTML=l.name+'<span class="pv">'+l.clues.length+' 条线索</span>';
+    b.innerHTML=l.name+'<span class="pv">3 种搜证工具</span>';
     b.addEventListener('click',()=>visitPlace(l,b));
     pl.appendChild(b);
   });
-  $('sceneDesc').textContent='选择一处现场开始侦查。每处现场都藏着关键线索。';
+  $('sceneDesc').textContent='选择一处现场开始侦查。先观察，再决定使用哪种工具。';
+  $('searchBudget').textContent='行动 0/'+searchBudget;
+  $('searchActions').innerHTML='<span class="search-empty">先选择现场，再决定如何搜证。每次工具使用都会消耗行动。</span>';
+  $('searchFeedback').textContent='搜证终端待命。';
   // suspects
   const sl=$('suspectList'); sl.innerHTML='';
   current.suspects.forEach(s=>{
@@ -408,30 +474,40 @@ function loadCase(){
 
 function visitPlace(l,btn){
   if(!active)return;
-  if(!visited[l.key]){
-    visited[l.key]=true; cluesFound+=l.clues.length;
-    btn.classList.add('done');
-    $('clueCount').textContent=cluesFound;
-    log('勘查 '+l.name+'：发现 '+l.clues.length+' 条线索。');
-    renderClues();
-  }
-  $('sceneDesc').textContent=l.name+' — '+l.desc;
+  selectedLocation=l;
+  if(!visited[l.key]){visited[l.key]=true;btn.classList.add('done');}
+  $('sceneDesc').textContent=l.name+' — '+l.desc+' 选择一个工具调查，结果才会进入档案。';
+  renderSearchActions();
 }
-
+function renderSearchActions(){
+  const box=$('searchActions'); box.innerHTML='';
+  if(!selectedLocation){box.innerHTML='<span class="search-empty">先选择现场，再决定如何搜证。</span>';return;}
+  const plan=searchPlans[selectedLocation.key];
+  plan.actions.forEach(action=>{
+    const key=selectedLocation.key+':'+action.id;
+    const b=document.createElement('button'); b.className='search-btn'; b.dataset.action=action.id;
+    b.disabled=searchUsed>=searchBudget||!!searchedActions[key];
+    b.innerHTML='<strong>'+action.label+'</strong>'+action.hint+(searchedActions[key]?' · 已完成':'');
+    b.addEventListener('click',()=>searchLocation(action.id)); box.appendChild(b);
+  });
+  $('searchBudget').textContent='行动 '+searchUsed+'/'+searchBudget;
+}
+function searchLocation(action){
+  if(!active||!selectedLocation||searchUsed>=searchBudget)return;
+  const key=selectedLocation.key+':'+action;
+  if(searchedActions[key]){log('这个调查动作已经完成，换一种工具。');return;}
+  const plan=searchPlans[selectedLocation.key];
+  const result=resolveSearchAction(plan.location,action,plan.variant);
+  searchedActions[key]=true; searchUsed++; evidence.push({location:selectedLocation.name,action,clue:result.clue,effect:result.variantEffect});
+  cluesFound=evidence.length; $('clueCount').textContent=cluesFound; $('searchBudget').textContent='行动 '+searchUsed+'/'+searchBudget;
+  $('searchFeedback').innerHTML='<b style="color:var(--green)">'+result.clue+'</b><br>'+result.variantEffect;
+  log('使用'+SEARCH_ACTIONS.find(x=>x.id===action).label+'：证据已归档。');
+  renderSearchActions(); renderClues();
+}
 function renderClues(){
   const cl=$('clueList'); cl.innerHTML='';
-  let any=false;
-  current.locations.forEach(l=>{
-    if(visited[l.key]){
-      any=true;
-      l.clues.forEach(c=>{
-        const d=document.createElement('div'); d.className='clue';
-        d.innerHTML='<h4>'+l.name+'</h4><p>'+c+'</p>';
-        cl.appendChild(d);
-      });
-    }
-  });
-  if(!any) cl.innerHTML='<div class="clue"><p>还没有收集到线索。回到「现场」走访各处。</p></div>';
+  if(!evidence.length){cl.innerHTML='<div class="clue"><p>还没有收集到线索。进入现场并选择调查工具。</p></div>';return;}
+  evidence.forEach(e=>{const d=document.createElement('div');d.className='clue';d.innerHTML='<h4>'+e.location+' · '+e.action+'</h4><p>'+e.clue+'</p><p style="color:var(--amber)">'+e.effect+'</p>';cl.appendChild(d);});
 }
 
 function buildReviewReport(metrics){
@@ -447,13 +523,13 @@ function buildReviewReport(metrics){
     {name:'林七',tag:'第一次玩',rating:solvedRate>=.75?4:3,text:clueText,want:'希望：发现线索时有更明显的现场反馈。'},
     {name:'折光',tag:'找隐藏线索',rating:clueRate>=.9?4:3,text:'线索内容能读懂，但答案常被直接写在描述里，推理空间不够。',want:'希望：把“结论”藏起来，让玩家自己连证据。'},
     {name:'快班',tag:'十分钟试玩',rating:crowded?3:4,text:crowded?'错误定案后需要重走流程，节奏会被打断。':'流程清楚，但每案都是同一种调查节奏。',want:'希望：加入短案或更快的复盘入口。'},
-    {name:'硬核档案员',tag:'重玩玩家',rating:solvedRate===1&&clueRate>=.9?3:4,text:'八案数量比原型好，但案件答案固定，第二轮仍然只是背答案。',want:'希望：加入变量、分支证据或不同结局。'},
+    {name:'硬核档案员',tag:'重玩玩家',rating:solvedRate===1&&clueRate>=.9?3:4,text:'八案数量比原型好，但只有部分案件会改变关键动机，第二轮仍有背答案的成分。',want:'希望：让每个案件的变量都改变证据链或结局。'},
     {name:'小屏侦查',tag:'手机玩家',rating:3,text:'信息密度可以接受，但现场、线索和定案之间需要来回切页。',want:'希望：在同一屏保留当前证据摘要和下一步动作。'}
   ];
   const experts=[
-    {name:'机制评审',tag:'玩法结构',rating:solvedRate>=.75?3:2,text:'核心循环已经成立，但点击现场只是打开文字，缺少观察、取证和判断动作。',want:'优先：让至少一个案件拥有可操作的搜证环节。'},
-    {name:'叙事评审',tag:'案件设计',rating:clueRate>=.9?3:2,text:'八案扩大了内容量，不过动机选项与线索结构高度重复，案件个性还不够。',want:'优先：为每案加入独有的叙事机制，而不是只换名词。'},
-    {name:'可用性评审',tag:'界面与移动端',rating:3,text:'视觉识别比旧版清楚，但结案报告才出现评审信息，过程中的方向反馈仍然不足。',want:'优先：在调查过程中持续显示证据进度与明确的下一步。'}
+    {name:'机制评审',tag:'玩法结构',rating:solvedRate>=.75?3:2,text:'搜证工具已经需要玩家做选择，但三种工具目前仍主要返回文字，缺少画面变化、放大和时间线操作。',want:'优先：把至少一种工具做成可观察、可操作的证据场景。'},
+    {name:'叙事评审',tag:'案件设计',rating:clueRate>=.9?3:2,text:'八案扩大了内容量，不过只有部分案件会改变变量，动机选项与线索结构仍然重复。',want:'优先：让每案变量都改变证据链，而不是只改变一句提示。'},
+    {name:'可用性评审',tag:'界面与移动端',rating:3,text:'搜证反馈已经出现，但现场、线索和定案仍需来回切页，行动预算的风险提示还不够醒目。',want:'优先：在工作台固定显示行动预算、当前证据和下一步动作。'}
   ];
   const average=[...playerBase,...experts].reduce((n,x)=>n+x.rating,0)/8;
   return {players:playerBase.map(x=>({...x,kind:'player'})),experts:experts.map(x=>({...x,kind:'expert'})),average,critical:solvedRate<.75?'玩家容易在证据不足时失去方向，先修调查反馈。':clueRate<.9?'部分线索会被漏掉，先修现场引导。':'案件逻辑可解，但重复游玩仍缺乏真正变化。',next:'下一步只做一件事：给案件加入可验证的变量，让同一案不能靠背答案通关。',metrics:{total,solved,score,attempts,clueRate}};
@@ -467,8 +543,10 @@ function renderReviewReport(report){
   $('reviewWrap').classList.remove('hidden');
 }
 
+function canSubmitVerdict(count=cluesFound){return Number(count)>=3;}
 function submitVerdict(){
   if(!active||caseClosed)return;
+  if(!canSubmitVerdict()){log('证据不足：至少归档 3 条证据，才能提交定案。');return;}
   if(!selCulprit){log('先选择责任人。');return;}
   if(!selMotive){log('先选择动机。');return;}
   attempts++;
