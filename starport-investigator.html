@@ -29,7 +29,7 @@ body::before{content:"";position:fixed;inset:0;background:radial-gradient(circle
 .place.done{border-color:rgba(110,255,168,.5);color:var(--green)}
 .place .pv{display:block;font-size:10px;color:var(--dim);margin-top:3px}
 .scene-desc{min-height:54px;padding:12px;border-radius:12px;border-left:3px solid var(--amber);background:#0b1a26;color:#bcd9e8;font:12px/1.7 monospace}
-.search-console{padding:11px;border:1px solid rgba(255,217,92,.28);background:rgba(23,20,12,.68);border-radius:12px}.search-console-head{display:flex;justify-content:space-between;color:var(--amber);font:11px monospace;letter-spacing:.08em}.search-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}.search-btn{min-height:54px;padding:7px;border:1px solid rgba(255,217,92,.3);border-radius:8px;background:#141b22;color:#e7dca9;font:11px monospace;cursor:pointer}.search-btn strong{display:block;color:var(--cyan);font-size:12px;margin-bottom:4px}.search-btn:disabled{opacity:.38;cursor:not-allowed}.search-empty{grid-column:1/-1;color:var(--dim);font:11px monospace;padding:8px}.search-found{padding:8px;border-left:2px solid var(--green);background:rgba(8,28,22,.72);color:#cfe6d6;font:11px/1.6 monospace}.timeline-view{padding:9px;border:1px solid rgba(99,247,224,.22);background:rgba(5,15,25,.92);border-radius:9px}.timeline-title{display:flex;justify-content:space-between;color:var(--cyan);font:11px monospace}.timeline-rail{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin:12px 0 8px}.timeline-point{min-height:44px;padding:6px 3px;border:1px solid rgba(143,213,255,.28);border-radius:6px;background:#0b1a26;color:#9fc0ca;font:10px monospace;cursor:pointer}.timeline-point:hover,.timeline-point:focus-visible{border-color:var(--amber);color:var(--amber);outline:none}.timeline-readout{min-height:54px;padding:8px;background:#08151f;border-left:2px solid var(--amber);color:#bcd9e8;font:11px/1.55 monospace}.timeline-hint{color:#7897a8;font:10px/1.5 monospace;margin-top:7px}
+.search-console{padding:11px;border:1px solid rgba(255,217,92,.28);background:rgba(23,20,12,.68);border-radius:12px}.search-console-head{display:flex;justify-content:space-between;color:var(--amber);font:11px monospace;letter-spacing:.08em}.search-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}.search-btn{min-height:54px;padding:7px;border:1px solid rgba(255,217,92,.3);border-radius:8px;background:#141b22;color:#e7dca9;font:11px monospace;cursor:pointer}.search-btn strong{display:block;color:var(--cyan);font-size:12px;margin-bottom:4px}.search-btn:disabled{opacity:.38;cursor:not-allowed}.search-empty{grid-column:1/-1;color:var(--dim);font:11px monospace;padding:8px}.search-found{padding:8px;border-left:2px solid var(--green);background:rgba(8,28,22,.72);color:#cfe6d6;font:11px/1.6 monospace}.timeline-view{padding:9px;border:1px solid rgba(99,247,224,.22);background:rgba(5,15,25,.92);border-radius:9px}.timeline-title{display:flex;justify-content:space-between;color:var(--cyan);font:11px monospace}.timeline-rail{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin:12px 0 8px}.timeline-point{min-height:44px;padding:6px 3px;border:1px solid rgba(143,213,255,.28);border-radius:6px;background:#0b1a26;color:#9fc0ca;font:10px monospace;cursor:pointer}.timeline-point:hover,.timeline-point:focus-visible{border-color:var(--amber);color:var(--amber);outline:none}.timeline-readout{min-height:54px;padding:8px;background:#08151f;border-left:2px solid var(--amber);color:#bcd9e8;font:11px/1.55 monospace}.timeline-hint{color:#7897a8;font:10px/1.5 monospace;margin-top:7px}.evidence-view{padding:9px;border:1px solid rgba(255,123,199,.28);background:rgba(22,8,22,.88);border-radius:9px}.evidence-regions{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin:10px 0 7px}.evidence-region{min-height:48px;padding:6px 3px;border:1px solid rgba(255,123,199,.3);border-radius:6px;background:#17101e;color:#f0bfdc;font:10px monospace;cursor:pointer}.evidence-region:hover,.evidence-region:focus-visible{border-color:var(--pink);outline:none}.evidence-region.selected{background:#3a1635;border-color:var(--pink);color:#fff}.evidence-readout{min-height:56px;padding:8px;border-left:2px solid var(--pink);background:#160d19;color:#e6cfe0;font:11px/1.55 monospace}.evidence-targets{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}.evidence-target{padding:7px 9px;border:1px solid rgba(255,217,92,.3);border-radius:999px;background:#211a0c;color:#f1dfa0;font:10px monospace;cursor:pointer}.evidence-target:disabled{opacity:.42;cursor:not-allowed}
 .clue{border:1px solid rgba(110,255,168,.25);border-radius:10px;padding:10px 12px;background:rgba(8,20,16,.6)}
 .clue h4{margin:0 0 4px;font-size:13px;color:var(--green);letter-spacing:.05em}
 .clue p{margin:0;font:12px/1.7 monospace;color:#cfe6d6}
@@ -116,6 +116,13 @@ select{width:100%;padding:10px;border-radius:10px;background:#0b1a26;color:#dff6
             <div class="timeline-rail" id="timelineRail"></div>
             <div class="timeline-readout" id="timelineReadout">选择一个时间点查看画面。</div>
             <div class="timeline-hint">不要只看时间戳：找到画面里的异常，再把它归档为证据。</div>
+          </div>
+          <div class="evidence-view hidden" id="evidenceView">
+            <div class="timeline-title"><span>物证放大器 / TRACE LAB</span><span id="evidenceStatus">未接入</span></div>
+            <div class="evidence-regions" id="evidenceRegions"></div>
+            <div class="evidence-readout" id="evidenceReadout">选择一个物证区域进行放大。</div>
+            <div class="evidence-targets" id="evidenceTargets"></div>
+            <div class="timeline-hint">先看物证，再选嫌疑人样本。匹配成功才会归档。</div>
           </div>
         </div>
       </div>
@@ -364,7 +371,7 @@ if(typeof globalThis!=='undefined')globalThis.CASES=CASES;
 let order=[], idx=0, current=null, active=false, caseClosed=false;
 let score=0, solved=0, attempts=0;
 let visited={}, cluesFound=0, clueTotal=0, clueRates=[];
-let evidence=[], selectedLocation=null, searchPlans={}, searchedActions={}, timelineSeen={}, timelines={}, activeTimeline=null, searchUsed=0, searchBudget=0, sessionSeed=0;
+let evidence=[], selectedLocation=null, searchPlans={}, searchedActions={}, timelineSeen={}, timelines={}, evidenceInspections={}, evidenceSeen={}, activeTimeline=null, activeEvidence=null, selectedEvidenceItem=null, evidenceMessage='', searchUsed=0, searchBudget=0, sessionSeed=0;
 let selCulprit=null, selMotive=null;
 let best=Number(localStorage.starportInvestBest||0);
 
@@ -373,8 +380,31 @@ function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random
 const SEARCH_ACTIONS=[
   {id:'observe',label:'现场观察',hint:'看表面痕迹'},
   {id:'scan',label:'深度扫描',hint:'找隐藏物证'},
-  {id:'record',label:'调取记录',hint:'核对时间线'}
+  {id:'record',label:'调取记录',hint:'核对时间线'},
+  {id:'trace',label:'物证放大',hint:'比对指纹与刮痕'}
 ];
+const EVIDENCE_LOCATIONS={1:'cargo',6:'dome'};
+const EVIDENCE_PROFILES={
+  1:{items:[
+    {id:'fingerprint',kind:'fingerprint',label:'冷冻核心外壳',detail:'放大后看到一组不完整指纹，拇指边缘有维修手套留下的导电粉末。',matches:['老周']},
+    {id:'scratch',kind:'scratch',label:'核心槽螺栓',detail:'螺栓上的弧形刮痕与货舱检修工单使用的陶瓷工具吻合。',matches:['老周']},
+    {id:'fiber',kind:'fiber',label:'门禁读卡器',detail:'读卡器边缘有深色纤维，但无法单独锁定某个嫌疑人。',matches:[]}
+  ]},
+  6:{items:[
+    {id:'fingerprint',kind:'fingerprint',label:'净化核心外壳',detail:'放大后发现实验室专用树脂指纹膜，样本纹路与叶舟的工具箱吻合。',matches:['叶舟']},
+    {id:'scratch',kind:'scratch',label:'固定螺栓',detail:'螺栓刮痕呈陶瓷扳手的窄弧形，和叶舟登记的备用工具一致。',matches:['叶舟']},
+    {id:'residue',kind:'residue',label:'核心接口残留',detail:'接口残留实验舱封装胶，来源范围仍然过宽。',matches:[]}
+  ]}
+};
+function buildEvidenceInspection(caseData,seed=1){
+  const profile=EVIDENCE_PROFILES[caseData.id]||{items:[{id:'surface',kind:'surface',label:'现场表面',detail:'放大后没有足够清晰的个人特征。',matches:[]}]};
+  return {caseId:caseData.id,variant:Math.abs(Number(seed)||0)%3,items:profile.items.map(x=>({...x,matches:[...x.matches]}))};
+}
+function compareEvidence(item,suspect,inspection){
+  const matched=!!(item&&item.matches&&item.matches.includes(suspect));
+  return {matched,clue:matched?item.label+'的物证纹路与'+suspect+'的样本匹配：'+item.detail:item.label+'与'+suspect+'的样本不匹配，不能归档为个人证据。',variantEffect:matched?'交叉核验通过，物证可以进入证据链。':'这只是一次排除，不增加证据数量。'};
+}
+if(typeof globalThis!=='undefined'){globalThis.buildEvidenceInspection=buildEvidenceInspection;globalThis.compareEvidence=compareEvidence;}
 const SEARCH_VARIANTS=[
   '本轮变量：传感器灵敏度偏低，只有近距离扫描能确认这条证据。',
   '本轮变量：夜班记录出现一处时间漂移，必须结合现场观察才能排除误报。',
@@ -435,9 +465,9 @@ function loadCase(){
   sessionSeed=Math.floor(Math.random()*1000000);
   current=buildCaseVariant(CASES[order[idx]],sessionSeed);
   current={...current,locations:shuffle(current.locations.map(l=>({...l,clues:shuffle([...l.clues])}))),suspects:shuffle([...current.suspects]),motives:shuffle([...current.motives])};
-  caseClosed=false; visited={}; evidence=[]; selectedLocation=null; searchedActions={}; timelineSeen={}; activeTimeline=null; searchUsed=0;
+  caseClosed=false; visited={}; evidence=[]; selectedLocation=null; searchedActions={}; timelineSeen={}; evidenceSeen={}; activeTimeline=null; activeEvidence=null; selectedEvidenceItem=null; evidenceMessage=''; searchUsed=0;
   searchBudget=Math.max(4,Math.min(7,current.locations.length+2));
-  searchPlans={}; timelines={}; const timelineKey=getTimelineLocation(current); current.locations.forEach(l=>{searchPlans[l.key]=buildSearchPlan({id:current.id,locations:[l]},sessionSeed+l.key.length); if(l.key===timelineKey)timelines[l.key]=buildTimeline(current,l.key,sessionSeed+l.key.length);});
+  searchPlans={}; timelines={}; evidenceInspections={}; const timelineKey=getTimelineLocation(current); const evidenceKey=EVIDENCE_LOCATIONS[current.id]; current.locations.forEach(l=>{searchPlans[l.key]=buildSearchPlan({id:current.id,locations:[l]},sessionSeed+l.key.length); if(l.key===timelineKey)timelines[l.key]=buildTimeline(current,l.key,sessionSeed+l.key.length); if(l.key===evidenceKey)evidenceInspections[l.key]=buildEvidenceInspection(current,sessionSeed+l.key.length);});
   clueTotal=searchBudget;
   $('caseTitle').textContent=current.title;
   $('brief').innerHTML='<b style="color:var(--cyan)">'+current.subtitle+'</b><br><span style="color:var(--amber);font-size:11px">'+current.variantLabel+'</span><br><br>'+current.brief;
@@ -456,6 +486,7 @@ function loadCase(){
   $('searchActions').innerHTML='<span class="search-empty">先选择现场，再决定如何搜证。每次工具使用都会消耗行动。</span>';
   $('searchFeedback').textContent='搜证终端待命。';
   $('timelineView').classList.add('hidden'); $('timelineRail').innerHTML=''; $('timelineReadout').textContent='选择一个时间点查看画面。'; $('timelineStatus').textContent='未接入';
+  $('evidenceView').classList.add('hidden'); $('evidenceRegions').innerHTML=''; $('evidenceTargets').innerHTML=''; $('evidenceReadout').textContent='选择一个物证区域进行放大。'; $('evidenceStatus').textContent='未接入';
   // suspects
   const sl=$('suspectList'); sl.innerHTML='';
   current.suspects.forEach(s=>{
@@ -483,6 +514,7 @@ function visitPlace(l,btn){
   if(!active)return;
   selectedLocation=l;
   activeTimeline=(timelines[l.key]&&searchedActions[l.key+':scan'])?timelines[l.key]:null;
+  activeEvidence=(evidenceInspections[l.key]&&searchedActions[l.key+':trace'])?evidenceInspections[l.key]:null;
   if(!visited[l.key]){visited[l.key]=true;btn.classList.add('done');}
   $('sceneDesc').textContent=l.name+' — '+l.desc+' 选择一个工具调查，结果才会进入档案。';
   renderSearchActions();
@@ -507,18 +539,44 @@ function inspectCurrentTimeline(id){
     timelineSeen[selectedLocation.key+':'+id]=true; evidence.push({location:selectedLocation.name,action:'录像 '+frame.time,clue:result.clue,effect:result.variantEffect}); updateEvidenceHud(); renderClues(); log('关键帧已归档：录像出现决定性异常。');
   }else if(result.critical){log('关键帧已归档，继续交叉核对其他证据。');}else{log('普通帧：没有新增证据，继续查看其他时间点。');}
 }
+function renderEvidence(){
+  const view=$('evidenceView'); const inspection=selectedLocation&&evidenceInspections[selectedLocation.key];
+  if(!inspection){view.classList.add('hidden');return;}
+  view.classList.remove('hidden'); const unlocked=!!searchedActions[selectedLocation.key+':trace']; $('evidenceStatus').textContent=unlocked?'已接入 · 选择物证':'先接入物证';
+  const regions=$('evidenceRegions'); regions.innerHTML='';
+  inspection.items.forEach(item=>{const b=document.createElement('button');b.className='evidence-region'+(selectedEvidenceItem?.id===item.id?' selected':'');b.dataset.item=item.id;b.disabled=!unlocked;b.textContent=item.label;b.addEventListener('click',()=>selectEvidenceItem(item.id));regions.appendChild(b);});
+  if(!unlocked){$('evidenceReadout').textContent='选择“物证放大”接入样本，再点击物证区域。';$('evidenceTargets').innerHTML='';return;}
+  if(!selectedEvidenceItem){$('evidenceReadout').textContent='选择一个物证区域进行放大。';$('evidenceTargets').innerHTML='';return;}
+  $('evidenceReadout').innerHTML='<b style="color:var(--pink)">'+selectedEvidenceItem.label+' / '+selectedEvidenceItem.kind+'</b><br>'+selectedEvidenceItem.detail+(evidenceMessage?'<br><span style="color:var(--green)">'+evidenceMessage+'</span>':'');
+  const targets=$('evidenceTargets'); targets.innerHTML='<span style="color:#7897a8;font:10px monospace;width:100%">选择样本进行比对：</span>';
+  current.suspects.forEach(s=>{const b=document.createElement('button');b.className='evidence-target';b.dataset.target=s.name;b.textContent=s.name+'样本';b.disabled=!!evidenceSeen[selectedLocation.key+':'+selectedEvidenceItem.id+':'+s.name];b.addEventListener('click',()=>compareCurrentEvidence(s.name));targets.appendChild(b);});
+}
+function selectEvidenceItem(id){
+  if(!activeEvidence)return;
+  selectedEvidenceItem=activeEvidence.items.find(x=>x.id===id)||null; evidenceMessage=''; renderEvidence();
+}
+function compareCurrentEvidence(suspect){
+  if(!active||!activeEvidence||!selectedEvidenceItem)return;
+  const result=compareEvidence(selectedEvidenceItem,suspect,activeEvidence); const key=selectedLocation.key+':'+selectedEvidenceItem.id+':'+suspect;
+  evidenceSeen[key]=true; evidenceMessage=(result.matched?'匹配成功：证据已归档。':'样本不匹配：仅作为排除记录。'); $('evidenceReadout').innerHTML='<b style="color:'+(result.matched?'var(--green)':'var(--pink)')+'">'+(result.matched?'匹配成功':'样本不匹配')+'</b><br>'+result.clue+'<br><span style="color:var(--amber)">'+result.variantEffect+'</span>';
+  if(result.matched&&!evidence.some(x=>x.traceKey===selectedLocation.key+':'+selectedEvidenceItem.id)){
+    evidence.push({location:selectedLocation.name,action:'物证比对',clue:result.clue,effect:result.variantEffect,traceKey:selectedLocation.key+':'+selectedEvidenceItem.id}); updateEvidenceHud(); renderClues(); log('物证比对成功：匹配结果已归档。');
+  }else if(result.matched){log('这条物证已经归档。');}else{log('比对完成：排除该样本，不增加证据。');}
+  renderEvidence();
+}
 function renderSearchActions(){
   const box=$('searchActions'); box.innerHTML='';
-  if(!selectedLocation){box.innerHTML='<span class="search-empty">先选择现场，再决定如何搜证。</span>';renderTimeline();return;}
+  if(!selectedLocation){box.innerHTML='<span class="search-empty">先选择现场，再决定如何搜证。</span>';renderTimeline();renderEvidence();return;}
   const plan=searchPlans[selectedLocation.key];
   plan.actions.forEach(action=>{
     const key=selectedLocation.key+':'+action.id;
+    const available=action.id!=='trace'||!!evidenceInspections[selectedLocation.key];
     const b=document.createElement('button'); b.className='search-btn'; b.dataset.action=action.id;
-    b.disabled=searchUsed>=searchBudget||!!searchedActions[key];
-    b.innerHTML='<strong>'+action.label+'</strong>'+action.hint+(searchedActions[key]?' · 已完成':'');
+    b.disabled=!available||searchUsed>=searchBudget||!!searchedActions[key];
+    b.innerHTML='<strong>'+action.label+'</strong>'+(available?action.hint:'本案无可比对样本')+(searchedActions[key]?' · 已完成':'');
     b.addEventListener('click',()=>searchLocation(action.id)); box.appendChild(b);
   });
-  $('searchBudget').textContent='行动 '+searchUsed+'/'+searchBudget; renderTimeline();
+  $('searchBudget').textContent='行动 '+searchUsed+'/'+searchBudget; renderTimeline(); renderEvidence();
 }
 function searchLocation(action){
   if(!active||!selectedLocation||searchUsed>=searchBudget)return;
@@ -527,6 +585,9 @@ function searchLocation(action){
   searchedActions[key]=true; searchUsed++;
   if(action==='scan'&&timelines[selectedLocation.key]){
     activeTimeline=timelines[selectedLocation.key]; $('searchFeedback').innerHTML='<b style="color:var(--cyan)">录像接入完成。</b><br>现在逐帧查看，不要只看第一眼。'; log('深度扫描：录像已接入，选择关键时间点。'); renderSearchActions(); return;
+  }
+  if(action==='trace'&&evidenceInspections[selectedLocation.key]){
+    activeEvidence=evidenceInspections[selectedLocation.key]; selectedEvidenceItem=null; $('searchFeedback').innerHTML='<b style="color:var(--pink)">物证样本接入完成。</b><br>点击一个区域，再和嫌疑人样本比对。'; log('物证放大：样本已接入，选择物证区域。'); renderSearchActions(); return;
   }
   const plan=searchPlans[selectedLocation.key]; const result=resolveSearchAction(plan.location,action,plan.variant);
   evidence.push({location:selectedLocation.name,action,clue:result.clue,effect:result.variantEffect}); updateEvidenceHud();
@@ -562,7 +623,7 @@ function buildReviewReport(metrics){
     {name:'可用性评审',tag:'界面与移动端',rating:3,text:'搜证反馈已经出现，但现场、线索和定案仍需来回切页，行动预算的风险提示还不够醒目。',want:'优先：在工作台固定显示行动预算、当前证据和下一步动作。'}
   ];
   const average=[...playerBase,...experts].reduce((n,x)=>n+x.rating,0)/8;
-  return {players:playerBase.map(x=>({...x,kind:'player'})),experts:experts.map(x=>({...x,kind:'expert'})),average,critical:solvedRate<.75?'玩家容易在证据不足时失去方向，先修调查反馈。':clueRate<.9?'部分线索会被漏掉，先修现场引导。':'案件逻辑可解，但重复游玩仍缺乏真正变化。',next:'下一步只做一件事：给案件加入可验证的变量，让同一案不能靠背答案通关。',metrics:{total,solved,score,attempts,clueRate}};
+  return {players:playerBase.map(x=>({...x,kind:'player'})),experts:experts.map(x=>({...x,kind:'expert'})),average,critical:solvedRate<.75?'玩家容易在证据不足时失去方向，先修调查反馈。':clueRate<.9?'部分线索会被漏掉，先修现场引导。':'案件逻辑可解，但物证比对结果还没有进入定案判定。',next:'下一步只做一件事：让物证比对结果真正改变可选推理或结局，而不只是增加证据数量。',metrics:{total,solved,score,attempts,clueRate}};
 }
 
 function renderReviewReport(report){

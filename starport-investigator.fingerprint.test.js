@@ -1,0 +1,25 @@
+const assert = require('assert');
+const fs = require('fs');
+const vm = require('vm');
+const html = fs.readFileSync(__dirname + '/starport-investigator.html', 'utf8');
+const source = html.match(/<script>([\s\S]*?)<\/script>/)[1];
+const elements = new Proxy({}, {get(target,id){
+  if(!target[id]) target[id]={textContent:'',innerHTML:'',value:'',style:{},dataset:{},classList:{add(){},remove(){},toggle(){}},addEventListener(){},querySelectorAll(){return []}};
+  return target[id];
+}});
+const document={getElementById:id=>elements[id],querySelectorAll:()=>[]};
+const sandbox={document,localStorage:{starportInvestBest:'0'},location:{href:''},console,Math,Set,Array,Number,String};
+vm.createContext(sandbox); vm.runInContext(source,sandbox);
+assert.strictEqual(typeof sandbox.buildEvidenceInspection,'function','evidence inspection builder must exist');
+assert.strictEqual(typeof sandbox.compareEvidence,'function','evidence comparison must exist');
+const inspection=sandbox.buildEvidenceInspection(sandbox.CASES.find(x=>x.id===1),17);
+const fp=inspection.items.find(x=>x.kind==='fingerprint');
+const match=sandbox.compareEvidence(fp,'老周',inspection);
+const miss=sandbox.compareEvidence(fp,'凯拉',inspection);
+assert.strictEqual(match.matched,true,'correct suspect sample must match');
+assert.strictEqual(miss.matched,false,'wrong suspect sample must not match');
+assert.ok(match.clue && match.clue.length>8,'matched comparison must yield an evidence clue');
+assert.ok(match.variantEffect && match.variantEffect.includes('证据链'),'matched comparison must explain chain impact');
+const inspection6=sandbox.buildEvidenceInspection(sandbox.CASES.find(x=>x.id===6),29);
+assert.ok(inspection6.items.some(x=>x.kind==='fingerprint'),'second case must also expose fingerprint evidence');
+console.log('FINGERPRINT-BEHAVIOR-OK');
