@@ -676,7 +676,7 @@ function buildReviewReport(metrics){
     {name:'可用性评审',tag:'界面与移动端',rating:3,text:'推理面板会显示已确认嫌疑人，结案反馈区分证据闭合；物证区域和样本按钮在小屏仍需要更强层级。',want:'优先：强化物证放大时的视觉焦点和匹配反馈。'}
   ];
   const average=[...playerBase,...experts].reduce((n,x)=>n+x.rating,0)/8;
-  return {players:playerBase.map(x=>({...x,kind:'player'})),experts:experts.map(x=>({...x,kind:'expert'})),average,critical:solvedRate<.75?'玩家容易在证据不足时失去方向，先修调查反馈。':clueRate<.9?'部分线索会被漏掉，先修现场引导。':'案件逻辑可解，但物证比对结果还没有进入定案判定。',next:'下一步只做一件事：让物证比对结果真正改变可选推理或结局，而不只是增加证据数量。',metrics:{total,solved,score,attempts,clueRate}};
+  return {players:playerBase.map(x=>({...x,kind:'player'})),experts:experts.map(x=>({...x,kind:'expert'})),average,critical:solvedRate<.75?'玩家容易在证据不足时失去方向，先修调查反馈。':clueRate<.9?'部分线索会被漏掉，先修现场引导。':'案件逻辑可解，但不同案件的物证工具和角色反应还不够差异化。',next:'下一步只做一件事：让每个案件的物证证据与角色反应、动机和结局形成独特链路。',metrics:{total,solved,score,attempts,clueRate}};
 }
 
 function renderReviewReport(report){

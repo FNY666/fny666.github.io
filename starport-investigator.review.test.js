@@ -39,4 +39,6 @@ assert.ok(report.experts.every(x => x.kind === 'expert'), 'expert reviews must b
 assert.ok(report.critical && report.critical.length > 20, 'report must name the critical issue');
 assert.ok(report.next && report.next.length > 10, 'report must name one next priority');
 assert.ok(report.players.every(x => Number.isInteger(x.rating) && x.rating >= 1 && x.rating <= 5), 'ratings must be 1-5');
+assert.ok(!report.critical.includes('物证比对结果还没有进入定案判定'), 'review must not claim evidence is disconnected from verdict');
+assert.ok(!report.next.includes('不只是增加证据数量'), 'review must not describe the old evidence-only limitation');
 console.log('REVIEW-BEHAVIOR-OK');
