@@ -1,4 +1,51 @@
-<!doctype html>
+from html import escape
+from pathlib import Path
+import json
+
+ROOT = Path(__file__).parent
+games = json.loads((ROOT / 'games.json').read_text())
+CATEGORY = {
+    'ARCADE':'格斗', 'MAIN':'格斗', 'VERSUS':'格斗', 'SCORE':'格斗', 'LAB':'格斗',
+    'NOVEL':'叙事', 'HERO':'叙事', 'RUN':'动作', 'DEFENSE':'策略', 'MUSIC':'节奏',
+    'PUZZLE':'解谜', 'SIMULATION':'模拟', 'SALVAGE':'探索', 'TRADING':'经营',
+    'TACTICAL':'策略', 'STEALTH':'潜行', 'NEW':'生存', 'RACING':'竞速',
+    'INSPECTION':'模拟', 'RESCUE':'救援', 'DINER':'经营', 'COMPANION':'休闲',
+    'PINBALL':'街机', 'SPORTS':'运动', 'SHOOTER':'射击', 'EXPLORER':'探索', 'CASE':'推理',
+}
+for item in games:
+    item['category'] = CATEGORY.get(item['pill'], item['pill'])
+by_name = {item['name']: item for item in games}
+
+def get(name):
+    return by_name[name]
+
+def attrs(item):
+    return {k: escape(str(item[k]), quote=True) for k in ('url','name','tag','desc','category')}
+
+def signal_card(item, index):
+    a = attrs(item)
+    return f'''<a class="signal-card cab" href="{a['url']}" data-category="{a['category']}" data-name="{a['name']}" data-tag="{a['tag']}" aria-label="锁定并进入 {a['name']}">
+      <span class="signal-id">SIG-{index:02d}</span><span class="signal-led"></span><span class="signal-type">{a['category']} / {a['tag']}</span><strong>{a['name']}</strong><small>{a['desc']}</small><span class="signal-open">LOCK <b>↗</b></span>
+    </a>'''
+
+def relay_card(item, index):
+    a = attrs(item)
+    return f'''<a class="relay-card cab" href="{a['url']}" data-category="{a['category']}" data-name="{a['name']}" data-tag="{a['tag']}" aria-label="锁定并进入 {a['name']}">
+      <span class="relay-id">SIG-{index:02d}</span><span><em>{a['category']} · {a['tag']}</em><strong>{a['name']}</strong><small>{a['desc']}</small></span><b class="relay-arrow">↗</b>
+    </a>'''
+
+hero_game = get('霓虹幸存者')
+featured = [(get('星港调查员'), 29), (get('星港调度'), 13), (get('量子弹珠'), 24)]
+categories = []
+for item in games:
+    if item['category'] not in categories:
+        categories.append(item['category'])
+filters = ''.join(f'<button class="filter" data-filter="{escape(c)}">{escape(c)}</button>' for c in categories)
+signals = ''.join(signal_card(item, i) for i, item in enumerate(games, 1))
+relays = ''.join(relay_card(item, index) for item, index in featured)
+hero = attrs(hero_game)
+
+html = r'''<!doctype html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
@@ -47,75 +94,11 @@ body:after{content:"";position:fixed;z-index:4;inset:0;pointer-events:none;opaci
   <header class="hud-top"><a class="brand" href="#top" aria-label="星港游戏厅首页"><span class="brand-core">09</span><span class="brand-copy"><b>星港游戏厅</b><small>STARPORT / SIGNAL CONTROL</small></span></a><div class="top-status"><span>SECTOR 09 · UPLINK 77.21</span><span><i class="online-dot"></i>SYSTEM <b>ONLINE</b></span></div></header>
   <main id="top">
     <section class="control-room" aria-labelledby="hero-title">
-      <div class="left-deck"><div class="eyebrow">UNAUTHORIZED FUN / PORT 09</div><h1 id="hero-title">找到你的<br><span>下一次跃迁</span></h1><p class="lede">星港深夜信号站已上线。<br>这里有 <b>29 枚游戏信号</b>，每一枚都通往一段不同的旅程。</p><div class="actions"><a class="action primary" href="#signals">扫描信号 <span>↓</span></a><a class="action" href="neon-survivors.html">直接接入 <span>↗</span></a></div><div class="readouts"><div class="readout"><b>29</b><small>ACTIVE NODES</small></div><div class="readout"><b>24 / 7</b><small>UPLINK STATUS</small></div><div class="readout"><b>01 COIN</b><small>INITIALIZE</small></div><div class="readout"><b>12ms</b><small>LATENCY</small></div></div></div>
-      <div class="core-stage"><span class="stage-caption">HOLOGRAPHIC COMMAND DECK / LIVE FEED</span><span class="stage-coordinates">X 09.771 · Y 44.203 · Z 00.013</span><div class="stage-cross"></div><div class="orbit-core"><div class="orbit-ring"></div><div class="orbit-ring two"></div><div class="orbit-ring three"></div><i class="node a">SIG-29 / CASE</i><i class="node b">SIG-13 / SIM</i><i class="node c">SIG-24 / ARCADE</i><div class="telemetry left"><b>FIELD / NIGHT-09</b>PARTICLES 128<br>DRIFT 0.0037</div><div class="telemetry right"><b>CORE / STABLE</b>WAVEFORM ∿ 98.4%<br>LOCKS 03 / 29</div><div class="telemetry bottom"><b>SCAN BEAM ∿∿∿</b>SEARCHING FOR PLAYERS</div><div class="core-sphere"></div><div class="core-eye">SIGNAL<br><small>READY TO LOCK</small></div><a class="signal-console cab" href="neon-survivors.html" data-name="霓虹幸存者" data-tag="NEON SURVIVORS" aria-label="锁定并进入霓虹幸存者"><span class="lock-mark">⌁</span><span><small>TARGET LOCKED / NEW SIGNAL</small><strong id="lock-name">霓虹幸存者</strong></span><em>READY ↗</em></a></div></div>
-      <aside class="right-deck"><div class="deck-label"><span>MISSION CONTROL / 09</span><b><i class="online-dot"></i>LIVE</b></div><div class="system-box"><h2>CORE TELEMETRY</h2><p>全息信号核心正在扫描可玩的世界。悬停或触摸任意信号，改变锁定目标。</p><div class="bar"><i></i></div><div class="metric-line"><span>SCAN PROGRESS</span><b>76.2%</b></div></div><div><div class="relay-title">RECOMMENDED RELAYS / 03</div><div class="relay-list"><a class="relay-card cab" href="https://fny666.github.io/starport-investigator.html" data-category="推理" data-name="星港调查员" data-tag="STARPORT INVESTIGATOR" aria-label="锁定并进入 星港调查员">
-      <span class="relay-id">SIG-29</span><span><em>推理 · STARPORT INVESTIGATOR</em><strong>星港调查员</strong><small>侦探推理 · 现场 / 物证 / 定案</small></span><b class="relay-arrow">↗</b>
-    </a><a class="relay-card cab" href="https://fny666.github.io/starport-transit.html" data-category="模拟" data-name="星港调度" data-tag="STARPORT TRANSIT" aria-label="锁定并进入 星港调度">
-      <span class="relay-id">SIG-13</span><span><em>模拟 · STARPORT TRANSIT</em><strong>星港调度</strong><small>资源管理 · 航线 / 拥堵 / 枢纽</small></span><b class="relay-arrow">↗</b>
-    </a><a class="relay-card cab" href="https://fny666.github.io/quantum-pinball.html" data-category="街机" data-name="量子弹珠" data-tag="QUANTUM PINBALL" aria-label="锁定并进入 量子弹珠">
-      <span class="relay-id">SIG-24</span><span><em>街机 · QUANTUM PINBALL</em><strong>量子弹珠</strong><small>物理街机 · 挡板 / 目标 / 多球</small></span><b class="relay-arrow">↗</b>
-    </a></div></div></aside>
+      <div class="left-deck"><div class="eyebrow">UNAUTHORIZED FUN / PORT 09</div><h1 id="hero-title">找到你的<br><span>下一次跃迁</span></h1><p class="lede">星港深夜信号站已上线。<br>这里有 <b>29 枚游戏信号</b>，每一枚都通往一段不同的旅程。</p><div class="actions"><a class="action primary" href="#signals">扫描信号 <span>↓</span></a><a class="action" href="__HERO_URL__">直接接入 <span>↗</span></a></div><div class="readouts"><div class="readout"><b>29</b><small>ACTIVE NODES</small></div><div class="readout"><b>24 / 7</b><small>UPLINK STATUS</small></div><div class="readout"><b>01 COIN</b><small>INITIALIZE</small></div><div class="readout"><b>12ms</b><small>LATENCY</small></div></div></div>
+      <div class="core-stage"><span class="stage-caption">HOLOGRAPHIC COMMAND DECK / LIVE FEED</span><span class="stage-coordinates">X 09.771 · Y 44.203 · Z 00.013</span><div class="stage-cross"></div><div class="orbit-core"><div class="orbit-ring"></div><div class="orbit-ring two"></div><div class="orbit-ring three"></div><i class="node a">SIG-29 / CASE</i><i class="node b">SIG-13 / SIM</i><i class="node c">SIG-24 / ARCADE</i><div class="telemetry left"><b>FIELD / NIGHT-09</b>PARTICLES 128<br>DRIFT 0.0037</div><div class="telemetry right"><b>CORE / STABLE</b>WAVEFORM ∿ 98.4%<br>LOCKS 03 / 29</div><div class="telemetry bottom"><b>SCAN BEAM ∿∿∿</b>SEARCHING FOR PLAYERS</div><div class="core-sphere"></div><div class="core-eye">SIGNAL<br><small>READY TO LOCK</small></div><a class="signal-console cab" href="__HERO_URL__" data-name="霓虹幸存者" data-tag="NEON SURVIVORS" aria-label="锁定并进入霓虹幸存者"><span class="lock-mark">⌁</span><span><small>TARGET LOCKED / NEW SIGNAL</small><strong id="lock-name">霓虹幸存者</strong></span><em>READY ↗</em></a></div></div>
+      <aside class="right-deck"><div class="deck-label"><span>MISSION CONTROL / 09</span><b><i class="online-dot"></i>LIVE</b></div><div class="system-box"><h2>CORE TELEMETRY</h2><p>全息信号核心正在扫描可玩的世界。悬停或触摸任意信号，改变锁定目标。</p><div class="bar"><i></i></div><div class="metric-line"><span>SCAN PROGRESS</span><b>76.2%</b></div></div><div><div class="relay-title">RECOMMENDED RELAYS / 03</div><div class="relay-list">__RELAYS__</div></div></aside>
     </section>
-    <section class="signals-section" id="signals" aria-labelledby="signals-title"><div class="signals-head"><h2 id="signals-title">全部游戏信号</h2><p>SELECT FREQUENCY / 29 ACTIVE NODES</p></div><div class="filters" role="group" aria-label="按类型筛选"><button class="filter active" data-filter="全部">全部信号</button><button class="filter" data-filter="格斗">格斗</button><button class="filter" data-filter="叙事">叙事</button><button class="filter" data-filter="动作">动作</button><button class="filter" data-filter="策略">策略</button><button class="filter" data-filter="节奏">节奏</button><button class="filter" data-filter="解谜">解谜</button><button class="filter" data-filter="模拟">模拟</button><button class="filter" data-filter="探索">探索</button><button class="filter" data-filter="经营">经营</button><button class="filter" data-filter="潜行">潜行</button><button class="filter" data-filter="生存">生存</button><button class="filter" data-filter="竞速">竞速</button><button class="filter" data-filter="救援">救援</button><button class="filter" data-filter="休闲">休闲</button><button class="filter" data-filter="街机">街机</button><button class="filter" data-filter="运动">运动</button><button class="filter" data-filter="射击">射击</button><button class="filter" data-filter="推理">推理</button></div><div class="signal-grid"><a class="signal-card cab" href="https://fny666.github.io/fight.html" data-category="格斗" data-name="像素乱斗" data-tag="PIXEL BRAWL" aria-label="锁定并进入 像素乱斗">
-      <span class="signal-id">SIG-01</span><span class="signal-led"></span><span class="signal-type">格斗 / PIXEL BRAWL</span><strong>像素乱斗</strong><small>格斗机台 · 连段 / 街机 / 无尽</small><span class="signal-open">LOCK <b>↗</b></span>
-    </a><a class="signal-card cab" href="https://fny666.github.io/fight.html" data-category="格斗" data-name="像素乱斗" data-tag="HARD MODE" aria-label="锁定并进入 像素乱斗">
-      <span class="signal-id">SIG-02</span><span class="signal-led"></span><span class="signal-type">格斗 / HARD MODE</span><strong>像素乱斗</strong><small>正式厅 · 角色 / BGM / PWA</small><span class="signal-open">LOCK <b>↗</b></span>
-    </a><a class="signal-card cab" href="https://fny666.github.io/fight.html?mode=pvp" data-category="格斗" data-name="双人对战" data-tag="2P BATTLE" aria-label="锁定并进入 双人对战">
-      <span class="signal-id">SIG-03</span><span class="signal-led"></span><span class="signal-type">格斗 / 2P BATTLE</span><strong>双人对战</strong><small>本地双人 · 同屏对战</small><span class="signal-open">LOCK <b>↗</b></span>
-    </a><a class="signal-card cab" href="https://fny666.github.io/fight.html?mode=endless" data-category="格斗" data-name="无尽模式" data-tag="ENDLESS" aria-label="锁定并进入 无尽模式">
-      <span class="signal-id">SIG-04</span><span class="signal-led"></span><span class="signal-type">格斗 / ENDLESS</span><strong>无尽模式</strong><small>无限波次 · 无限分数 · 冲榜</small><span class="signal-open">LOCK <b>↗</b></span>
-    </a><a class="signal-card cab" href="https://fny666.github.io/fight.html?mode=train" data-category="格斗" data-name="连段挑战" data-tag="TRAINING" aria-label="锁定并进入 连段挑战">
-      <span class="signal-id">SIG-05</span><span class="signal-led"></span><span class="signal-type">格斗 / TRAINING</span><strong>连段挑战</strong><small>帧数据 / 取消 / 教学关卡</small><span class="signal-open">LOCK <b>↗</b></span>
-    </a><a class="signal-card cab" href="https://fny666.github.io/novel/" data-category="叙事" data-name="星海彼岸" data-tag="STORY MODE" aria-label="锁定并进入 星海彼岸">
-      <span class="signal-id">SIG-06</span><span class="signal-led"></span><span class="signal-type">叙事 / STORY MODE</span><strong>星海彼岸</strong><small>视觉小说 · 多结局 · 叙事机台</small><span class="signal-open">LOCK <b>↗</b></span>
-    </a><a class="signal-card cab" href="https://fny666.github.io/?hero=cat" data-category="叙事" data-name="猫警物语" data-tag="KIDS HERO" aria-label="锁定并进入 猫警物语">
-      <span class="signal-id">SIG-07</span><span class="signal-led"></span><span class="signal-type">叙事 / KIDS HERO</span><strong>猫警物语</strong><small>童年台 · 正义快枪手</small><span class="signal-open">LOCK <b>↗</b></span>
-    </a><a class="signal-card cab" href="https://fny666.github.io/?hero=ultra" data-category="叙事" data-name="光侠战记" data-tag="ULTRA HERO" aria-label="锁定并进入 光侠战记">
-      <span class="signal-id">SIG-08</span><span class="signal-led"></span><span class="signal-type">叙事 / ULTRA HERO</span><strong>光侠战记</strong><small>巨人台 · 光能量战斗</small><span class="signal-open">LOCK <b>↗</b></span>
-    </a><a class="signal-card cab" href="https://fny666.github.io/neon-shift.html" data-category="动作" data-name="霓虹跃迁" data-tag="NEON SHIFT" aria-label="锁定并进入 霓虹跃迁">
-      <span class="signal-id">SIG-09</span><span class="signal-led"></span><span class="signal-type">动作 / NEON SHIFT</span><strong>霓虹跃迁</strong><small>未来跑酷 · 跳跃 / 核心 / 冲分</small><span class="signal-open">LOCK <b>↗</b></span>
-    </a><a class="signal-card cab" href="https://fny666.github.io/starline-defense.html" data-category="策略" data-name="星轨防线" data-tag="STARLINE DEFENSE" aria-label="锁定并进入 星轨防线">
-      <span class="signal-id">SIG-10</span><span class="signal-led"></span><span class="signal-type">策略 / STARLINE DEFENSE</span><strong>星轨防线</strong><small>轨道防卫 · 瞄准 / 射击 / 护盾</small><span class="signal-open">LOCK <b>↗</b></span>
-    </a><a class="signal-card cab" href="https://fny666.github.io/neon-beat.html" data-category="节奏" data-name="霓虹节拍" data-tag="NEON BEAT" aria-label="锁定并进入 霓虹节拍">
-      <span class="signal-id">SIG-11</span><span class="signal-led"></span><span class="signal-type">节奏 / NEON BEAT</span><strong>霓虹节拍</strong><small>节奏机台 · 四轨 / 连击 / 音符</small><span class="signal-open">LOCK <b>↗</b></span>
-    </a><a class="signal-card cab" href="https://fny666.github.io/quantum-corridor.html" data-category="解谜" data-name="量子回廊" data-tag="QUANTUM CORRIDOR" aria-label="锁定并进入 量子回廊">
-      <span class="signal-id">SIG-12</span><span class="signal-led"></span><span class="signal-type">解谜 / QUANTUM CORRIDOR</span><strong>量子回廊</strong><small>线路解谜 · 节点 / 星门 / 航线</small><span class="signal-open">LOCK <b>↗</b></span>
-    </a><a class="signal-card cab" href="https://fny666.github.io/starport-transit.html" data-category="模拟" data-name="星港调度" data-tag="STARPORT TRANSIT" aria-label="锁定并进入 星港调度">
-      <span class="signal-id">SIG-13</span><span class="signal-led"></span><span class="signal-type">模拟 / STARPORT TRANSIT</span><strong>星港调度</strong><small>资源管理 · 航线 / 拥堵 / 枢纽</small><span class="signal-open">LOCK <b>↗</b></span>
-    </a><a class="signal-card cab" href="https://fny666.github.io/nebula-salvage.html" data-category="探索" data-name="星骸回收" data-tag="NEBULA SALVAGE" aria-label="锁定并进入 星骸回收">
-      <span class="signal-id">SIG-14</span><span class="signal-led"></span><span class="signal-type">探索 / NEBULA SALVAGE</span><strong>星骸回收</strong><small>零重力采矿 · 资源 / 燃料 / 返航</small><span class="signal-open">LOCK <b>↗</b></span>
-    </a><a class="signal-card cab" href="https://fny666.github.io/orbital-exchange.html" data-category="经营" data-name="轨道商会" data-tag="ORBITAL EXCHANGE" aria-label="锁定并进入 轨道商会">
-      <span class="signal-id">SIG-15</span><span class="signal-led"></span><span class="signal-type">经营 / ORBITAL EXCHANGE</span><strong>轨道商会</strong><small>星际贸易 · 市场 / 燃料 / 价差</small><span class="signal-open">LOCK <b>↗</b></span>
-    </a><a class="signal-card cab" href="https://fny666.github.io/solar-protocol.html" data-category="策略" data-name="恒星协议" data-tag="SOLAR PROTOCOL" aria-label="锁定并进入 恒星协议">
-      <span class="signal-id">SIG-16</span><span class="signal-led"></span><span class="signal-type">策略 / SOLAR PROTOCOL</span><strong>恒星协议</strong><small>卡牌战术 · 能量 / 护盾 / 星区</small><span class="signal-open">LOCK <b>↗</b></span>
-    </a><a class="signal-card cab" href="https://fny666.github.io/ghost-protocol.html" data-category="潜行" data-name="幽影协议" data-tag="GHOST PROTOCOL" aria-label="锁定并进入 幽影协议">
-      <span class="signal-id">SIG-17</span><span class="signal-led"></span><span class="signal-type">潜行 / GHOST PROTOCOL</span><strong>幽影协议</strong><small>潜行网格 · 视野 / 警报 / 撤离</small><span class="signal-open">LOCK <b>↗</b></span>
-    </a><a class="signal-card cab" href="neon-survivors.html" data-category="生存" data-name="霓虹幸存者" data-tag="NEON SURVIVORS" aria-label="锁定并进入 霓虹幸存者">
-      <span class="signal-id">SIG-18</span><span class="signal-led"></span><span class="signal-type">生存 / NEON SURVIVORS</span><strong>霓虹幸存者</strong><small>生存 Roguelite · 自动开火 / 构筑 / BOSS</small><span class="signal-open">LOCK <b>↗</b></span>
-    </a><a class="signal-card cab" href="https://fny666.github.io/neon-circuit.html" data-category="竞速" data-name="霓虹竞速" data-tag="NEON CIRCUIT" aria-label="锁定并进入 霓虹竞速">
-      <span class="signal-id">SIG-19</span><span class="signal-led"></span><span class="signal-type">竞速 / NEON CIRCUIT</span><strong>霓虹竞速</strong><small>星际竞速 · 圈数 / 氮气 / 名次</small><span class="signal-open">LOCK <b>↗</b></span>
-    </a><a class="signal-card cab" href="https://fny666.github.io/starport-customs.html" data-category="模拟" data-name="星港检疫" data-tag="STARPORT CUSTOMS" aria-label="锁定并进入 星港检疫">
-      <span class="signal-id">SIG-20</span><span class="signal-led"></span><span class="signal-type">模拟 / STARPORT CUSTOMS</span><strong>星港检疫</strong><small>审查模拟 · 协议 / 扫描 / 判断</small><span class="signal-open">LOCK <b>↗</b></span>
-    </a><a class="signal-card cab" href="https://fny666.github.io/deep-space-rescue.html" data-category="救援" data-name="深空救援" data-tag="DEEP SPACE RESCUE" aria-label="锁定并进入 深空救援">
-      <span class="signal-id">SIG-21</span><span class="signal-led"></span><span class="signal-type">救援 / DEEP SPACE RESCUE</span><strong>深空救援</strong><small>救援调度 · 倒计时 / 燃料 / 幸存者</small><span class="signal-open">LOCK <b>↗</b></span>
-    </a><a class="signal-card cab" href="https://fny666.github.io/starport-diner.html" data-category="经营" data-name="星港餐站" data-tag="STARPORT DINER" aria-label="锁定并进入 星港餐站">
-      <span class="signal-id">SIG-22</span><span class="signal-led"></span><span class="signal-type">经营 / STARPORT DINER</span><strong>星港餐站</strong><small>时间管理 · 订单 / 配方 / 连击</small><span class="signal-open">LOCK <b>↗</b></span>
-    </a><a class="signal-card cab" href="https://fny666.github.io/quantum-pet.html" data-category="休闲" data-name="量子宠物舱" data-tag="QUANTUM PET POD" aria-label="锁定并进入 量子宠物舱">
-      <span class="signal-id">SIG-23</span><span class="signal-led"></span><span class="signal-type">休闲 / QUANTUM PET POD</span><strong>量子宠物舱</strong><small>休闲养成 · 喂食 / 陪玩 / 成长</small><span class="signal-open">LOCK <b>↗</b></span>
-    </a><a class="signal-card cab" href="https://fny666.github.io/quantum-pinball.html" data-category="街机" data-name="量子弹珠" data-tag="QUANTUM PINBALL" aria-label="锁定并进入 量子弹珠">
-      <span class="signal-id">SIG-24</span><span class="signal-led"></span><span class="signal-type">街机 / QUANTUM PINBALL</span><strong>量子弹珠</strong><small>物理街机 · 挡板 / 目标 / 多球</small><span class="signal-open">LOCK <b>↗</b></span>
-    </a><a class="signal-card cab" href="https://fny666.github.io/zero-g-hoop.html" data-category="运动" data-name="零重力篮" data-tag="ZERO-G HOOP" aria-label="锁定并进入 零重力篮">
-      <span class="signal-id">SIG-25</span><span class="signal-led"></span><span class="signal-type">运动 / ZERO-G HOOP</span><strong>零重力篮</strong><small>零重力投篮 · 瞄准 / 篮筐 / 连击</small><span class="signal-open">LOCK <b>↗</b></span>
-    </a><a class="signal-card cab" href="https://fny666.github.io/neon-fighter.html" data-category="射击" data-name="霓虹战机" data-tag="NEON FIGHTER" aria-label="锁定并进入 霓虹战机">
-      <span class="signal-id">SIG-26</span><span class="signal-led"></span><span class="signal-type">射击 / NEON FIGHTER</span><strong>霓虹战机</strong><small>纵版射击 · 战机 / 敌潮 / 波次</small><span class="signal-open">LOCK <b>↗</b></span>
-    </a><a class="signal-card cab" href="https://fny666.github.io/stellar-guardians.html" data-category="策略" data-name="星域守护者" data-tag="STELLAR GUARDIANS" aria-label="锁定并进入 星域守护者">
-      <span class="signal-id">SIG-27</span><span class="signal-led"></span><span class="signal-type">策略 / STELLAR GUARDIANS</span><strong>星域守护者</strong><small>塔防游戏 · 防御塔 / 敌潮 / 策略</small><span class="signal-open">LOCK <b>↗</b></span>
-    </a><a class="signal-card cab" href="https://fny666.github.io/quantum-treasure.html" data-category="探索" data-name="量子探宝" data-tag="QUANTUM TREASURE" aria-label="锁定并进入 量子探宝">
-      <span class="signal-id">SIG-28</span><span class="signal-led"></span><span class="signal-type">探索 / QUANTUM TREASURE</span><strong>量子探宝</strong><small>量子迷宫 · 扫描 / 收集 / 完成</small><span class="signal-open">LOCK <b>↗</b></span>
-    </a><a class="signal-card cab" href="https://fny666.github.io/starport-investigator.html" data-category="推理" data-name="星港调查员" data-tag="STARPORT INVESTIGATOR" aria-label="锁定并进入 星港调查员">
-      <span class="signal-id">SIG-29</span><span class="signal-led"></span><span class="signal-type">推理 / STARPORT INVESTIGATOR</span><strong>星港调查员</strong><small>侦探推理 · 现场 / 物证 / 定案</small><span class="signal-open">LOCK <b>↗</b></span>
-    </a><div class="empty" hidden>该频段没有回应，换一个信号。</div></div></section>
+    <section class="signals-section" id="signals" aria-labelledby="signals-title"><div class="signals-head"><h2 id="signals-title">全部游戏信号</h2><p>SELECT FREQUENCY / 29 ACTIVE NODES</p></div><div class="filters" role="group" aria-label="按类型筛选"><button class="filter active" data-filter="全部">全部信号</button>__FILTERS__</div><div class="signal-grid">__SIGNALS__<div class="empty" hidden>该频段没有回应，换一个信号。</div></div></section>
   </main>
   <footer class="footer"><span>STARPORT ARCADE OS / <b>ALL SYSTEMS ONLINE</b></span><span>LOCK A SIGNAL · ENTER THE GAME · MAKE YOUR OWN ROUTE</span></footer>
 </div>
@@ -131,3 +114,7 @@ body:after{content:"";position:fixed;z-index:4;inset:0;pointer-events:none;opaci
 </script>
 </body>
 </html>
+'''
+html = html.replace('__HERO_URL__', hero['url']).replace('__RELAYS__', relays).replace('__FILTERS__', filters).replace('__SIGNALS__', signals)
+(ROOT / 'arcade.html').write_text(html)
+print(f'generated signal control arcade with {len(games)} nodes and {len(categories)} frequencies')

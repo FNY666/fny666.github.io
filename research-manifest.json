@@ -59,11 +59,25 @@
         {"url": "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_grid_layout/Basic_concepts_of_grid_layout", "publisher": "MDN Web Docs", "published_or_updated": "current as accessed 2026-09-05", "tier": "primary", "support": "Supports flexible grid composition."}
       ],
       "caveat": "No independent user study has been run; visual acceptance must be based on actual screenshots and navigation checks."
+    },
+    {
+      "id": "C6",
+      "claim": "Interactive black-tech landing pages can use a live rendered visual layer, spatial object, motion and direct pointer response as part of the navigation experience; this is an implementation/design inference, not a universal usability result.",
+      "status": "inferred",
+      "confidence": "medium",
+      "sources": [
+        {"url": "https://threejs.org/examples/webgl_points_waves.html", "publisher": "Three.js", "published_or_updated": "current as accessed 2026-09-05", "tier": "primary", "support": "The official example is a live WebGL particle-and-wave rendering page, demonstrating a continuously rendered visual field."},
+        {"url": "https://www.apple.com/apple-vision-pro/", "publisher": "Apple", "published_or_updated": "current as accessed 2026-09-05", "tier": "primary", "support": "The product page frames spatial computing as content that occupies and responds within space, then explains the experience in progressive sections."},
+        {"url": "https://www.cyberpunk.net/us/en/", "publisher": "CD PROJEKT RED", "published_or_updated": "current as accessed 2026-09-05", "tier": "primary", "support": "The official Cyberpunk universe page was accessible as a game-world reference; its content framing supports using a strong fictional world rather than a generic catalog presentation."},
+        {"url": "https://www.awwwards.com/websites/webgl/", "publisher": "Awwwards", "published_or_updated": "current as accessed 2026-09-05", "tier": "secondary", "support": "The public directory is explicitly a selection of WebGL website examples for inspiration."},
+        {"url": "https://tympanus.net/codrops/category/playground/", "publisher": "Codrops", "published_or_updated": "current as accessed 2026-09-05", "tier": "secondary", "support": "The public Playground directory presents interactive Three.js experiments, including physics-oriented interaction."}
+      ],
+      "caveat": "Several inspiration directories are curated showcases, not controlled evidence that a pattern improves conversion or retention."
     }
   ],
   "coverage": {
-    "searched": ["itch.io games", "Apple AirPods Pro product page", "web.dev responsive design", "MDN CSS Grid", "Awwwards games", "SiteInspire games", "Google web design searches"],
-    "inaccessible": ["Steam homepage returned no readable text in the browser session", "Awwwards page exposed only a short nominee summary", "SiteInspire page exposed only a short listing summary"],
+    "searched": ["itch.io games", "Apple AirPods Pro product page", "Apple Vision Pro product page", "Cyberpunk 2077 official site", "Three.js WebGL particle example", "web.dev responsive design", "MDN CSS Grid", "Awwwards WebGL and Animation directories", "Codrops Playground", "Google web design searches"],
+    "inaccessible": ["Bruno Simon and Active Theory pages rendered blank/unstable in the current browser session", "Steam homepage returned no readable text in the browser session", "Awwwards page exposed only a short nominee summary", "SiteInspire page exposed only a short listing summary", "PlayStation games page failed TLS in the current browser session"],
     "unresolved_conflicts": []
   }
 }
