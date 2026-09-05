@@ -1,0 +1,9 @@
+{
+  "name": "starport-arcade",
+  "version": "1.0.0",
+  "private": true,
+  "description": "星港游戏厅 — GitHub Pages 静态游戏站点。无需构建，测试用 node run-tests.js 跑。",
+  "scripts": {
+    "test": "node run-tests.js"
+  }
+}
