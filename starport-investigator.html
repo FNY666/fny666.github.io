@@ -386,17 +386,48 @@ const SEARCH_ACTIONS=[
   {id:'record',label:'调取记录',hint:'核对时间线'},
   {id:'trace',label:'物证放大',hint:'比对指纹与刮痕'}
 ];
-const EVIDENCE_LOCATIONS={1:'cargo',6:'dome'};
+const EVIDENCE_LOCATIONS={1:'cargo',2:'med',3:'srv',4:'cryo',5:'obs',6:'dome',7:'gate7',8:'beacon8'};
+function getEvidenceLocation(caseData){return EVIDENCE_LOCATIONS[caseData.id]||caseData.locations?.[0]?.key||null;}
 const EVIDENCE_PROFILES={
   1:{items:[
     {id:'fingerprint',kind:'fingerprint',label:'冷冻核心外壳',detail:'放大后看到一组不完整指纹，拇指边缘有维修手套留下的导电粉末。',matches:['老周']},
     {id:'scratch',kind:'scratch',label:'核心槽螺栓',detail:'螺栓上的弧形刮痕与货舱检修工单使用的陶瓷工具吻合。',matches:['老周']},
     {id:'fiber',kind:'fiber',label:'门禁读卡器',detail:'读卡器边缘有深色纤维，但无法单独锁定某个嫌疑人。',matches:[]}
   ]},
+  2:{items:[
+    {id:'fingerprint',kind:'fingerprint',label:'毒素试管盖',detail:'试管盖内侧有后勤库的防腐树脂指纹膜，纹路与周野的领料手套样本一致。',matches:['周野']},
+    {id:'residue',kind:'residue',label:'电解质水杯沿',detail:'杯沿残留星尘毒素，能确认投放方式，不能单独锁定个人。',matches:[]},
+    {id:'scratch',kind:'scratch',label:'医疗舱门锁',detail:'门锁没有暴力破坏痕迹，说明进入者使用了合法门禁。',matches:[]}
+  ]},
+  3:{items:[
+    {id:'fingerprint',kind:'fingerprint',label:'外接终端键盘',detail:'键盘空格键上的油膜纹路与承包商科尔的工作手套样本匹配。',matches:['科尔']},
+    {id:'usb',kind:'fiber',label:'U 盘接口',detail:'接口残留机房专用防尘纤维，证明数据从机房被带出。',matches:[]},
+    {id:'seal',kind:'scratch',label:'服务器封条',detail:'封条被完整揭下后重新贴回，只有近距离接触者能完成。',matches:[]}
+  ]},
+  4:{items:[
+    {id:'fingerprint',kind:'fingerprint',label:'冷冻舱维护锁',detail:'维护锁边缘的工具粉末与韩岑的专用维修工具样本一致。',matches:['韩岑']},
+    {id:'fiber',kind:'fiber',label:'隔热毯纤维',detail:'隔热毯来自货运维修组，证明有人把乘客转移进货运流线。',matches:[]},
+    {id:'scratch',kind:'scratch',label:'仿生替身接口',detail:'替身接口被工程权限重新写入，普通文员无法操作。',matches:[]}
+  ]},
+  5:{items:[
+    {id:'fingerprint',kind:'fingerprint',label:'维修终端外壳',detail:'租用终端外壳的指纹膜与赫洛的货艇登记样本匹配。',matches:['赫洛']},
+    {id:'fuel',kind:'residue',label:'氘燃料阀门',detail:'阀门的封签被重复打开，燃料确实被抽走。',matches:[]},
+    {id:'signal',kind:'scratch',label:'信号调制旋钮',detail:'调制旋钮被固定在同一频段，假信号不是自然遇险。',matches:[]}
+  ]},
   6:{items:[
     {id:'fingerprint',kind:'fingerprint',label:'净化核心外壳',detail:'放大后发现实验室专用树脂指纹膜，样本纹路与叶舟的工具箱吻合。',matches:['叶舟']},
     {id:'scratch',kind:'scratch',label:'固定螺栓',detail:'螺栓刮痕呈陶瓷扳手的窄弧形，和叶舟登记的备用工具一致。',matches:['叶舟']},
     {id:'residue',kind:'residue',label:'核心接口残留',detail:'接口残留实验舱封装胶，来源范围仍然过宽。',matches:[]}
+  ]},
+  7:{items:[
+    {id:'fingerprint',kind:'fingerprint',label:'驾驶舱维护面板',detail:'维护面板上的临时权限指纹与驾驶员陆沉的控制台样本匹配。',matches:['陆沉']},
+    {id:'fiber',kind:'fiber',label:'夹层隔热毯',detail:'隔热毯纤维证明第二名乘客确实藏在货舱夹层。',matches:[]},
+    {id:'scratch',kind:'scratch',label:'舱门切换开关',detail:'开关曾被切换到维护模式，但无法单独确认操作者。',matches:[]}
+  ]},
+  8:{items:[
+    {id:'fingerprint',kind:'fingerprint',label:'调度台旧终端',detail:'旧终端的远程登录指纹与调度员唐澈的值班样本匹配。',matches:['唐澈']},
+    {id:'scratch',kind:'scratch',label:'灯塔接口盖板',detail:'盖板被无损拆开，修改者掌握维护流程。',matches:[]},
+    {id:'residue',kind:'residue',label:'导航芯片封装',detail:'芯片封装胶来自白鲸货舱，说明两条线索存在运输关联。',matches:[]}
   ]}
 };
 function buildEvidenceInspection(caseData,seed=1){
@@ -407,7 +438,7 @@ function compareEvidence(item,suspect,inspection){
   const matched=!!(item&&item.matches&&item.matches.includes(suspect));
   return {matched,clue:matched?item.label+'的物证纹路与'+suspect+'的样本匹配：'+item.detail:item.label+'与'+suspect+'的样本不匹配，不能归档为个人证据。',variantEffect:matched?'交叉核验通过，物证可以进入证据链。':'这只是一次排除，不增加证据数量。'};
 }
-if(typeof globalThis!=='undefined'){globalThis.buildEvidenceInspection=buildEvidenceInspection;globalThis.compareEvidence=compareEvidence;}
+if(typeof globalThis!=='undefined'){globalThis.buildEvidenceInspection=buildEvidenceInspection;globalThis.compareEvidence=compareEvidence;globalThis.getEvidenceLocation=getEvidenceLocation;}
 const SEARCH_VARIANTS=[
   '本轮变量：传感器灵敏度偏低，只有近距离扫描能确认这条证据。',
   '本轮变量：夜班记录出现一处时间漂移，必须结合现场观察才能排除误报。',
@@ -470,7 +501,7 @@ function loadCase(){
   current={...current,locations:shuffle(current.locations.map(l=>({...l,clues:shuffle([...l.clues])}))),suspects:shuffle([...current.suspects]),motives:shuffle([...current.motives])};
   caseClosed=false; visited={}; evidence=[]; exclusions=[]; selectedLocation=null; searchedActions={}; timelineSeen={}; evidenceSeen={}; activeTimeline=null; activeEvidence=null; selectedEvidenceItem=null; evidenceMessage=''; confirmedSuspectState=null; searchUsed=0;
   searchBudget=Math.max(4,Math.min(7,current.locations.length+2));
-  searchPlans={}; timelines={}; evidenceInspections={}; const timelineKey=getTimelineLocation(current); const evidenceKey=EVIDENCE_LOCATIONS[current.id]; current.locations.forEach(l=>{searchPlans[l.key]=buildSearchPlan({id:current.id,locations:[l]},sessionSeed+l.key.length); if(l.key===timelineKey)timelines[l.key]=buildTimeline(current,l.key,sessionSeed+l.key.length); if(l.key===evidenceKey)evidenceInspections[l.key]=buildEvidenceInspection(current,sessionSeed+l.key.length);});
+  searchPlans={}; timelines={}; evidenceInspections={}; const timelineKey=getTimelineLocation(current); const evidenceKey=getEvidenceLocation(current); current.locations.forEach(l=>{searchPlans[l.key]=buildSearchPlan({id:current.id,locations:[l]},sessionSeed+l.key.length); if(l.key===timelineKey)timelines[l.key]=buildTimeline(current,l.key,sessionSeed+l.key.length); if(l.key===evidenceKey)evidenceInspections[l.key]=buildEvidenceInspection(current,sessionSeed+l.key.length);});
   clueTotal=searchBudget;
   $('caseTitle').textContent=current.title;
   $('brief').innerHTML='<b style="color:var(--cyan)">'+current.subtitle+'</b><br><span style="color:var(--amber);font-size:11px">'+current.variantLabel+'</span><br><br>'+current.brief;
@@ -640,9 +671,9 @@ function buildReviewReport(metrics){
     {name:'小屏侦查',tag:'手机玩家',rating:3,text:'信息密度可以接受，但现场、线索和定案之间需要来回切页。',want:'希望：在同一屏保留当前证据摘要和下一步动作。'}
   ];
   const experts=[
-    {name:'机制评审',tag:'玩法结构',rating:solvedRate>=.75?3:2,text:'物证比对现在会改变证据强度和分数，闭合结案已经成立；但物证组件只覆盖少数案件。',want:'优先：把物证结果继续接入更多案件的推理状态。'},
-    {name:'叙事评审',tag:'案件设计',rating:clueRate>=.9?3:2,text:'正确匹配与错误排除终于有不同后果，但动机选项与证据链仍有重复结构。',want:'优先：让物证匹配改变具体动机、嫌疑人状态或结局。'},
-    {name:'可用性评审',tag:'界面与移动端',rating:3,text:'推理面板会显示已确认的嫌疑人，结案反馈也会区分证据闭合；调查工具仍然需要更强的视觉反馈。',want:'优先：在物证放大时加入真正的放大区域和纹路变化。'}
+    {name:'机制评审',tag:'玩法结构',rating:solvedRate>=.75?3:2,text:'八案现在都有物证比对，匹配结果会改变证据强度、推理状态和分数；但每案的搜证工具组合仍偏相似。',want:'优先：让不同案件的物证工具产生不同的调查动作。'},
+    {name:'叙事评审',tag:'案件设计',rating:clueRate>=.9?3:2,text:'正确匹配与错误排除有不同后果，证据链更可信；但部分动机仍靠文字解释，缺少角色反应。',want:'优先：让物证确认改变具体口供、动机或结局文本。'},
+    {name:'可用性评审',tag:'界面与移动端',rating:3,text:'推理面板会显示已确认嫌疑人，结案反馈区分证据闭合；物证区域和样本按钮在小屏仍需要更强层级。',want:'优先：强化物证放大时的视觉焦点和匹配反馈。'}
   ];
   const average=[...playerBase,...experts].reduce((n,x)=>n+x.rating,0)/8;
   return {players:playerBase.map(x=>({...x,kind:'player'})),experts:experts.map(x=>({...x,kind:'expert'})),average,critical:solvedRate<.75?'玩家容易在证据不足时失去方向，先修调查反馈。':clueRate<.9?'部分线索会被漏掉，先修现场引导。':'案件逻辑可解，但物证比对结果还没有进入定案判定。',next:'下一步只做一件事：让物证比对结果真正改变可选推理或结局，而不只是增加证据数量。',metrics:{total,solved,score,attempts,clueRate}};
