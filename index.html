@@ -2,106 +2,875 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>星港游戏厅</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>星港游戏厅 · NEON ARCADE</title>
+<meta name="description" content="星港游戏厅 — 未来霓虹街区里的全息机台，26+ 款网页小游戏，点开即玩。">
+<meta name="theme-color" content="#05070f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
 <style>
-:root{--bg:#05070d;--neon:#ffd95c;--cyan:#8fd5ff;--pink:#ff7bc7;--green:#68ff9a;--violet:#b89cff}
-*{box-sizing:border-box}html,body{margin:0;min-height:100%;overflow-x:hidden;overflow-y:auto;font-family:system-ui,-apple-system,PingFang SC,Microsoft YaHei,sans-serif;color:#fff;background:radial-gradient(circle at 50% 0,#11223f 0%,#08101d 34%,#05070d 66%),linear-gradient(180deg,#0a1020 0%,#05070d 100%)}
-body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle at 16% 20%,rgba(143,213,255,.16),transparent 18%),radial-gradient(circle at 84% 16%,rgba(255,123,199,.16),transparent 18%),radial-gradient(circle at 50% 34%,rgba(255,217,92,.11),transparent 16%),linear-gradient(90deg, rgba(120,170,255,.06) 1px, transparent 1px),linear-gradient(rgba(120,170,255,.06) 1px, transparent 1px);background-size:auto,auto,auto,64px 100%,100% 36px;opacity:.3;pointer-events:none}
-#wrap{position:relative;width:100%;height:100%}
-.brand{position:absolute;left:50%;top:16px;transform:translateX(-50%);text-align:center;z-index:10}
-.brand h1{margin:0;font-size:clamp(36px,7vw,72px);line-height:.95;font-weight:900;letter-spacing:.14em;color:var(--neon);text-shadow:0 0 12px rgba(255,217,92,.8),0 0 28px rgba(255,217,92,.35)}
-.brand .sub{margin-top:8px;font-size:12px;letter-spacing:.42em;color:#b9d5ff;opacity:.96}
-.brand .sub2{margin-top:6px;font-size:10px;letter-spacing:.28em;color:#7aa5e8;opacity:.82}
-.portal{position:absolute;left:50%;top:116px;transform:translateX(-50%);width:min(1240px,96vw);display:grid;grid-template-columns:repeat(4,minmax(180px,1fr));gap:16px}
-@media (max-width:1020px){.portal{grid-template-columns:repeat(2,minmax(180px,1fr));top:116px}.brand{top:14px}}
-@media (max-width:560px){
-  #wrap{height:auto;min-height:100vh;padding-bottom:84px}
-  .brand{position:relative;left:auto;top:auto;transform:none;padding:22px 12px 0}
-  .portal{position:relative;left:auto;top:auto;transform:none;width:92vw;margin:30px auto 0;grid-template-columns:1fr;gap:16px}
-  .brand .sub{font-size:10px;letter-spacing:.28em}.brand .sub2{font-size:9px}
-  .footer{position:relative;left:auto;bottom:auto;transform:none;margin:28px auto 0}
-  .floor,.haze,.scanline{position:fixed;z-index:-1}
+:root{
+  --bg:#04060e; --bg2:#070c1a;
+  --cyan:#7fe8ff; --pink:#ff7bc7; --gold:#ffe45e; --green:#6dffc2; --violet:#b98cff; --orange:#ff9f5c; --red:#ff6b8a;
+  --txt:#e8f2ff; --dim:#8fb0d4; --dim2:#5f7ba0;
+  --line:rgba(127,232,255,.16); --card:rgba(11,19,38,.72);
+  --font:"PingFang SC","Microsoft YaHei",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r:20px;
 }
-.cab{position:relative;min-height:260px;border-radius:22px;background:linear-gradient(180deg,rgba(24,34,58,.96),rgba(10,14,24,.96));border:1px solid rgba(255,255,255,.08);box-shadow:0 18px 42px rgba(0,0,0,.42), inset 0 0 0 2px rgba(255,255,255,.03);overflow:hidden;cursor:pointer;transition:.18s ease;transform:translateY(0)}
-.cab:hover{transform:translateY(-6px) scale(1.01)}
-.cab::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 20%, rgba(255,255,255,.06), transparent 45%);pointer-events:none}
-.screen{position:absolute;left:50%;top:14px;transform:translateX(-50%);width:88%;height:140px;border-radius:16px;background:linear-gradient(180deg,#0b1322,#06101b);border:2px solid rgba(143,213,255,.18);box-shadow:inset 0 0 24px rgba(0,0,0,.4),0 0 24px rgba(143,213,255,.05)}
-.screen .scan{position:absolute;inset:0;background:repeating-linear-gradient(180deg,rgba(255,255,255,.035) 0 2px,transparent 2px 5px);opacity:.34;mix-blend-mode:screen}
-.screen .orb{position:absolute;border-radius:50%;filter:blur(.2px);box-shadow:0 0 18px currentColor}
-.screen .orb.o1{left:18px;top:18px;width:30px;height:30px;color:var(--cyan);background:radial-gradient(circle,#fff,rgba(255,255,255,.2) 45%, transparent 70%)}
-.screen .orb.o2{right:22px;bottom:20px;width:18px;height:18px;color:var(--pink);background:radial-gradient(circle,#fff,rgba(255,255,255,.15) 45%, transparent 70%)}
-.screen .grid{position:absolute;inset:18px;border-radius:12px;background:linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);background-size:100% 24px, 24px 100%;opacity:.14}
-.screen .c1{position:absolute;left:24%;top:18%;width:22%;height:42%;border-radius:12px;background:linear-gradient(180deg,rgba(255,217,92,.9),rgba(255,143,0,.55));box-shadow:0 0 30px rgba(255,217,92,.2)}
-.screen .c2{position:absolute;left:52%;top:20%;width:18%;height:40%;border-radius:12px;background:linear-gradient(180deg,rgba(143,213,255,.88),rgba(90,150,255,.54));box-shadow:0 0 30px rgba(143,213,255,.18)}
-.screen .c3{position:absolute;left:39%;top:58%;width:22%;height:12%;border-radius:999px;background:linear-gradient(90deg,rgba(255,123,199,.9),rgba(183,156,255,.4));box-shadow:0 0 24px rgba(255,123,199,.2)}
-.name{position:absolute;left:50%;top:172px;transform:translateX(-50%);font-size:20px;font-weight:900;letter-spacing:.08em;white-space:nowrap}
-.tag{position:absolute;left:50%;top:205px;transform:translateX(-50%);font-size:11px;color:#aac2e7;letter-spacing:.14em;white-space:nowrap}
-.desc{position:absolute;left:50%;top:225px;transform:translateX(-50%);font-size:11px;color:#7c8ea8;letter-spacing:.1em;white-space:nowrap}
-.btn{position:absolute;right:14px;bottom:14px;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);font-size:11px;letter-spacing:.15em;color:#d8e8ff}
-.pill{position:absolute;left:14px;bottom:14px;padding:6px 10px;border-radius:999px;font-size:11px;letter-spacing:.15em;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.1)}
-.c1 .name,.c1 .pill{color:var(--neon)} .c2 .name,.c2 .pill{color:var(--cyan)} .c3 .name,.c3 .pill{color:var(--pink)} .c4 .name,.c4 .pill{color:var(--green)} .c5 .name,.c5 .pill{color:var(--violet)} .c6 .name,.c6 .pill{color:#ffb45c} .c7 .name,.c7 .pill{color:#b4ffbf} .c8 .name,.c8 .pill{color:#ff9fd4}
-.footer{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);font-size:11px;color:#91a7d6;letter-spacing:.18em;opacity:.95;text-align:center;width:96vw;z-index:10}
-.floor{position:absolute;left:0;right:0;bottom:0;height:30%;background:linear-gradient(180deg, rgba(12,18,30,.08), rgba(6,10,16,.85) 34%, rgba(6,10,16,.96))}
-.haze{position:absolute;left:0;right:0;bottom:0;height:30%;background:radial-gradient(circle at 20% 0%, rgba(143,213,255,.08), transparent 26%),radial-gradient(circle at 80% 0%, rgba(255,123,199,.08), transparent 26%)}
-.scanline{position:absolute;left:0;right:0;bottom:0;height:30%;background:repeating-linear-gradient(180deg, rgba(255,255,255,.04) 0 1px, transparent 1px 7px);opacity:.12;mix-blend-mode:screen;transform:skewY(-8deg)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--txt);font-family:var(--font);
+  -webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button,input{font-family:inherit;color:inherit}
+button{border:0;background:none;cursor:pointer}
+#bg{position:fixed;inset:0;z-index:0;display:block;width:100%;height:100%}
+.veil{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(circle at 50% -10%,rgba(90,180,255,.16),transparent 55%),
+             radial-gradient(circle at 85% 12%,rgba(255,110,190,.12),transparent 45%),
+             linear-gradient(180deg,rgba(4,6,14,0) 40%,rgba(4,6,14,.75) 100%)}
+.scan{position:fixed;inset:0;z-index:2;pointer-events:none;opacity:.32;mix-blend-mode:overlay;
+  background:repeating-linear-gradient(180deg,rgba(160,220,255,.055) 0 1px,transparent 1px 4px)}
+main,header,footer{position:relative;z-index:3}
+
+/* ------------------------------- header ------------------------------ */
+header{position:sticky;top:0;z-index:40;padding:12px max(16px,4vw);
+  background:linear-gradient(180deg,rgba(4,7,16,.92),rgba(4,7,16,.55) 70%,transparent);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.nav{display:flex;align-items:center;gap:14px;max-width:1360px;margin:0 auto}
+.mark{display:flex;align-items:center;gap:11px;flex-shrink:0}
+.mark .dot{width:34px;height:34px;border-radius:11px;position:relative;flex-shrink:0;
+  background:conic-gradient(from 210deg,#7fe8ff,#b98cff,#ff7bc7,#ffe45e,#7fe8ff);
+  box-shadow:0 0 26px rgba(127,232,255,.45);animation:spin 12s linear infinite}
+.mark .dot::after{content:'';position:absolute;inset:4px;border-radius:8px;background:#050a16}
+.mark .dot::before{content:'';position:absolute;inset:11px;border-radius:50%;background:#7fe8ff;
+  box-shadow:0 0 14px #7fe8ff;z-index:2;animation:pulse 2.4s ease-in-out infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:.55;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
+.mark b{font:900 19px/1 var(--font);letter-spacing:.14em;white-space:nowrap}
+.mark span{display:block;margin-top:4px;font:800 8.5px/1 var(--font);letter-spacing:.34em;color:var(--dim2)}
+.search{flex:1;max-width:420px;margin-left:auto;position:relative}
+.search input{width:100%;padding:11px 40px 11px 40px;border-radius:14px;border:1px solid var(--line);
+  background:rgba(8,14,30,.7);font:600 13.5px/1 var(--font);outline:none;transition:.2s}
+.search input:focus{border-color:rgba(127,232,255,.55);box-shadow:0 0 0 4px rgba(127,232,255,.08)}
+.search input::placeholder{color:var(--dim2)}
+.search .ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--dim2);font-size:14px;pointer-events:none}
+.search kbd{position:absolute;right:10px;top:50%;transform:translateY(-50%);padding:2px 7px;border-radius:6px;
+  background:rgba(127,232,255,.1);border:1px solid var(--line);font:800 10px/1.5 var(--font);color:var(--dim2)}
+.navbtn{width:40px;height:40px;border-radius:13px;border:1px solid var(--line);background:rgba(8,14,30,.7);
+  display:grid;place-items:center;font-size:16px;transition:.18s;flex-shrink:0}
+.navbtn:hover{border-color:rgba(127,232,255,.5);transform:translateY(-2px);background:rgba(20,40,72,.8)}
+.navbtn:active{transform:scale(.93)}
+.navbtn.off{opacity:.4}
+
+/* -------------------------------- hero ------------------------------- */
+.wrap{max-width:1360px;margin:0 auto;padding:0 max(16px,4vw)}
+.hero{margin:26px auto 8px;display:grid;grid-template-columns:1.05fr .95fr;gap:26px;align-items:center}
+.hero-copy .kicker{display:inline-flex;align-items:center;gap:8px;padding:6px 13px;border-radius:999px;
+  border:1px solid rgba(255,228,94,.35);background:rgba(255,228,94,.08);color:var(--gold);
+  font:800 10.5px/1 var(--font);letter-spacing:.24em}
+.kicker i{width:6px;height:6px;border-radius:50%;background:var(--gold);box-shadow:0 0 10px var(--gold);animation:pulse 1.6s infinite}
+h1.title{margin:16px 0 0;font:900 clamp(38px,6.6vw,74px)/1.02 var(--font);letter-spacing:.02em;
+  background:linear-gradient(150deg,#ffffff 0%,#9ff0ff 38%,#ff9fd6 78%,#ffe45e 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 6px 32px rgba(127,232,255,.35))}
+.title-en{margin-top:12px;font:800 11px/1 var(--font);letter-spacing:.52em;color:var(--dim)}
+.lede{margin:16px 0 0;max-width:520px;font:500 14.5px/1.95 var(--font);color:var(--dim)}
+.lede b{color:var(--cyan);font-weight:800}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
+.btn{display:inline-flex;align-items:center;gap:9px;padding:14px 24px;border-radius:15px;
+  font:900 14.5px/1 var(--font);letter-spacing:.09em;transition:.18s;white-space:nowrap}
+.btn.main{color:#04121c;background:linear-gradient(120deg,#7fe8ff,#6dffc2 60%,#b6ffd9);
+  box-shadow:0 14px 34px rgba(90,220,255,.28)}
+.btn.main:hover{transform:translateY(-3px);box-shadow:0 20px 44px rgba(90,220,255,.4)}
+.btn.ghost{border:1px solid var(--line);background:rgba(10,18,36,.62);color:var(--txt)}
+.btn.ghost:hover{border-color:rgba(127,232,255,.5);transform:translateY(-3px);background:rgba(18,34,62,.8)}
+.btn:active{transform:translateY(0) scale(.98)}
+.hero-stats{display:flex;gap:26px;margin-top:26px;flex-wrap:wrap}
+.hero-stats div span{display:block;font:800 9.5px/1 var(--font);letter-spacing:.22em;color:var(--dim2)}
+.hero-stats div b{display:block;margin-top:7px;font:900 24px/1 var(--font);color:var(--cyan)}
+.hero-stats div:nth-child(2) b{color:var(--pink)} .hero-stats div:nth-child(3) b{color:var(--gold)}
+
+.hero-art{position:relative;aspect-ratio:16/10;border-radius:26px;overflow:hidden;
+  border:1px solid rgba(127,232,255,.22);background:#060b18;
+  box-shadow:0 40px 90px rgba(0,0,0,.6),inset 0 0 60px rgba(60,140,220,.08)}
+.hero-art canvas{width:100%;height:100%;display:block}
+.hero-art .frame{position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(180deg,rgba(255,255,255,.045) 0 1px,transparent 1px 4px);opacity:.5}
+.hero-art .badge{position:absolute;left:16px;top:14px;padding:6px 12px;border-radius:999px;
+  background:rgba(4,8,18,.72);border:1px solid rgba(127,232,255,.3);backdrop-filter:blur(8px);
+  font:800 10px/1 var(--font);letter-spacing:.2em;color:var(--cyan)}
+.hero-art .play{position:absolute;right:16px;bottom:16px;padding:11px 20px;border-radius:999px;
+  background:rgba(4,8,18,.7);border:1px solid rgba(127,232,255,.36);backdrop-filter:blur(8px);
+  font:900 12px/1 var(--font);letter-spacing:.14em;color:#dff4ff;transition:.18s}
+.hero-art:hover .play{background:#7fe8ff;color:#04121c;transform:scale(1.05)}
+
+/* ------------------------------ toolbar ------------------------------ */
+.toolbar{position:sticky;top:66px;z-index:30;margin:34px 0 18px;padding:10px 0;
+  background:linear-gradient(180deg,rgba(4,6,14,.92),rgba(4,6,14,.55) 76%,transparent)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{padding:9px 16px;border-radius:999px;border:1px solid var(--line);background:rgba(9,16,32,.66);
+  font:800 12px/1 var(--font);letter-spacing:.08em;color:var(--dim);white-space:nowrap;transition:.16s}
+.chip:hover{color:var(--txt);border-color:rgba(127,232,255,.42);transform:translateY(-2px)}
+.chip.on{color:#04121c;background:linear-gradient(120deg,#7fe8ff,#6dffc2);border-color:transparent;
+  box-shadow:0 8px 20px rgba(90,220,255,.28)}
+.chip .n{opacity:.6;margin-left:5px;font-size:10.5px}
+.rowhead{display:flex;align-items:baseline;justify-content:space-between;gap:14px;margin:30px 0 14px}
+.rowhead h2{margin:0;font:900 20px/1 var(--font);letter-spacing:.1em}
+.rowhead h2 em{font-style:normal;color:var(--cyan)}
+.rowhead .sub{font:700 10.5px/1 var(--font);letter-spacing:.24em;color:var(--dim2)}
+.sortbtn{font:800 11.5px/1 var(--font);letter-spacing:.12em;color:var(--dim);
+  padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:rgba(9,16,32,.6);transition:.16s}
+.sortbtn:hover{color:var(--txt);border-color:rgba(127,232,255,.4)}
+
+/* -------------------------------- grid ------------------------------- */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px;padding-bottom:10px}
+.cab{position:relative;border-radius:var(--r);overflow:hidden;text-align:left;padding:0;
+  background:linear-gradient(165deg,rgba(17,28,54,.82),rgba(7,11,24,.9));
+  border:1px solid var(--line);box-shadow:0 16px 38px rgba(0,0,0,.42);
+  transition:transform .2s cubic-bezier(.2,.9,.3,1.2),box-shadow .2s,border-color .2s;
+  animation:rise .5s cubic-bezier(.2,1,.3,1) backwards;display:block;width:100%}
+@keyframes rise{from{opacity:0;transform:translateY(22px) scale(.97)}}
+.cab:hover{transform:translateY(-8px);border-color:color-mix(in srgb,var(--c) 55%,transparent);
+  box-shadow:0 28px 60px rgba(0,0,0,.55),0 0 34px color-mix(in srgb,var(--c) 22%,transparent)}
+.cab:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+.cab .screen{position:relative;height:132px;overflow:hidden;
+  background:radial-gradient(circle at 50% 118%,color-mix(in srgb,var(--c) 22%,#0b1730),#060b18 72%);
+  border-bottom:1px solid rgba(127,232,255,.1)}
+.cab .screen::after{content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(180deg,rgba(255,255,255,.05) 0 1px,transparent 1px 3px);opacity:.55}
+.cab .meta{padding:14px 16px 16px}
+.cab .zh{font:900 17.5px/1.2 var(--font);letter-spacing:.05em;color:#f0f7ff}
+.cab .en{margin-top:5px;font:800 9.5px/1 var(--font);letter-spacing:.22em;color:var(--c);opacity:.95}
+.cab .desc{margin-top:10px;font:500 12px/1.65 var(--font);color:var(--dim2);min-height:38px}
+.cab .foot{display:flex;align-items:center;justify-content:space-between;margin-top:12px;gap:8px}
+.tag{padding:4px 10px;border-radius:999px;font:800 9.5px/1.4 var(--font);letter-spacing:.14em;
+  color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent);
+  border:1px solid color-mix(in srgb,var(--c) 34%,transparent)}
+.plays{font:700 10px/1 var(--font);letter-spacing:.1em;color:var(--dim2)}
+.fav{position:absolute;top:10px;right:10px;z-index:4;width:32px;height:32px;border-radius:11px;
+  display:grid;place-items:center;font-size:14px;color:#8ea9c8;
+  background:rgba(4,8,18,.6);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(6px);transition:.16s}
+.fav:hover{transform:scale(1.12);color:var(--gold)}
+.fav.on{color:var(--gold);border-color:rgba(255,228,94,.5);background:rgba(255,228,94,.14);
+  text-shadow:0 0 12px rgba(255,228,94,.8)}
+.flag{position:absolute;top:10px;left:10px;z-index:4;padding:4px 9px;border-radius:8px;
+  font:900 9px/1.4 var(--font);letter-spacing:.16em;color:#04121c;background:var(--c);
+  box-shadow:0 4px 14px color-mix(in srgb,var(--c) 45%,transparent)}
+.empty{padding:60px 20px;text-align:center;color:var(--dim2);font:600 14px/2 var(--font);grid-column:1/-1}
+.empty b{display:block;font-size:34px;margin-bottom:8px}
+
+/* --------------------------- screen artwork -------------------------- */
+.art{position:absolute;inset:0}
+.art i{position:absolute;display:block;border-radius:3px}
+.cab:hover .art{animation-play-state:running}
+@keyframes floaty{0%,100%{transform:translateY(-4px)}50%{transform:translateY(6px)}}
+@keyframes scrollY{to{transform:translateY(28px)}}
+@keyframes scrollX{to{transform:translateX(-46px)}}
+@keyframes bounce{0%,100%{height:14%}50%{height:78%}}
+@keyframes blink{0%,100%{opacity:.25}50%{opacity:1}}
+@keyframes orbit{to{transform:rotate(360deg)}}
+@keyframes dash{to{stroke-dashoffset:-60}}
+/* shooter */
+.a-shoot .ship{width:16px;height:16px;left:50%;bottom:18%;margin-left:-8px;background:var(--c);
+  clip-path:polygon(50% 0,100% 100%,50% 78%,0 100%);animation:floaty 3s ease-in-out infinite}
+.a-shoot .b{width:3px;height:12px;background:#fff;left:50%;bottom:34%;box-shadow:0 0 10px var(--c);
+  animation:shootUp 1.1s linear infinite}
+@keyframes shootUp{from{transform:translateY(0);opacity:1}to{transform:translateY(-84px);opacity:0}}
+.a-shoot .e{width:12px;height:12px;border-radius:50%;background:color-mix(in srgb,var(--c) 55%,#ff7bc7);
+  opacity:.85;animation:floaty 2.4s ease-in-out infinite}
+/* runner */
+.a-run .g{left:-10%;right:-10%;height:2px;background:linear-gradient(90deg,transparent,var(--c),transparent);
+  opacity:.35;animation:scrollY 1.4s linear infinite}
+.a-run .p{width:14px;height:20px;left:26%;bottom:26%;border-radius:4px;background:var(--c);
+  box-shadow:0 0 20px var(--c);animation:hop 1.05s cubic-bezier(.3,0,.4,1) infinite}
+@keyframes hop{0%,100%{transform:translateY(0)}40%{transform:translateY(-34px)}}
+.a-run .o{width:12px;height:22px;right:-10%;bottom:26%;background:#ff5c8a;border-radius:3px;
+  animation:slideL 1.9s linear infinite}
+@keyframes slideL{from{transform:translateX(0)}to{transform:translateX(-260px)}}
+/* rhythm */
+.a-beat .bar{bottom:20%;width:12%;background:linear-gradient(180deg,var(--c),transparent);border-radius:4px 4px 0 0;
+  animation:bounce 1.05s ease-in-out infinite}
+.a-beat .line{left:8%;right:8%;bottom:20%;height:2px;background:var(--c);opacity:.6;box-shadow:0 0 12px var(--c)}
+/* puzzle / grid */
+.a-grid .n{width:11px;height:11px;border-radius:50%;background:var(--c);box-shadow:0 0 14px var(--c);
+  animation:blink 2.1s ease-in-out infinite}
+.a-grid .l{height:2px;background:linear-gradient(90deg,transparent,var(--c),transparent);opacity:.55;
+  animation:blink 3s ease-in-out infinite}
+/* racing */
+.a-race .r{left:50%;width:4px;height:16px;margin-left:-2px;background:var(--c);opacity:.75;border-radius:2px;
+  animation:zoom 1s linear infinite}
+@keyframes zoom{from{transform:translateY(-20px) scaleY(.4);opacity:0}
+  60%{opacity:1}to{transform:translateY(130px) scaleY(2.4);opacity:0}}
+.a-race .car{width:20px;height:26px;left:50%;bottom:16%;margin-left:-10px;border-radius:6px;
+  background:linear-gradient(180deg,#fff,var(--c));box-shadow:0 0 22px var(--c);animation:sway 2.6s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:translateX(-16px) rotate(-6deg)}50%{transform:translateX(16px) rotate(6deg)}}
+/* cards */
+.a-card .k{width:34px;height:48px;border-radius:6px;bottom:22%;border:1px solid var(--c);
+  background:linear-gradient(160deg,color-mix(in srgb,var(--c) 25%,transparent),rgba(6,12,26,.9));
+  animation:floaty 3.4s ease-in-out infinite}
+/* orbit / trade */
+.a-orbit .sun{width:26px;height:26px;border-radius:50%;left:50%;top:50%;margin:-13px 0 0 -13px;
+  background:radial-gradient(circle,#fff,var(--c));box-shadow:0 0 30px var(--c)}
+.a-orbit .ring{border:1px dashed color-mix(in srgb,var(--c) 45%,transparent);border-radius:50%;
+  left:50%;top:50%;animation:orbit 9s linear infinite}
+.a-orbit .ring i{position:absolute;width:8px;height:8px;border-radius:50%;background:var(--c);
+  box-shadow:0 0 12px var(--c);top:-4px;left:calc(50% - 4px)}
+/* stealth */
+.a-stealth .cell{border:1px solid color-mix(in srgb,var(--c) 22%,transparent);border-radius:2px}
+.a-stealth .eye{width:14px;height:14px;border-radius:50%;background:#ff5c8a;box-shadow:0 0 16px #ff5c8a;
+  animation:blink 1.6s ease-in-out infinite}
+.a-stealth .me{width:10px;height:10px;border-radius:3px;background:var(--c);box-shadow:0 0 14px var(--c);
+  animation:sneak 5s ease-in-out infinite}
+@keyframes sneak{0%{transform:translate(0,0)}30%{transform:translate(46px,0)}60%{transform:translate(46px,-30px)}
+  100%{transform:translate(0,0)}}
+/* fight */
+.a-fight .f{width:20px;height:34px;bottom:24%;border-radius:5px;background:linear-gradient(180deg,var(--c),transparent);
+  box-shadow:0 0 18px var(--c)}
+.a-fight .f.l{left:28%;animation:jab 1.4s ease-in-out infinite}
+.a-fight .f.r{right:28%;background:linear-gradient(180deg,#ff7bc7,transparent);box-shadow:0 0 18px #ff7bc7;
+  animation:jab 1.4s ease-in-out .7s infinite}
+@keyframes jab{0%,100%{transform:translateX(0)}45%{transform:translateX(14px)}}
+.a-fight .hit{width:18px;height:18px;left:50%;top:44%;margin-left:-9px;border-radius:50%;
+  background:radial-gradient(circle,#fff,transparent 70%);animation:blink .7s steps(2) infinite}
+/* story */
+.a-story .txt{left:14%;right:14%;height:5px;border-radius:3px;background:color-mix(in srgb,var(--c) 40%,transparent)}
+.a-story .face{width:34px;height:34px;border-radius:50%;left:50%;top:22%;margin-left:-17px;
+  background:radial-gradient(circle at 40% 35%,#fff,var(--c));box-shadow:0 0 26px var(--c);
+  animation:floaty 4s ease-in-out infinite}
+/* tower defense */
+.a-td .t{width:14px;height:18px;border-radius:3px 3px 0 0;background:var(--c);box-shadow:0 0 14px var(--c)}
+.a-td .w{width:9px;height:9px;border-radius:50%;background:#ff7bc7;animation:march 3.2s linear infinite}
+@keyframes march{from{transform:translateX(-30px)}to{transform:translateX(210px)}}
+/* pet / casual */
+.a-pet .body{width:44px;height:38px;left:50%;top:38%;margin-left:-22px;border-radius:50% 50% 46% 46%;
+  background:radial-gradient(circle at 38% 32%,#fff,var(--c));box-shadow:0 0 30px var(--c);
+  animation:squish 2.2s ease-in-out infinite}
+@keyframes squish{0%,100%{transform:scale(1,1)}50%{transform:scale(1.08,.92) translateY(4px)}}
+.a-pet .eye{width:6px;height:6px;border-radius:50%;background:#04121c;top:48%}
+/* pinball */
+.a-ball .ball{width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#8fb0d4);
+  box-shadow:0 0 16px #fff;animation:pin 2.6s cubic-bezier(.4,0,.6,1) infinite}
+@keyframes pin{0%{transform:translate(0,0)}25%{transform:translate(60px,42px)}50%{transform:translate(-40px,66px)}
+  75%{transform:translate(38px,20px)}100%{transform:translate(0,0)}}
+.a-ball .bump{width:16px;height:16px;border-radius:50%;border:2px solid var(--c);animation:blink 1.8s infinite}
+/* detective */
+.a-eye .lens{width:44px;height:44px;border-radius:50%;border:3px solid var(--c);left:38%;top:28%;
+  box-shadow:0 0 24px var(--c),inset 0 0 20px color-mix(in srgb,var(--c) 30%,transparent);
+  animation:scanmove 5s ease-in-out infinite}
+@keyframes scanmove{0%,100%{transform:translate(-18px,4px)}50%{transform:translate(26px,-10px)}}
+.a-eye .doc{left:16%;right:16%;height:4px;border-radius:2px;background:color-mix(in srgb,var(--c) 30%,transparent)}
+/* survivors flagship */
+.a-swarm .hero{width:14px;height:14px;left:50%;top:50%;margin:-7px 0 0 -7px;border-radius:4px;background:#fff;
+  box-shadow:0 0 22px var(--c)}
+.a-swarm .ring{border:1px solid color-mix(in srgb,var(--c) 40%,transparent);border-radius:50%;left:50%;top:50%;
+  animation:expand 2.4s ease-out infinite}
+@keyframes expand{from{width:12px;height:12px;margin:-6px 0 0 -6px;opacity:.9}
+  to{width:180px;height:180px;margin:-90px 0 0 -90px;opacity:0}}
+.a-swarm .m{width:9px;height:9px;border-radius:2px;background:color-mix(in srgb,var(--c) 60%,#ff7bc7);
+  animation:closein 3.4s ease-in infinite}
+@keyframes closein{from{transform:scale(1)}to{transform:translate(var(--tx),var(--ty)) scale(.4);opacity:0}}
+
+/* ------------------------------- footer ------------------------------ */
+footer{margin:56px 0 40px;text-align:center;color:var(--dim2);font:600 11.5px/2.2 var(--font);letter-spacing:.14em}
+footer a{color:var(--dim);border-bottom:1px dashed rgba(127,232,255,.25)}
+footer .krew{margin-top:8px;font-size:10px;letter-spacing:.28em;opacity:.6}
+
+/* ------------------------------- toast ------------------------------- */
+#toast{position:fixed;left:50%;bottom:32px;transform:translate(-50%,26px);z-index:80;opacity:0;
+  padding:13px 22px;border-radius:14px;pointer-events:none;transition:.28s cubic-bezier(.2,1,.3,1);
+  background:rgba(8,14,30,.92);border:1px solid rgba(127,232,255,.35);backdrop-filter:blur(10px);
+  font:800 13px/1 var(--font);letter-spacing:.1em;box-shadow:0 18px 40px rgba(0,0,0,.5)}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* ------------------------------ rainbow ------------------------------ */
+body.party .cab{animation:rise .5s backwards,hue 6s linear infinite}
+body.party h1.title{animation:hue 5s linear infinite}
+@keyframes hue{to{filter:hue-rotate(360deg)}}
+
+@media (max-width:900px){
+  .hero{grid-template-columns:1fr;gap:20px;margin-top:18px}
+  .hero-art{order:-1}
+  .toolbar{top:60px}
+  .mark span{display:none}
+  .search{max-width:none}
+}
+@media (max-width:560px){
+  .nav{flex-wrap:wrap}
+  .search{order:3;flex-basis:100%;max-width:none;margin-left:0}
+  .mark b{font-size:16px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:12px}
+  .cab .screen{height:96px}
+  .cab .meta{padding:11px 12px 13px}
+  .cab .zh{font-size:14.5px}
+  .cab .desc{font-size:11px;min-height:34px;margin-top:7px}
+  .hero-stats{gap:18px}
+  .hero-stats div b{font-size:20px}
+  .toolbar{top:112px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
 </style>
 </head>
 <body>
-<div id="wrap">
-  <div class="brand"><h1>星港游戏厅</h1><div class="sub">NEON ARCADE • SELECT • PLAY</div><div class="sub2">未来人造街区 / 全息机台 / 点哪玩哪</div></div>
-  <div class="portal">
-    <div class="cab c1" data-url="https://fny666.github.io/fight.html"><div class="screen"><div class="scan"></div><div class="grid"></div><div class="orb o1"></div><div class="orb o2"></div><div class="c1"></div><div class="c2"></div><div class="c3"></div></div><div class="name">像素乱斗</div><div class="tag">PIXEL BRAWL</div><div class="desc">格斗机台 · 连段 / 街机 / 无尽</div><div class="pill">ARCADE</div><div class="btn">ENTER</div></div>
-    <div class="cab c2" data-url="https://fny666.github.io/fight.html"><div class="screen"><div class="scan"></div><div class="grid"></div><div class="orb o1"></div><div class="orb o2"></div><div class="c1" style="left:18%;width:32%;background:linear-gradient(180deg,rgba(143,213,255,.9),rgba(90,150,255,.5))"></div><div class="c2" style="left:54%;width:26%;background:linear-gradient(180deg,rgba(255,217,92,.85),rgba(255,143,0,.45))"></div><div class="c3"></div></div><div class="name">像素乱斗</div><div class="tag">HARD MODE</div><div class="desc">正式厅 · 角色 / BGM / PWA</div><div class="pill">MAIN</div><div class="btn">ENTER</div></div>
-    <div class="cab c3" data-url="https://fny666.github.io/fight.html?mode=pvp"><div class="screen"><div class="scan"></div><div class="grid"></div><div class="orb o1"></div><div class="orb o2"></div><div class="c1" style="left:25%;top:25%;width:18%;height:28%;background:linear-gradient(180deg,rgba(255,123,199,.95),rgba(183,156,255,.45))"></div><div class="c2" style="left:56%;top:25%;width:18%;height:28%;background:linear-gradient(180deg,rgba(143,213,255,.95),rgba(90,150,255,.45))"></div><div class="c3"></div></div><div class="name">双人对战</div><div class="tag">2P BATTLE</div><div class="desc">本地双人 · 同屏对战</div><div class="pill">VERSUS</div><div class="btn">ENTER</div></div>
-    <div class="cab c4" data-url="https://fny666.github.io/fight.html?mode=endless"><div class="screen"><div class="scan"></div><div class="grid"></div><div class="orb o1"></div><div class="orb o2"></div><div class="c1" style="left:20%;top:18%;width:26%;height:46%;background:linear-gradient(180deg,rgba(104,255,154,.92),rgba(20,180,120,.45))"></div><div class="c2" style="left:54%;top:18%;width:26%;height:46%;background:linear-gradient(180deg,rgba(183,156,255,.9),rgba(120,90,255,.4))"></div><div class="c3"></div></div><div class="name">无尽模式</div><div class="tag">ENDLESS</div><div class="desc">无限波次 · 无限分数 · 冲榜</div><div class="pill">SCORE</div><div class="btn">ENTER</div></div>
-    <div class="cab c5" data-url="https://fny666.github.io/fight.html?mode=train"><div class="screen"><div class="scan"></div><div class="grid"></div><div class="orb o1"></div><div class="orb o2"></div><div class="c1" style="left:20%;top:23%;width:26%;height:34%;background:linear-gradient(180deg,rgba(255,180,92,.95),rgba(255,143,0,.45))"></div><div class="c2" style="left:54%;top:23%;width:26%;height:34%;background:linear-gradient(180deg,rgba(143,213,255,.95),rgba(90,150,255,.45))"></div><div class="c3"></div></div><div class="name">连段挑战</div><div class="tag">TRAINING</div><div class="desc">帧数据 / 取消 / 教学关卡</div><div class="pill">LAB</div><div class="btn">ENTER</div></div>
-    <div class="cab c6" data-url="https://fny666.github.io/novel/"><div class="screen"><div class="scan"></div><div class="grid"></div><div class="orb o1"></div><div class="orb o2"></div><div class="c1" style="left:16%;top:20%;width:28%;height:40%;background:linear-gradient(180deg,rgba(255,123,199,.95),rgba(140,123,255,.45))"></div><div class="c2" style="left:56%;top:20%;width:28%;height:40%;background:linear-gradient(180deg,rgba(143,213,255,.95),rgba(90,150,255,.45))"></div><div class="c3"></div></div><div class="name">星海彼岸</div><div class="tag">STORY MODE</div><div class="desc">视觉小说 · 多结局 · 叙事机台</div><div class="pill">NOVEL</div><div class="btn">ENTER</div></div>
-    <div class="cab c7" data-url="https://fny666.github.io/?hero=cat"><div class="screen"><div class="scan"></div><div class="grid"></div><div class="orb o1"></div><div class="orb o2"></div><div class="c1" style="left:18%;top:22%;width:24%;height:38%;background:linear-gradient(180deg,rgba(255,217,92,.95),rgba(255,173,0,.45))"></div><div class="c2" style="left:56%;top:22%;width:24%;height:38%;background:linear-gradient(180deg,rgba(255,123,199,.95),rgba(183,156,255,.45))"></div><div class="c3"></div></div><div class="name">猫警物语</div><div class="tag">KIDS HERO</div><div class="desc">童年台 · 正义快枪手</div><div class="pill">HERO</div><div class="btn">ENTER</div></div>
-    <div class="cab c8" data-url="https://fny666.github.io/?hero=ultra"><div class="screen"><div class="scan"></div><div class="grid"></div><div class="orb o1"></div><div class="orb o2"></div><div class="c1" style="left:22%;top:18%;width:22%;height:44%;background:linear-gradient(180deg,rgba(255,123,199,.95),rgba(255,255,255,.45))"></div><div class="c2" style="left:56%;top:18%;width:22%;height:44%;background:linear-gradient(180deg,rgba(143,213,255,.95),rgba(92,255,248,.45))"></div><div class="c3"></div></div><div class="name">光侠战记</div><div class="tag">ULTRA HERO</div><div class="desc">巨人台 · 光能量战斗</div><div class="pill">HERO</div><div class="btn">ENTER</div></div>
-    <div class="cab c5" data-url="https://fny666.github.io/neon-shift.html">
-      <div class="topbar"></div><div class="holo"></div>
-      <div class="name">霓虹跃迁</div><div class="tag">NEON SHIFT</div><div class="desc">未来跑酷 · 跳跃 / 核心 / 冲分</div><div class="badge">RUN</div><div class="btn">ENTER</div>
+<canvas id="bg"></canvas>
+<div class="veil"></div>
+<div class="scan"></div>
+
+<header>
+  <div class="nav">
+    <div class="mark"><div class="dot"></div><div><b>星港游戏厅</b><span>NEON ARCADE</span></div></div>
+    <div class="search">
+      <span class="ico">⌕</span>
+      <input id="q" type="search" placeholder="搜索机台 / 玩法 / 关键词…" autocomplete="off" spellcheck="false">
+      <kbd>/</kbd>
     </div>
-    <div class="cab c9" data-url="https://fny666.github.io/starline-defense.html">
-      <div class="topbar"></div><div class="holo"></div>
-      <div class="name">星轨防线</div><div class="tag">STARLINE DEFENSE</div><div class="desc">轨道防卫 · 瞄准 / 射击 / 护盾</div><div class="pill">DEFENSE</div><div class="btn">ENTER</div>
-    </div>
-    <div class="cab c10" data-url="https://fny666.github.io/neon-beat.html">
-      <div class="topbar"></div><div class="holo"></div>
-      <div class="name">霓虹节拍</div><div class="tag">NEON BEAT</div><div class="desc">节奏机台 · 四轨 / 连击 / 音符</div><div class="pill">MUSIC</div><div class="btn">ENTER</div>
-    </div>
-    <div class="cab c11" data-url="https://fny666.github.io/quantum-corridor.html">
-      <div class="topbar"></div><div class="holo"></div>
-      <div class="name">量子回廊</div><div class="tag">QUANTUM CORRIDOR</div><div class="desc">线路解谜 · 节点 / 星门 / 航线</div><div class="pill">PUZZLE</div><div class="btn">ENTER</div>
-    </div>
-    <div class="cab c12" data-url="https://fny666.github.io/starport-transit.html">
-      <div class="topbar"></div><div class="holo"></div>
-      <div class="name">星港调度</div><div class="tag">STARPORT TRANSIT</div><div class="desc">资源管理 · 航线 / 拥堵 / 枢纽</div><div class="pill">SIMULATION</div><div class="btn">ENTER</div>
-    </div>
-    <div class="cab c13" data-url="https://fny666.github.io/nebula-salvage.html">
-      <div class="topbar"></div><div class="holo"></div>
-      <div class="name">星骸回收</div><div class="tag">NEBULA SALVAGE</div><div class="desc">零重力采矿 · 资源 / 燃料 / 返航</div><div class="pill">SALVAGE</div><div class="btn">ENTER</div>
-    </div>
-    <div class="cab c14" data-url="https://fny666.github.io/orbital-exchange.html">
-      <div class="topbar"></div><div class="holo"></div>
-      <div class="name">轨道商会</div><div class="tag">ORBITAL EXCHANGE</div><div class="desc">星际贸易 · 市场 / 燃料 / 价差</div><div class="pill">TRADING</div><div class="btn">ENTER</div>
-    </div>
-    <div class="cab c15" data-url="https://fny666.github.io/solar-protocol.html">
-      <div class="topbar"></div><div class="holo"></div>
-      <div class="name">恒星协议</div><div class="tag">SOLAR PROTOCOL</div><div class="desc">卡牌战术 · 能量 / 护盾 / 星区</div><div class="pill">TACTICAL</div><div class="btn">ENTER</div>
-    </div>
-    <div class="cab c16" data-url="https://fny666.github.io/ghost-protocol.html">
-      <div class="topbar"></div><div class="holo"></div>
-      <div class="name">幽影协议</div><div class="tag">GHOST PROTOCOL</div><div class="desc">潜行网格 · 视野 / 警报 / 撤离</div><div class="pill">STEALTH</div><div class="btn">ENTER</div>
-    </div>
-    <div class="cab c17" data-url="https://fny666.github.io/neon-circuit.html">
-      <div class="topbar"></div><div class="holo"></div>
-      <div class="name">霓虹竞速</div><div class="tag">NEON CIRCUIT</div><div class="desc">星际竞速 · 圈数 / 氮气 / 名次</div><div class="pill">RACING</div><div class="btn">ENTER</div>
-    </div>
+    <button class="navbtn" id="btn-random" title="随机来一台" aria-label="随机来一台">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+        <rect x="3.5" y="3.5" width="17" height="17" rx="4.5"/><circle cx="8.6" cy="8.6" r="1.35" fill="currentColor" stroke="none"/>
+        <circle cx="15.4" cy="15.4" r="1.35" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.35" fill="currentColor" stroke="none"/>
+        <circle cx="15.4" cy="8.6" r="1.35" fill="currentColor" stroke="none"/><circle cx="8.6" cy="15.4" r="1.35" fill="currentColor" stroke="none"/>
+      </svg></button>
+    <button class="navbtn" id="btn-sound" title="界面音效" aria-label="界面音效">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 9.5h3.4L12 5.6v12.8L7.4 14.5H4z" fill="currentColor" stroke="none"/>
+        <g class="waves"><path d="M15.4 9.2a4 4 0 0 1 0 5.6"/><path d="M18.1 6.9a7.6 7.6 0 0 1 0 10.2"/></g>
+        <g class="mutex" style="display:none"><path d="M16 9.6l5 5"/><path d="M21 9.6l-5 5"/></g>
+      </svg></button>
   </div>
-  <div class="footer">点击任意全息机台进入游戏 · 未来科幻总店 / 可继续扩展更多机台</div>
-  <div class="floor"></div><div class="haze"></div><div class="scanline"></div>
+</header>
+
+<main>
+<div class="wrap">
+
+  <section class="hero">
+    <div class="hero-copy">
+      <div class="kicker"><i></i>NEW FLAGSHIP · 新旗舰机台</div>
+      <h1 class="title">霓虹幸存者</h1>
+      <div class="title-en">NEON SURVIVORS</div>
+      <p class="lede">星港外环被虫群淹没。自动开火、<b>七种武器</b>与 <b>九种强化</b>自由构筑，
+        每 130 秒降临一只 BOSS。撑得越久，掉落的星币越多——它们会永久强化你的下一次出击。</p>
+      <div class="cta">
+        <a class="btn main" href="neon-survivors.html">▶ 立即游玩</a>
+        <button class="btn ghost" id="btn-scroll">浏览全部机台 ↓</button>
+      </div>
+      <div class="hero-stats">
+        <div><span>机台总数</span><b id="stat-total">0</b></div>
+        <div><span>我的收藏</span><b id="stat-fav">0</b></div>
+        <div><span>累计游玩</span><b id="stat-plays">0</b></div>
+      </div>
+    </div>
+    <a class="hero-art" href="neon-survivors.html" aria-label="进入霓虹幸存者">
+      <canvas id="promo"></canvas>
+      <div class="frame"></div>
+      <div class="badge">LIVE DEMO · 全息预览</div>
+      <div class="play">进入机台 →</div>
+    </a>
+  </section>
+
+  <div class="toolbar">
+    <div class="chips" id="chips"></div>
+  </div>
+
+  <section id="recent-sec" style="display:none">
+    <div class="rowhead"><h2>继续<em>游玩</em></h2><span class="sub">RECENTLY PLAYED</span></div>
+    <div class="grid" id="recent"></div>
+  </section>
+
+  <section>
+    <div class="rowhead">
+      <h2>全部<em>机台</em> <span class="sub" id="count"></span></h2>
+      <button class="sortbtn" id="btn-sort">排序：推荐</button>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
+
 </div>
-<script>document.querySelectorAll('.cab').forEach(el=>el.addEventListener('click',()=>location.href=el.dataset.url));</script>
-</body></html>
+</main>
+
+<footer>
+  点击任意全息机台即可开玩 · 全部游戏均可离线运行于浏览器<br>
+  <a href="arcade.html">经典版大厅</a> · <a href="https://github.com/FNY666/fny666.github.io" target="_blank" rel="noopener">源码仓库</a>
+  <div class="krew">STARPORT ARCADE · POWERED BY CANVAS &amp; NEON</div>
+</footer>
+
+<div id="toast"></div>
+
+<script>
+/* ==================================================================== data */
+const GAMES = [
+  { id:'survivors', zh:'霓虹幸存者', en:'NEON SURVIVORS', url:'neon-survivors.html', cat:'动作', c:'#7fe8ff',
+    desc:'生存 Roguelite · 自动开火 / 构筑 / BOSS', art:'swarm', flag:'NEW', hot:100, kw:'roguelite 割草 生存 升级 boss 幸存者' },
+  { id:'fight', zh:'像素乱斗', en:'PIXEL BRAWL', url:'fight.html', cat:'格斗', c:'#ffe45e',
+    desc:'格斗机台 · 连段 / 角色 / 街机模式', art:'fight', flag:'HOT', hot:92, kw:'格斗 连段 街机 pvp' },
+  { id:'fight-pvp', zh:'双人对战', en:'2P BATTLE', url:'fight.html?mode=pvp', cat:'格斗', c:'#ff7bc7',
+    desc:'本地双人 · 同屏对战 / 一台两人', art:'fight', hot:70, kw:'双人 对战 versus' },
+  { id:'fight-endless', zh:'无尽模式', en:'ENDLESS', url:'fight.html?mode=endless', cat:'格斗', c:'#6dffc2',
+    desc:'无限波次 · 无限分数 / 冲榜', art:'fight', hot:64, kw:'无尽 冲分 挑战' },
+  { id:'fight-train', zh:'连段挑战', en:'TRAINING', url:'fight.html?mode=train', cat:'格斗', c:'#b98cff',
+    desc:'训练场 · 帧数据 / 取消 / 教学', art:'fight', hot:40, kw:'训练 教学 帧数据' },
+  { id:'neon-fighter', zh:'霓虹战机', en:'NEON FIGHTER', url:'neon-fighter.html', cat:'射击', c:'#7fe8ff',
+    desc:'纵版弹幕 · 战机 / 敌潮 / 波次', art:'shoot', hot:86, kw:'弹幕 飞机 shmup 射击' },
+  { id:'starline', zh:'星轨防线', en:'STARLINE DEFENSE', url:'starline-defense.html', cat:'射击', c:'#ff9f5c',
+    desc:'轨道防卫 · 瞄准 / 射击 / 护盾', art:'shoot', hot:74, kw:'防守 瞄准 护盾' },
+  { id:'guardians', zh:'星域守护者', en:'STELLAR GUARDIANS', url:'stellar-guardians.html', cat:'策略', c:'#6dffc2',
+    desc:'塔防策略 · 防御塔 / 敌潮 / 路线', art:'td', hot:78, kw:'塔防 策略 防御塔' },
+  { id:'solar', zh:'恒星协议', en:'SOLAR PROTOCOL', url:'solar-protocol.html', cat:'策略', c:'#ffe45e',
+    desc:'卡牌战术 · 能量 / 护盾 / 星区', art:'card', hot:66, kw:'卡牌 战术 回合' },
+  { id:'ghost', zh:'幽影协议', en:'GHOST PROTOCOL', url:'ghost-protocol.html', cat:'策略', c:'#b98cff',
+    desc:'潜行网格 · 视野 / 警报 / 撤离', art:'stealth', hot:62, kw:'潜行 隐匿 网格' },
+  { id:'shift', zh:'霓虹跃迁', en:'NEON SHIFT', url:'neon-shift.html', cat:'动作', c:'#7fe8ff',
+    desc:'未来跑酷 · 跳跃 / 能量核心 / 冲分', art:'run', hot:72, kw:'跑酷 跳跃 runner' },
+  { id:'circuit', zh:'霓虹竞速', en:'NEON CIRCUIT', url:'neon-circuit.html', cat:'竞速', c:'#ff7bc7',
+    desc:'星际竞速 · 圈数 / 氮气 / 名次', art:'race', hot:76, kw:'赛车 竞速 racing 氮气' },
+  { id:'hoop', zh:'零重力篮', en:'ZERO-G HOOP', url:'zero-g-hoop.html', cat:'休闲', c:'#ff9f5c',
+    desc:'零重力投篮 · 瞄准 / 篮筐 / 连击', art:'ball', hot:58, kw:'篮球 投篮 体育' },
+  { id:'pinball', zh:'量子弹珠', en:'QUANTUM PINBALL', url:'quantum-pinball.html', cat:'休闲', c:'#ffe45e',
+    desc:'物理街机 · 挡板 / 目标 / 多球', art:'ball', hot:60, kw:'弹珠 物理 街机 pinball' },
+  { id:'beat', zh:'霓虹节拍', en:'NEON BEAT', url:'neon-beat.html', cat:'音乐', c:'#ff7bc7',
+    desc:'节奏机台 · 四轨 / 连击 / 判定', art:'beat', hot:80, kw:'音游 节奏 rhythm 打歌' },
+  { id:'corridor', zh:'量子回廊', en:'QUANTUM CORRIDOR', url:'quantum-corridor.html', cat:'解谜', c:'#6dffc2',
+    desc:'线路解谜 · 节点 / 星门 / 航线', art:'grid', hot:56, kw:'解谜 连线 益智' },
+  { id:'treasure', zh:'量子探宝', en:'QUANTUM TREASURE', url:'quantum-treasure.html', cat:'解谜', c:'#ffe45e',
+    desc:'量子迷宫 · 扫描 / 收集 / 通关', art:'grid', hot:48, kw:'迷宫 探索 收集' },
+  { id:'investigator', zh:'星港调查员', en:'STARPORT INVESTIGATOR', url:'starport-investigator.html', cat:'推理', c:'#b98cff',
+    desc:'侦探推理 · 现场 / 物证 / 定案', art:'eye', flag:'DEEP', hot:82, kw:'推理 侦探 证据 案件' },
+  { id:'customs', zh:'星港检疫', en:'STARPORT CUSTOMS', url:'starport-customs.html', cat:'推理', c:'#7fe8ff',
+    desc:'审查模拟 · 协议 / 扫描 / 判断', art:'eye', hot:54, kw:'审查 判断 模拟 检疫' },
+  { id:'transit', zh:'星港调度', en:'STARPORT TRANSIT', url:'starport-transit.html', cat:'经营', c:'#6dffc2',
+    desc:'资源管理 · 航线 / 拥堵 / 枢纽', art:'orbit', hot:52, kw:'调度 管理 模拟' },
+  { id:'diner', zh:'星港餐站', en:'STARPORT DINER', url:'starport-diner.html', cat:'经营', c:'#ff9f5c',
+    desc:'时间管理 · 订单 / 配方 / 连击', art:'pet', hot:64, kw:'餐厅 订单 经营 做菜' },
+  { id:'exchange', zh:'轨道商会', en:'ORBITAL EXCHANGE', url:'orbital-exchange.html', cat:'经营', c:'#ffe45e',
+    desc:'星际贸易 · 市场 / 燃料 / 价差', art:'orbit', hot:50, kw:'贸易 经济 商人' },
+  { id:'salvage', zh:'星骸回收', en:'NEBULA SALVAGE', url:'nebula-salvage.html', cat:'冒险', c:'#b98cff',
+    desc:'零重力采矿 · 资源 / 燃料 / 返航', art:'orbit', hot:58, kw:'采矿 探索 资源' },
+  { id:'rescue', zh:'深空救援', en:'DEEP SPACE RESCUE', url:'deep-space-rescue.html', cat:'冒险', c:'#7fe8ff',
+    desc:'救援调度 · 倒计时 / 燃料 / 幸存者', art:'shoot', hot:56, kw:'救援 倒计时 太空' },
+  { id:'pet', zh:'量子宠物舱', en:'QUANTUM PET POD', url:'quantum-pet.html', cat:'休闲', c:'#6dffc2',
+    desc:'休闲养成 · 喂食 / 陪玩 / 成长', art:'pet', hot:62, kw:'养成 宠物 放置 治愈' },
+  { id:'novel', zh:'星海彼岸', en:'THE FAR SHORE', url:'novel/', cat:'叙事', c:'#ff7bc7',
+    desc:'视觉小说 · 多结局 / 分支选择', art:'story', hot:70, kw:'小说 剧情 galgame 多结局' }
+];
+const CATS = ['全部','动作','射击','格斗','策略','竞速','音乐','解谜','推理','经营','冒险','休闲','叙事','★ 收藏'];
+
+/* ================================================================= state */
+const LS = 'starportArcade.v2';
+let store = { fav: [], plays: {}, last: {}, sound: true };
+try { store = Object.assign(store, JSON.parse(localStorage.getItem(LS) || '{}')); } catch (e) {}
+const saveStore = () => { try { localStorage.setItem(LS, JSON.stringify(store)); } catch (e) {} };
+let cat = '全部', query = '', sort = 0;
+const SORTS = [['推荐', (a,b)=>b.hot-a.hot], ['最常玩', (a,b)=>(store.plays[b.id]||0)-(store.plays[a.id]||0)||b.hot-a.hot], ['名称', (a,b)=>a.zh.localeCompare(b.zh,'zh')]];
+
+/* ================================================================= audio */
+let AC = null;
+function sfx(freq, dur = .06, type = 'square', vol = .05, slide = 0) {
+  if (!store.sound) return;
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, t);
+    if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(40, freq + slide), t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .008);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + dur + .02);
+  } catch (e) {}
+}
+const hoverSfx = () => sfx(880, .04, 'sine', .025);
+const clickSfx = () => { sfx(660, .07, 'square', .05, 260); setTimeout(()=>sfx(990,.08,'square',.04),50); };
+
+/* ================================================================= toast */
+let toastT;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('on');
+  clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('on'), 2200);
+}
+
+/* ================================================================ art dom */
+function artHTML(kind) {
+  const R = (n, f) => Array.from({ length: n }, (_, i) => f(i)).join('');
+  switch (kind) {
+    case 'swarm': return `<div class="art a-swarm">
+      <i class="ring"></i><i class="ring" style="animation-delay:1.2s"></i><i class="hero"></i>
+      ${R(9, i => { const a = i / 9 * Math.PI * 2, d = 70;
+        return `<i class="m" style="left:calc(50% + ${Math.cos(a)*d}px);top:calc(50% + ${Math.sin(a)*d*0.6}px);--tx:${-Math.cos(a)*d}px;--ty:${-Math.sin(a)*d*0.6}px;animation-delay:${(i*0.32).toFixed(2)}s"></i>`; })}</div>`;
+    case 'shoot': return `<div class="art a-shoot">
+      <i class="ship"></i>${R(3, i => `<i class="b" style="margin-left:${(i-1)*10}px;animation-delay:${i*0.22}s"></i>`)}
+      ${R(5, i => `<i class="e" style="left:${12+i*18}%;top:${16+(i%2)*16}%;animation-delay:${i*0.3}s"></i>`)}</div>`;
+    case 'run': return `<div class="art a-run">
+      ${R(6, i => `<i class="g" style="top:${28+i*13}%;animation-delay:${i*0.2}s"></i>`)}
+      <i class="p"></i><i class="o"></i><i class="o" style="animation-delay:.95s"></i></div>`;
+    case 'beat': return `<div class="art a-beat"><i class="line"></i>
+      ${R(4, i => `<i class="bar" style="left:${14+i*20}%;animation-delay:${i*0.13}s"></i>`)}</div>`;
+    case 'grid': return `<div class="art a-grid">
+      ${R(6, i => `<i class="n" style="left:${16+(i%3)*30}%;top:${28+Math.floor(i/3)*32}%;animation-delay:${i*0.28}s"></i>`)}
+      ${R(3, i => `<i class="l" style="left:18%;right:18%;top:${33+i*32}%;animation-delay:${i*0.5}s"></i>`)}</div>`;
+    case 'race': return `<div class="art a-race">
+      ${R(6, i => `<i class="r" style="animation-delay:${i*0.16}s"></i>`)}<i class="car"></i></div>`;
+    case 'card': return `<div class="art a-card">
+      ${R(3, i => `<i class="k" style="left:${26+i*18}%;animation-delay:${i*0.4}s;transform:rotate(${(i-1)*8}deg)"></i>`)}</div>`;
+    case 'orbit': return `<div class="art a-orbit"><i class="sun"></i>
+      ${R(3, i => { const s = 50 + i * 34; return `<i class="ring" style="width:${s}px;height:${s}px;margin:${-s/2}px 0 0 ${-s/2}px;animation-duration:${6+i*3}s"><i></i></i>`; })}</div>`;
+    case 'stealth': return `<div class="art a-stealth">
+      ${R(15, i => `<i class="cell" style="left:${10+(i%5)*17}%;top:${24+Math.floor(i/5)*20}%;width:13%;height:16%"></i>`)}
+      <i class="eye" style="right:22%;top:30%"></i><i class="me" style="left:22%;bottom:26%"></i></div>`;
+    case 'fight': return `<div class="art a-fight"><i class="f l"></i><i class="f r"></i><i class="hit"></i></div>`;
+    case 'story': return `<div class="art a-story"><i class="face"></i>
+      ${R(3, i => `<i class="txt" style="bottom:${16+i*11}%;${i===2?'right:34%;':''}"></i>`)}</div>`;
+    case 'td': return `<div class="art a-td">
+      ${R(4, i => `<i class="t" style="left:${18+i*20}%;top:${i%2?32:56}%"></i>`)}
+      ${R(3, i => `<i class="w" style="left:-8%;top:${44+i*8}%;animation-delay:${i*0.9}s"></i>`)}</div>`;
+    case 'pet': return `<div class="art a-pet"><i class="body"></i>
+      <i class="eye" style="left:44%"></i><i class="eye" style="left:54%"></i></div>`;
+    case 'ball': return `<div class="art a-ball">
+      ${R(4, i => `<i class="bump" style="left:${20+i*20}%;top:${26+(i%2)*30}%;animation-delay:${i*0.3}s"></i>`)}
+      <i class="ball" style="left:34%;top:24%"></i></div>`;
+    case 'eye': return `<div class="art a-eye"><i class="lens"></i>
+      ${R(4, i => `<i class="doc" style="bottom:${14+i*9}%;${i%2?'right:26%;':''}"></i>`)}</div>`;
+    default: return `<div class="art a-grid"></div>`;
+  }
+}
+
+/* ================================================================= render */
+const gridEl = document.getElementById('grid');
+const recentEl = document.getElementById('recent');
+const chipsEl = document.getElementById('chips');
+
+function cardHTML(g, i) {
+  const fav = store.fav.includes(g.id);
+  const plays = store.plays[g.id] || 0;
+  return `<div class="cab" data-id="${g.id}" style="--c:${g.c};animation-delay:${Math.min(i * 26, 420)}ms" tabindex="0" role="button" aria-label="${g.zh}">
+    <div class="screen">${artHTML(g.art)}</div>
+    ${g.flag ? `<div class="flag">${g.flag}</div>` : ''}
+    <button class="fav ${fav ? 'on' : ''}" data-fav="${g.id}" title="收藏" aria-label="收藏 ${g.zh}">${fav ? '★' : '☆'}</button>
+    <div class="meta">
+      <div class="zh">${g.zh}</div>
+      <div class="en">${g.en}</div>
+      <div class="desc">${g.desc}</div>
+      <div class="foot"><span class="tag">${g.cat}</span><span class="plays">${plays ? '已玩 ' + plays + ' 次' : '未开封'}</span></div>
+    </div>
+  </div>`;
+}
+
+function filtered() {
+  const q = query.trim().toLowerCase();
+  let list = GAMES.filter(g => {
+    const okCat = cat === '全部' || (cat === '★ 收藏' ? store.fav.includes(g.id) : g.cat === cat);
+    const okQ = !q || (g.zh + g.en + g.desc + g.cat + (g.kw || '')).toLowerCase().includes(q);
+    return okCat && okQ;
+  });
+  return list.sort(SORTS[sort][1]);
+}
+
+function renderChips() {
+  chipsEl.innerHTML = CATS.map(c => {
+    const n = c === '全部' ? GAMES.length : c === '★ 收藏' ? store.fav.length : GAMES.filter(g => g.cat === c).length;
+    return `<button class="chip ${c === cat ? 'on' : ''}" data-cat="${c}">${c}<span class="n">${n}</span></button>`;
+  }).join('');
+}
+
+function renderGrid() {
+  const list = filtered();
+  document.getElementById('count').textContent = `${list.length} 台在线`;
+  gridEl.innerHTML = list.length ? list.map(cardHTML).join('')
+    : `<div class="empty"><b>🛸</b>没有找到「${query}」相关的机台<br>换个关键词，或者点右上角骰子随机来一台</div>`;
+}
+
+function renderRecent() {
+  const ids = Object.keys(store.last).sort((a, b) => store.last[b] - store.last[a]).slice(0, 4);
+  const list = ids.map(id => GAMES.find(g => g.id === id)).filter(Boolean);
+  document.getElementById('recent-sec').style.display = list.length ? '' : 'none';
+  recentEl.innerHTML = list.map(cardHTML).join('');
+}
+
+function renderStats() {
+  document.getElementById('stat-total').textContent = GAMES.length;
+  document.getElementById('stat-fav').textContent = store.fav.length;
+  document.getElementById('stat-plays').textContent = Object.values(store.plays).reduce((a, b) => a + b, 0);
+}
+
+function renderAll() { renderChips(); renderGrid(); renderRecent(); renderStats(); }
+
+/* ================================================================ actions */
+function launch(id) {
+  const g = GAMES.find(x => x.id === id); if (!g) return;
+  store.plays[id] = (store.plays[id] || 0) + 1; store.last[id] = Date.now(); saveStore();
+  clickSfx();
+  document.body.style.transition = 'opacity .22s'; document.body.style.opacity = '0';
+  setTimeout(() => { location.href = g.url; }, 190);
+}
+function toggleFav(id) {
+  const i = store.fav.indexOf(id);
+  if (i >= 0) { store.fav.splice(i, 1); toast('已取消收藏'); sfx(420, .08, 'sine', .05, -120); }
+  else { store.fav.push(id); toast('★ 已加入收藏'); sfx(680, .07, 'sine', .06, 420); }
+  saveStore(); renderAll();
+}
+
+document.addEventListener('click', e => {
+  const fav = e.target.closest('[data-fav]');
+  if (fav) { e.preventDefault(); e.stopPropagation(); toggleFav(fav.dataset.fav); return; }
+  const cab = e.target.closest('.cab');
+  if (cab) { launch(cab.dataset.id); return; }
+  const chip = e.target.closest('[data-cat]');
+  if (chip) { cat = chip.dataset.cat; sfx(560, .05, 'square', .04); renderAll(); }
+});
+document.addEventListener('keydown', e => {
+  if (e.key === '/' && document.activeElement !== qEl) { e.preventDefault(); qEl.focus(); qEl.select(); }
+  if (e.key === 'Escape' && document.activeElement === qEl) { qEl.value = ''; query = ''; renderGrid(); qEl.blur(); }
+  if (e.key === 'Enter') {
+    const cab = document.activeElement && document.activeElement.classList && document.activeElement.classList.contains('cab');
+    if (cab) launch(document.activeElement.dataset.id);
+    else if (document.activeElement === qEl) { const f = filtered()[0]; if (f) launch(f.id); }
+  }
+  konami(e.key);
+});
+document.addEventListener('mouseover', e => { if (e.target.closest('.cab')) hoverSfx(); });
+
+const qEl = document.getElementById('q');
+qEl.addEventListener('input', () => { query = qEl.value; renderGrid(); });
+document.getElementById('btn-sort').onclick = e => {
+  sort = (sort + 1) % SORTS.length; e.currentTarget.textContent = '排序：' + SORTS[sort][0];
+  sfx(600, .05, 'square', .04); renderGrid();
+};
+document.getElementById('btn-random').onclick = () => {
+  const list = filtered().length ? filtered() : GAMES;
+  const g = list[Math.floor(Math.random() * list.length)];
+  toast('🎲 随机机台：' + g.zh); sfx(300, .18, 'square', .05, 700);
+  setTimeout(() => launch(g.id), 620);
+};
+const soundBtn = document.getElementById('btn-sound');
+const syncSound = () => {
+  soundBtn.classList.toggle('off', !store.sound);
+  soundBtn.querySelector('.waves').style.display = store.sound ? '' : 'none';
+  soundBtn.querySelector('.mutex').style.display = store.sound ? 'none' : '';
+};
+soundBtn.onclick = () => { store.sound = !store.sound; saveStore(); syncSound(); if (store.sound) clickSfx(); };
+document.getElementById('btn-scroll').onclick = () => {
+  document.querySelector('.toolbar').scrollIntoView({ behavior: 'smooth', block: 'start' }); sfx(520, .06, 'sine', .04);
+};
+
+/* konami easter egg */
+const CODE = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+let kpos = 0;
+function konami(k) {
+  if (k === CODE[kpos] || (k && k.toLowerCase && k.toLowerCase() === CODE[kpos])) {
+    kpos++;
+    if (kpos === CODE.length) {
+      kpos = 0; document.body.classList.toggle('party');
+      toast(document.body.classList.contains('party') ? '✦ 霓虹超载模式 ON' : '霓虹超载模式 OFF');
+      [523,659,784,1047,1319].forEach((f, i) => setTimeout(() => sfx(f, .16, 'triangle', .07), i * 80));
+      confetti();
+    }
+  } else kpos = (k === CODE[0]) ? 1 : 0;
+}
+
+/* ============================================================ background */
+const bg = document.getElementById('bg'), bx = bg.getContext('2d');
+let BW = 0, BH = 0, DPR = 1, stars = [], boids = [], sparks = [];
+function bgResize() {
+  DPR = Math.min(devicePixelRatio || 1, 2);
+  BW = innerWidth; BH = innerHeight;
+  bg.width = BW * DPR; bg.height = BH * DPR; bx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  stars = Array.from({ length: Math.min(200, Math.round(BW * BH / 9000)) }, () => ({
+    x: Math.random() * BW, y: Math.random() * BH, z: Math.random() * .8 + .2, s: Math.random() * 1.6 + .4
+  }));
+  boids = Array.from({ length: 8 }, () => ({
+    x: Math.random() * BW, y: Math.random() * BH, a: Math.random() * 6.28,
+    v: 14 + Math.random() * 26, c: ['#7fe8ff','#ff7bc7','#ffe45e','#6dffc2','#b98cff'][Math.floor(Math.random()*5)]
+  }));
+}
+function confetti() {
+  for (let i = 0; i < 90; i++) sparks.push({
+    x: BW / 2, y: BH * .35, vx: (Math.random()-.5)*680, vy: (Math.random()-.7)*620, life: 1.6,
+    c: ['#7fe8ff','#ff7bc7','#ffe45e','#6dffc2','#b98cff'][Math.floor(Math.random()*5)]
+  });
+}
+let bt = 0, blast = 0;
+function bgLoop(ts) {
+  requestAnimationFrame(bgLoop);
+  const dt = Math.min(.05, (ts - blast) / 1000 || 0); blast = ts; bt += dt;
+  bx.clearRect(0, 0, BW, BH);
+  const sy = scrollY * .12;
+  // grid horizon
+  bx.strokeStyle = 'rgba(90,150,240,.07)'; bx.lineWidth = 1; bx.beginPath();
+  const step = 78, off = (bt * 8) % step;
+  for (let x = -off; x < BW + step; x += step) { bx.moveTo(x, 0); bx.lineTo(x, BH); }
+  for (let y = -off - sy % step; y < BH + step; y += step) { bx.moveTo(0, y); bx.lineTo(BW, y); }
+  bx.stroke();
+  // stars
+  for (const s of stars) {
+    const y = (s.y - sy * s.z + BH) % BH;
+    bx.fillStyle = `rgba(190,225,255,${.2 + s.z * .55})`;
+    bx.fillRect(s.x, y, s.s, s.s);
+  }
+  // drifting neon ships
+  bx.globalCompositeOperation = 'lighter';
+  for (const b of boids) {
+    b.a += Math.sin(bt * .5 + b.v) * .004;
+    b.x += Math.cos(b.a) * b.v * dt; b.y += Math.sin(b.a) * b.v * dt;
+    if (b.x < -40) b.x = BW + 40; if (b.x > BW + 40) b.x = -40;
+    if (b.y < -40) b.y = BH + 40; if (b.y > BH + 40) b.y = -40;
+    const gy = b.y - sy * .5;
+    bx.save(); bx.translate(b.x, ((gy % (BH + 80)) + BH + 80) % (BH + 80) - 40); bx.rotate(b.a);
+    bx.globalAlpha = .5; bx.fillStyle = b.c; bx.shadowBlur = 18; bx.shadowColor = b.c;
+    bx.beginPath(); bx.moveTo(9, 0); bx.lineTo(-6, 5); bx.lineTo(-3, 0); bx.lineTo(-6, -5); bx.closePath(); bx.fill();
+    bx.restore();
+  }
+  bx.shadowBlur = 0; bx.globalAlpha = 1;
+  // confetti sparks
+  for (let i = sparks.length - 1; i >= 0; i--) {
+    const p = sparks[i]; p.life -= dt;
+    if (p.life <= 0) { sparks.splice(i, 1); continue; }
+    p.vy += 900 * dt; p.x += p.vx * dt; p.y += p.vy * dt;
+    bx.globalAlpha = Math.min(1, p.life); bx.fillStyle = p.c;
+    bx.fillRect(p.x, p.y, 4, 8);
+  }
+  bx.globalAlpha = 1; bx.globalCompositeOperation = 'source-over';
+}
+
+/* ========================================================== promo canvas */
+const pc = document.getElementById('promo'), px = pc.getContext('2d');
+let PW = 0, PH = 0, promoState = null;
+function promoResize() {
+  const r = pc.getBoundingClientRect();
+  PW = Math.max(200, r.width); PH = Math.max(120, r.height);
+  pc.width = PW * DPR; pc.height = PH * DPR; px.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+function promoInit() {
+  promoState = {
+    hero: { x: PW / 2, y: PH / 2, a: 0 },
+    mobs: Array.from({ length: 46 }, () => spawnMob()),
+    gems: [], bolts: [], pops: [], t: 0, fire: 0
+  };
+}
+function spawnMob() {
+  const a = Math.random() * 6.283, d = Math.max(PW, PH) * .30 + Math.random() * Math.max(PW, PH) * .34;
+  return { x: PW / 2 + Math.cos(a) * d, y: PH / 2 + Math.sin(a) * d, s: 34 + Math.random() * 42,
+    c: ['#7fe8ff','#ff7bc7','#b98cff','#6dffc2','#ffe45e'][Math.floor(Math.random()*5)],
+    r: 4 + Math.random() * 4, w: Math.random() * 6.283 };
+}
+let plast = 0;
+function promoLoop(ts) {
+  requestAnimationFrame(promoLoop);
+  if (!promoState) return;
+  const dt = Math.min(.05, (ts - plast) / 1000 || 0); plast = ts;
+  const S = promoState; S.t += dt;
+  const h = S.hero;
+  h.a += dt * .9;
+  h.x = PW / 2 + Math.cos(S.t * .8) * PW * .16;
+  h.y = PH / 2 + Math.sin(S.t * 1.2) * PH * .16;
+  // mobs
+  for (const m of S.mobs) {
+    m.w += dt * 2;
+    const dx = h.x - m.x, dy = h.y - m.y, d = Math.hypot(dx, dy) || 1;
+    const wob = Math.sin(m.w) * .3, ca = Math.cos(wob), sa = Math.sin(wob);
+    const rx = (dx / d) * ca - (dy / d) * sa, ry = (dx / d) * sa + (dy / d) * ca;
+    m.x += rx * m.s * dt; m.y += ry * m.s * dt;
+  }
+  // xp gems fly to the hero
+  for (let i = S.gems.length - 1; i >= 0; i--) {
+    const g2 = S.gems[i];
+    const dx = h.x - g2.x, dy = h.y - g2.y, d = Math.hypot(dx, dy) || 1;
+    g2.x += dx / d * 260 * dt; g2.y += dy / d * 260 * dt;
+    if (d < 12) S.gems.splice(i, 1);
+  }
+  // auto fire
+  S.fire -= dt;
+  if (S.fire <= 0 && S.mobs.length) {
+    S.fire = .13;
+    let best = null, bd = 1e9;
+    for (const m of S.mobs) { const d = Math.hypot(m.x - h.x, m.y - h.y); if (d < bd) { bd = d; best = m; } }
+    if (best) {
+      const a = Math.atan2(best.y - h.y, best.x - h.x);
+      for (let k = -1; k <= 1; k++) S.bolts.push({ x: h.x, y: h.y, vx: Math.cos(a + k * .16) * 420, vy: Math.sin(a + k * .16) * 420, life: 1.4 });
+    }
+  }
+  for (let i = S.bolts.length - 1; i >= 0; i--) {
+    const b = S.bolts[i]; b.life -= dt; b.x += b.vx * dt; b.y += b.vy * dt;
+    if (b.life <= 0) { S.bolts.splice(i, 1); continue; }
+    for (let j = S.mobs.length - 1; j >= 0; j--) {
+      const m = S.mobs[j];
+      if (Math.hypot(m.x - b.x, m.y - b.y) < m.r + 5) {
+        S.pops.push({ x: m.x, y: m.y, life: .4, c: m.c });
+        if (S.gems.length < 30) S.gems.push({ x: m.x, y: m.y });
+        S.mobs.splice(j, 1); S.bolts.splice(i, 1);
+        S.mobs.push(spawnMob());
+        break;
+      }
+    }
+  }
+  for (let i = S.pops.length - 1; i >= 0; i--) { S.pops[i].life -= dt; if (S.pops[i].life <= 0) S.pops.splice(i, 1); }
+
+  // draw
+  const g = px.createLinearGradient(0, 0, 0, PH);
+  g.addColorStop(0, '#0a1330'); g.addColorStop(1, '#05070f');
+  px.fillStyle = g; px.fillRect(0, 0, PW, PH);
+  px.strokeStyle = 'rgba(110,180,255,.10)'; px.lineWidth = 1; px.beginPath();
+  const st = 40, o = (S.t * 14) % st;
+  for (let x = -o; x < PW; x += st) { px.moveTo(x, 0); px.lineTo(x, PH); }
+  for (let y = -o; y < PH; y += st) { px.moveTo(0, y); px.lineTo(PW, y); }
+  px.stroke();
+  px.globalCompositeOperation = 'lighter';
+  for (const p of S.pops) {
+    px.globalAlpha = p.life / .4; px.strokeStyle = p.c; px.lineWidth = 2;
+    px.beginPath(); px.arc(p.x, p.y, (1 - p.life / .4) * 22 + 4, 0, 6.283); px.stroke();
+  }
+  px.globalAlpha = 1;
+  for (const gm of S.gems) {
+    px.fillStyle = '#8dffc9'; px.shadowBlur = 12; px.shadowColor = '#6dffc2';
+    px.fillRect(gm.x - 3, gm.y - 3, 6, 6);
+  }
+  for (const m of S.mobs) {
+    px.fillStyle = m.c; px.shadowBlur = 16; px.shadowColor = m.c;
+    px.save(); px.translate(m.x, m.y); px.rotate(Math.atan2(h.y - m.y, h.x - m.x) + 1.57);
+    px.beginPath(); px.moveTo(0, -m.r * 1.5); px.lineTo(m.r, m.r); px.lineTo(0, m.r * .4); px.lineTo(-m.r, m.r);
+    px.closePath(); px.fill(); px.restore();
+  }
+  for (const b of S.bolts) {
+    px.fillStyle = '#ffffff'; px.shadowBlur = 12; px.shadowColor = '#7fe8ff';
+    px.fillRect(b.x - 2, b.y - 2, 5, 5);
+  }
+  for (let k = 0; k < 3; k++) {
+    const a = S.t * 2.4 + k / 3 * 6.283, ox = h.x + Math.cos(a) * 46, oy = h.y + Math.sin(a) * 46;
+    px.fillStyle = '#ff9fd6'; px.shadowBlur = 16; px.shadowColor = '#ff7bc7';
+    px.fillRect(ox - 3, oy - 3, 7, 7);
+  }
+  px.shadowBlur = 22; px.shadowColor = '#7fe8ff';
+  px.save(); px.translate(h.x, h.y); px.rotate(Math.atan2(Math.sin(S.t * 1.2), Math.cos(S.t * .8)) + 1.57);
+  px.fillStyle = '#eafcff';
+  px.beginPath(); px.moveTo(0, -11); px.lineTo(8, 8); px.lineTo(0, 4); px.lineTo(-8, 8); px.closePath(); px.fill();
+  px.restore();
+  px.shadowBlur = 0; px.globalCompositeOperation = 'source-over';
+
+  // fake HUD chrome so the preview reads as a real run
+  const pad = 16, bw = PW * .3, by = PH - 44;
+  px.fillStyle = 'rgba(4,8,18,.62)'; px.fillRect(pad, by, bw, 9);
+  px.fillStyle = '#ff5c7a'; px.fillRect(pad, by, bw * (.55 + Math.sin(S.t * .7) * .12), 9);
+  px.fillStyle = 'rgba(4,8,18,.62)'; px.fillRect(pad, by + 12, bw, 5);
+  px.fillStyle = '#6dffc2'; px.fillRect(pad, by + 12, bw * ((S.t * .16) % 1), 5);
+  px.font = '900 ' + Math.max(13, Math.round(PW * .036)) + 'px "PingFang SC",system-ui,sans-serif';
+  px.textAlign = 'right'; px.fillStyle = 'rgba(223,244,255,.92)';
+  const secs = 96 + Math.floor(S.t);
+  px.fillText(String(Math.floor(secs / 60)).padStart(2, '0') + ':' + String(secs % 60).padStart(2, '0'), PW - pad, pad + 16);
+  px.font = '800 10px "PingFang SC",system-ui,sans-serif'; px.textAlign = 'left';
+  px.fillStyle = 'rgba(255,228,94,.9)'; px.fillText('Lv ' + (7 + Math.floor(S.t / 12) % 6), pad, by - 8);
+}
+
+/* =================================================================== boot */
+function boot() {
+  bgResize(); promoResize(); promoInit(); renderAll(); syncSound();
+  requestAnimationFrame(bgLoop); requestAnimationFrame(promoLoop);
+  addEventListener('resize', () => { bgResize(); promoResize(); promoInit(); });
+  // restore body opacity when returning via bfcache
+  addEventListener('pageshow', () => { document.body.style.opacity = '1'; });
+}
+boot();
+</script>
+</body>
+</html>

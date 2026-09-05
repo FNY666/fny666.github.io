@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>霓虹幸存者 NEON SURVIVORS · 星港游戏厅</title>
+<meta name="theme-color" content="#05070f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<style>
+:root{
+  --cyan:#7fe8ff; --pink:#ff7bc7; --gold:#ffe45e; --green:#6dffc2; --violet:#b98cff; --red:#ff6b8a;
+  --ink:#05070f; --panel:rgba(10,16,32,.82); --line:rgba(127,232,255,.22);
+  --font:"PingFang SC","Microsoft YaHei",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--ink);color:#eaf4ff;font-family:var(--font);
+  user-select:none;-webkit-user-select:none;touch-action:none;overscroll-behavior:none}
+#stage{position:fixed;inset:0}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block;background:#05070f}
+.hidden{display:none!important}
+button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit}
+
+/* ---------------- HUD ---------------- */
+#hud{position:absolute;inset:0;pointer-events:none;z-index:5;padding:max(10px,env(safe-area-inset-top)) 12px 12px}
+.topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.vitals{width:min(42vw,340px)}
+.bar{position:relative;height:16px;border-radius:9px;background:rgba(3,8,18,.72);border:1px solid var(--line);overflow:hidden;
+  box-shadow:0 0 18px rgba(0,0,0,.5), inset 0 0 12px rgba(0,0,0,.6)}
+.bar i{position:absolute;inset:0;width:100%;transform-origin:left;transition:width .12s linear;display:block}
+#hpfill{background:linear-gradient(90deg,#ff4d6d,#ff9f5c);box-shadow:0 0 14px rgba(255,90,110,.7)}
+#hptext{position:absolute;inset:0;display:grid;place-items:center;font:800 10px/1 var(--font);letter-spacing:.06em;
+  color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9)}
+.xp{height:9px;margin-top:5px;border-radius:6px}
+#xpfill{background:linear-gradient(90deg,#6dffc2,#7fe8ff);box-shadow:0 0 14px rgba(109,255,194,.7)}
+.vrow{display:flex;align-items:center;gap:8px;margin-top:6px}
+.chip{padding:3px 9px;border-radius:999px;background:rgba(8,16,32,.7);border:1px solid var(--line);
+  font:800 11px/1.4 var(--font);letter-spacing:.08em;color:#bfe6ff}
+#lvl{color:var(--gold);border-color:rgba(255,228,94,.4)}
+.center-top{text-align:center;flex:1}
+#timer{font:900 clamp(20px,4.4vw,34px)/1 var(--font);letter-spacing:.1em;color:#dff4ff;
+  text-shadow:0 0 18px rgba(127,232,255,.55)}
+.tstats{margin-top:4px;font:700 11px/1 var(--font);letter-spacing:.14em;color:#7fa7cf}
+.tstats b{color:var(--gold)}
+.topright{display:flex;gap:8px;pointer-events:auto}
+.icobtn{width:38px;height:38px;border-radius:12px;background:rgba(8,16,32,.72);border:1px solid var(--line);
+  display:grid;place-items:center;font-size:16px;color:#cfe9ff;backdrop-filter:blur(6px);transition:.15s}
+.icobtn:active{transform:scale(.92);background:rgba(30,60,100,.8)}
+.icobtn.off{opacity:.45}
+
+#loadout{position:absolute;left:12px;bottom:calc(14px + env(safe-area-inset-bottom));display:flex;flex-wrap:wrap;gap:6px;max-width:46vw}
+.slot{position:relative;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
+  background:rgba(6,12,26,.75);border:1px solid color-mix(in srgb,var(--c) 55%,transparent);
+  color:var(--c);font-size:16px;box-shadow:0 0 12px color-mix(in srgb,var(--c) 25%,transparent)}
+.slot.pass{border-radius:50%;font-size:13px}
+.slot i{position:absolute;right:-3px;bottom:-4px;font:900 9px/1 var(--font);font-style:normal;color:#02060f;
+  background:var(--c);border-radius:5px;padding:2px 3px}
+
+#announce{position:absolute;left:50%;top:31%;transform:translateX(-50%);opacity:0;white-space:nowrap;
+  font:900 clamp(18px,3.6vw,30px)/1 var(--font);letter-spacing:.26em;color:#ffb0c4;
+  text-shadow:0 0 22px rgba(255,90,120,.9),0 2px 10px rgba(0,0,0,.8)}
+#announce.show{animation:warn 2.4s ease-out}
+@keyframes warn{
+  0%{opacity:0;transform:translateX(-50%) scale(1.5)}
+  12%{opacity:1;transform:translateX(-50%) scale(1)}
+  22%{opacity:.35}32%{opacity:1}70%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-16px)}}
+#bossbar{position:absolute;left:50%;transform:translateX(-50%);top:88px;width:min(72vw,520px)}
+#bossname{text-align:center;font:900 12px/1.6 var(--font);letter-spacing:.24em;color:#ffb0c4;text-shadow:0 0 12px rgba(255,90,120,.7)}
+#bossbar .bar{height:11px;border-color:rgba(255,110,140,.45)}
+#bossfill{background:linear-gradient(90deg,#ff2d6f,#ffb45c);box-shadow:0 0 16px rgba(255,60,110,.8)}
+
+/* ------------- touch controls ------------- */
+#touch{position:absolute;inset:0;z-index:6;pointer-events:none}
+#stick{position:absolute;left:calc(18px + env(safe-area-inset-left));bottom:calc(22px + env(safe-area-inset-bottom));
+  width:132px;height:132px;border-radius:50%;pointer-events:auto;touch-action:none;
+  background:radial-gradient(circle,rgba(127,232,255,.10),rgba(6,12,26,.42));border:1px solid rgba(127,232,255,.28)}
+#knob{position:absolute;left:50%;top:50%;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#bff2ff,#2b7fa8);box-shadow:0 0 22px rgba(127,232,255,.6)}
+#dashbtn{position:absolute;right:calc(20px + env(safe-area-inset-right));bottom:calc(34px + env(safe-area-inset-bottom));
+  width:92px;height:92px;border-radius:50%;pointer-events:auto;touch-action:none;display:grid;place-items:center;
+  font:900 15px/1 var(--font);letter-spacing:.1em;color:#eafcff;border:1px solid rgba(255,123,199,.45);
+  background:radial-gradient(circle,rgba(255,123,199,.22),rgba(10,16,32,.6));overflow:hidden}
+#dashbtn::after{content:'';position:absolute;left:0;bottom:0;width:var(--cd,100%);height:4px;background:var(--pink);
+  box-shadow:0 0 12px var(--pink)}
+#dashbtn:active{transform:scale(.94)}
+@media (hover:hover) and (pointer:fine){#touch{display:none}}
+
+/* ------------- overlays ------------- */
+.overlay{position:absolute;inset:0;z-index:20;display:grid;place-items:center;padding:18px;
+  background:radial-gradient(circle at 50% 40%,rgba(8,16,36,.72),rgba(2,4,10,.94));backdrop-filter:blur(7px)}
+#menu{background:radial-gradient(circle at 50% 42%,rgba(6,12,28,.42),rgba(2,4,10,.86));backdrop-filter:blur(2.5px)}
+.panel{width:min(560px,94vw);max-height:92vh;overflow:auto;padding:26px 24px;border-radius:22px;
+  background:linear-gradient(160deg,rgba(14,24,48,.94),rgba(6,10,22,.96));
+  border:1px solid var(--line);box-shadow:0 30px 80px rgba(0,0,0,.6),inset 0 0 40px rgba(60,140,220,.06);text-align:center;
+  scrollbar-width:thin}
+.logo{font:900 clamp(34px,9vw,62px)/1 var(--font);letter-spacing:.06em;
+  background:linear-gradient(180deg,#fff,#7fe8ff 45%,#ff7bc7);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 26px rgba(127,232,255,.45))}
+.logo-sub{margin-top:8px;font:800 11px/1 var(--font);letter-spacing:.42em;color:#8fb6dd}
+.tagline{margin:14px 0 4px;font:600 13px/1.9 var(--font);color:#9fc0e0}
+.btn{display:block;width:100%;margin:10px 0;padding:15px 20px;border-radius:14px;font:900 17px/1 var(--font);letter-spacing:.12em;
+  color:#02121c;background:linear-gradient(120deg,#7fe8ff,#6dffc2);box-shadow:0 10px 26px rgba(80,220,255,.28);transition:.15s}
+.btn:active{transform:translateY(2px) scale(.99)}
+.btn.ghost{color:#cfe9ff;background:rgba(127,232,255,.08);border:1px solid var(--line);box-shadow:none}
+.btn.pink{color:#210716;background:linear-gradient(120deg,#ff9fd6,#ffd45c)}
+.btnrow{display:flex;gap:10px}.btnrow .btn{margin:10px 0 0}
+.stats{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-top:16px}
+.stat{min-width:88px;padding:10px 12px;border-radius:12px;background:rgba(8,16,32,.6);border:1px solid rgba(127,232,255,.14)}
+.stat span{display:block;font:800 10px/1 var(--font);letter-spacing:.18em;color:#7fa7cf}
+.stat b{display:block;margin-top:6px;font:900 19px/1 var(--font);color:var(--cyan)}
+.stat.gold b{color:var(--gold)}
+#howto{max-height:0;overflow:hidden;transition:max-height .3s ease;text-align:left}
+#howto.open{max-height:420px}
+#howto .inner{margin-top:14px;padding:14px 16px;border-radius:14px;background:rgba(5,10,22,.7);border:1px solid rgba(127,232,255,.14);
+  font:600 12.5px/1.9 var(--font);color:#a9c8e6}
+#howto b{color:var(--cyan)}
+kbd{display:inline-block;padding:1px 7px;margin:0 2px;border-radius:6px;background:rgba(127,232,255,.14);
+  border:1px solid rgba(127,232,255,.3);font:800 11px/1.6 var(--font);color:#dff4ff}
+
+/* ------------- level up cards ------------- */
+#cards{background:radial-gradient(circle at 50% 50%,rgba(10,20,45,.6),rgba(2,4,10,.9))}
+#cards .head{text-align:center;margin-bottom:14px}
+#cards .head h2{margin:0;font:900 clamp(24px,6vw,38px)/1.1 var(--font);letter-spacing:.14em;color:var(--gold);
+  text-shadow:0 0 26px rgba(255,228,94,.5)}
+#cards .head p{margin:8px 0 0;font:700 11px/1 var(--font);letter-spacing:.26em;color:#8fb6dd}
+#cardlist{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;width:min(940px,96vw)}
+.card{position:relative;flex:1 1 240px;max-width:290px;min-height:250px;padding:22px 18px 20px;border-radius:20px;text-align:center;
+  background:linear-gradient(170deg,rgba(16,28,54,.96),rgba(6,10,22,.97));
+  border:1px solid color-mix(in srgb,var(--c) 45%,transparent);
+  box-shadow:0 18px 44px rgba(0,0,0,.55), inset 0 0 30px color-mix(in srgb,var(--c) 8%,transparent);
+  transition:transform .16s ease, box-shadow .16s ease; animation:cardIn .32s cubic-bezier(.2,1.2,.4,1) backwards}
+.card:nth-child(2){animation-delay:.06s}.card:nth-child(3){animation-delay:.12s}
+@keyframes cardIn{from{opacity:0;transform:translateY(26px) scale(.94)}}
+.card:hover{transform:translateY(-8px) scale(1.02);box-shadow:0 26px 60px rgba(0,0,0,.6),0 0 32px color-mix(in srgb,var(--c) 32%,transparent)}
+.card:active{transform:translateY(-2px) scale(.99)}
+.card::before{content:'';position:absolute;inset:0;border-radius:20px;pointer-events:none;
+  background:radial-gradient(circle at 50% 0%,color-mix(in srgb,var(--c) 22%,transparent),transparent 62%)}
+.card.epic{border-width:2px;box-shadow:0 18px 44px rgba(0,0,0,.55),0 0 34px color-mix(in srgb,var(--c) 30%,transparent)}
+.card.new::after{content:'NEW';position:absolute;top:12px;right:12px;padding:3px 8px;border-radius:999px;
+  font:900 9px/1.4 var(--font);letter-spacing:.16em;color:#04121a;background:var(--c)}
+.ckey{position:absolute;top:12px;left:12px;width:22px;height:22px;border-radius:7px;display:grid;place-items:center;
+  font:900 11px/1 var(--font);color:#9fc0e0;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12)}
+.cicon{font-size:52px;line-height:1;color:var(--c);filter:drop-shadow(0 0 20px color-mix(in srgb,var(--c) 60%,transparent));margin-top:8px}
+.cname{margin-top:14px;font:900 21px/1.2 var(--font);letter-spacing:.06em;color:#f2f9ff}
+.ctag{margin-top:6px;font:800 10px/1 var(--font);letter-spacing:.2em;color:var(--c);opacity:.9}
+.cdesc{margin-top:12px;font:600 13px/1.7 var(--font);color:#a9c8e6}
+
+/* ------------- pause / shop ------------- */
+#buildlist{list-style:none;margin:14px 0 0;padding:0;text-align:left;max-height:36vh;overflow:auto}
+#buildlist li{display:flex;justify-content:space-between;padding:9px 12px;border-radius:10px;margin-bottom:6px;
+  background:rgba(8,16,32,.6);font:700 13px/1 var(--font);color:#bcd8f2}
+#shoplist{margin-top:16px;text-align:left}
+.srow{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;margin-bottom:10px;
+  background:rgba(8,16,32,.62);border:1px solid rgba(127,232,255,.13)}
+.srow.maxed{opacity:.55}
+.sinfo{flex:1}.sinfo b{display:block;font:900 14px/1.4 var(--font);color:#dff0ff}
+.sinfo span{display:block;font:600 12px/1.5 var(--font);color:#8fb6dd}
+.pips{display:flex;gap:4px;margin-top:7px}
+.pips i{width:20px;height:5px;border-radius:3px;background:rgba(255,255,255,.12)}
+.pips i.on{background:linear-gradient(90deg,#7fe8ff,#6dffc2);box-shadow:0 0 8px rgba(127,232,255,.7)}
+.srow button{padding:10px 14px;border-radius:11px;font:900 13px/1 var(--font);color:#04121a;
+  background:linear-gradient(120deg,#ffd45c,#ff9f5c);min-width:82px}
+.srow button:disabled{opacity:.4;background:rgba(255,255,255,.12);color:#9fc0e0;cursor:default}
+.wallet{margin-top:10px;font:800 13px/1 var(--font);letter-spacing:.1em;color:var(--gold)}
+#dead .logo{background-image:linear-gradient(180deg,#fff,#ff9fb5 55%,#ff5c8a)}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:rgba(127,232,255,.3);border-radius:3px}
+@media(max-width:640px){
+  .card{min-height:auto;padding:16px 14px;flex:1 1 100%}
+  .cicon{font-size:38px}.cname{font-size:18px;margin-top:8px}.cdesc{font-size:12px;margin-top:8px}
+  #cardlist{gap:10px}
+  .panel{padding:20px 16px}
+}
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="game"></canvas>
+
+  <!-- ============ HUD ============ -->
+  <div id="hud" class="hidden">
+    <div class="topbar">
+      <div class="vitals">
+        <div class="bar"><i id="hpfill"></i><div id="hptext">100 / 100</div></div>
+        <div class="bar xp"><i id="xpfill" style="width:0%"></i></div>
+        <div class="vrow"><span class="chip" id="lvl">Lv 1</span><span class="chip">击杀 <b id="kills">0</b></span><span class="chip">¤ <b id="credits">0</b></span></div>
+      </div>
+      <div class="center-top">
+        <div id="timer">00:00</div>
+        <div class="tstats">SURVIVE · <b>NEON</b> · SURVIVORS</div>
+      </div>
+      <div class="topright">
+        <button class="icobtn" id="btn-mute" title="音效">🔊</button>
+        <button class="icobtn" id="btn-pause" title="暂停">⏸</button>
+      </div>
+    </div>
+    <div id="bossbar" class="hidden">
+      <div id="bossname">BOSS</div>
+      <div class="bar"><i id="bossfill"></i></div>
+    </div>
+    <div id="announce"></div>
+    <div id="loadout"></div>
+  </div>
+
+  <!-- ============ touch ============ -->
+  <div id="touch">
+    <div id="stick"><div id="knob"></div></div>
+    <button id="dashbtn">冲刺</button>
+  </div>
+
+  <!-- ============ menu ============ -->
+  <div id="menu" class="overlay">
+    <div class="panel">
+      <div class="logo">霓虹幸存者</div>
+      <div class="logo-sub">NEON SURVIVORS</div>
+      <p class="tagline">星港外环被虫群淹没。<br>自动开火 · 构筑成长 · 活到最后一秒。</p>
+      <div class="stats">
+        <div class="stat"><span>最佳存活</span><b id="m-best">00:00</b></div>
+        <div class="stat"><span>最高击杀</span><b id="m-kills">0</b></div>
+        <div class="stat gold"><span>星币</span><b id="m-credits">0</b></div>
+      </div>
+      <button class="btn" id="btn-play">开始生存</button>
+      <div class="btnrow">
+        <button class="btn ghost" id="btn-shop">星币改装</button>
+        <button class="btn ghost" id="btn-howto">玩法说明</button>
+      </div>
+      <button class="btn ghost" id="btn-hall" data-hall>返回星港游戏厅</button>
+      <div id="howto"><div class="inner">
+        <b>移动</b> <kbd>W A S D</kbd> / <kbd>方向键</kbd> / 左下摇杆<br>
+        <b>冲刺</b> <kbd>空格</kbd> / <kbd>Shift</kbd> / 右下按钮（短暂无敌）<br>
+        <b>攻击</b> 全自动，自动锁定最近的敌人<br>
+        <b>升级</b> 拾取绿色晶体积累经验，升级时三选一<br>
+        <b>暂停</b> <kbd>Esc</kbd> / <kbd>P</kbd>，选卡可按 <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><br>
+        <b>目标</b> 每 130 秒会降临一只 BOSS，撑得越久星币越多；
+        阵亡后星币可在「星币改装」永久强化下一次出击。
+      </div></div>
+    </div>
+  </div>
+
+  <!-- ============ level up ============ -->
+  <div id="cards" class="overlay hidden">
+    <div>
+      <div class="head"><h2>等级提升</h2><p>选择一项强化 · 按 1 / 2 / 3</p></div>
+      <div id="cardlist"></div>
+    </div>
+  </div>
+
+  <!-- ============ pause ============ -->
+  <div id="pause" class="overlay hidden">
+    <div class="panel">
+      <div class="logo" style="font-size:34px">已暂停</div>
+      <ul id="buildlist"></ul>
+      <button class="btn" id="btn-resume">继续</button>
+      <button class="btn ghost" id="btn-quit">放弃并返回主菜单</button>
+    </div>
+  </div>
+
+  <!-- ============ dead ============ -->
+  <div id="dead" class="overlay hidden">
+    <div class="panel">
+      <div class="logo">信号中断</div>
+      <div class="logo-sub">RUN COMPLETE</div>
+      <div class="stats">
+        <div class="stat"><span>存活</span><b id="d-time">00:00</b></div>
+        <div class="stat"><span>击杀</span><b id="d-kills">0</b></div>
+        <div class="stat"><span>等级</span><b id="d-level">1</b></div>
+        <div class="stat gold"><span>获得星币</span><b id="d-credits">0</b></div>
+      </div>
+      <p class="tagline">历史最佳存活：<b id="d-best">00:00</b></p>
+      <button class="btn" id="btn-again">再来一局</button>
+      <div class="btnrow">
+        <button class="btn ghost" id="btn-dead-shop">星币改装</button>
+        <button class="btn ghost" id="btn-menu">主菜单</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ shop ============ -->
+  <div id="shop" class="overlay hidden">
+    <div class="panel">
+      <div class="logo" style="font-size:32px">星币改装</div>
+      <div class="logo-sub">PERMANENT UPGRADES</div>
+      <div class="wallet">持有星币：<span id="s-credits">0</span> ¤</div>
+      <div id="shoplist"></div>
+      <button class="btn ghost" id="btn-shop-back">返回</button>
+    </div>
+  </div>
+</div>
+<script src="neon-survivors.js?v=1"></script>
+</body>
+</html>
