@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.0",
+  "question": "Which proven or authoritative frontend principles should guide the visual redesign of Starport Arcade?",
+  "scope": {
+    "time_window": "current as of 2026-09-05",
+    "geography_or_context": "public game discovery and product/interactive web pages; mobile-first web arcade",
+    "inclusions": ["game catalog discovery", "hero storytelling", "responsive layout", "accessible interaction"],
+    "exclusions": ["copying proprietary visual assets or code", "private or login-only references"]
+  },
+  "claims": [
+    {
+      "id": "C1",
+      "claim": "A large game catalog benefits from explicit filtering and browse structure so users can narrow choices instead of scanning an undifferentiated list.",
+      "status": "confirmed",
+      "confidence": "medium",
+      "sources": [
+        {"url": "https://itch.io/games", "publisher": "itch.io", "published_or_updated": "current as accessed 2026-09-05", "tier": "primary", "support": "The public games page exposes platform, price, time, genre, input, multiplayer, accessibility, type and sorting controls before the game grid."}
+      ],
+      "caveat": "This is a product pattern observed in the reference, not a controlled usability study."
+    },
+    {
+      "id": "C2",
+      "claim": "A product landing page can establish one main proposition first and progressively explain supporting features afterward.",
+      "status": "confirmed",
+      "confidence": "medium",
+      "sources": [
+        {"url": "https://www.apple.com/airpods-pro/", "publisher": "Apple", "published_or_updated": "current as accessed 2026-09-05", "tier": "primary", "support": "The page opens with product identity and primary value proposition, then provides separate sections for spatial audio, fitness, hearing health, battery and other details."}
+      ],
+      "caveat": "The page is a commercial product page, so its conversion goals differ from an indie-game catalog."
+    },
+    {
+      "id": "C3",
+      "claim": "CSS Grid supports explicit areas, flexible fractional tracks, responsive sizing and controlled layering for responsive page composition.",
+      "status": "confirmed",
+      "confidence": "high",
+      "sources": [
+        {"url": "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_grid_layout/Basic_concepts_of_grid_layout", "publisher": "MDN Web Docs", "published_or_updated": "current as accessed 2026-09-05", "tier": "primary", "support": "The guide documents grid areas, fr tracks, repeat, minmax, alignment and layering, including responsive/flexible track sizing."}
+      ],
+      "caveat": "The guide explains capability, not which composition is aesthetically best."
+    },
+    {
+      "id": "C4",
+      "claim": "Responsive design should adapt layout and content presentation to viewport constraints rather than only shrink a desktop layout.",
+      "status": "confirmed",
+      "confidence": "medium",
+      "sources": [
+        {"url": "https://web.dev/learn/design/", "publisher": "web.dev", "published_or_updated": "current as accessed 2026-09-05", "tier": "primary", "support": "The official course is explicitly about sites that look great and work well for everyone across responsive design concerns."}
+      ],
+      "caveat": "The landing page alone is a course description; detailed modules were not all fetched in this pass."
+    },
+    {
+      "id": "C5",
+      "claim": "The redesigned Starport Arcade should use a single hero focus, a small curated selection, then a filterable catalog; this is a design inference from the references and the observed baseline, not a measured universal rule.",
+      "status": "inferred",
+      "confidence": "medium",
+      "sources": [
+        {"url": "https://itch.io/games", "publisher": "itch.io", "published_or_updated": "current as accessed 2026-09-05", "tier": "primary", "support": "Supports browse/filter structure."},
+        {"url": "https://www.apple.com/airpods-pro/", "publisher": "Apple", "published_or_updated": "current as accessed 2026-09-05", "tier": "primary", "support": "Supports lead-with-one-proposition storytelling."},
+        {"url": "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_grid_layout/Basic_concepts_of_grid_layout", "publisher": "MDN Web Docs", "published_or_updated": "current as accessed 2026-09-05", "tier": "primary", "support": "Supports flexible grid composition."}
+      ],
+      "caveat": "No independent user study has been run; visual acceptance must be based on actual screenshots and navigation checks."
+    }
+  ],
+  "coverage": {
+    "searched": ["itch.io games", "Apple AirPods Pro product page", "web.dev responsive design", "MDN CSS Grid", "Awwwards games", "SiteInspire games", "Google web design searches"],
+    "inaccessible": ["Steam homepage returned no readable text in the browser session", "Awwwards page exposed only a short nominee summary", "SiteInspire page exposed only a short listing summary"],
+    "unresolved_conflicts": []
+  }
+}

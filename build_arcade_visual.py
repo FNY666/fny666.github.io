@@ -1,4 +1,57 @@
-<!doctype html>
+from html import escape
+from pathlib import Path
+import json
+
+root = Path(__file__).parent
+raw_games = json.loads((root / 'games.json').read_text())
+games = []
+for game in raw_games:
+    item = dict(game)
+    item['category'] = {
+        'ARCADE':'格斗', 'MAIN':'格斗', 'VERSUS':'格斗', 'SCORE':'格斗', 'LAB':'格斗',
+        'NOVEL':'叙事', 'HERO':'叙事', 'RUN':'动作', 'DEFENSE':'策略', 'MUSIC':'节奏',
+        'PUZZLE':'解谜', 'SIMULATION':'模拟', 'SALVAGE':'探索', 'TRADING':'经营',
+        'TACTICAL':'策略', 'STEALTH':'潜行', 'NEW':'生存', 'RACING':'竞速',
+        'INSPECTION':'模拟', 'RESCUE':'救援', 'DINER':'经营', 'COMPANION':'休闲',
+        'PINBALL':'街机', 'SPORTS':'运动', 'SHOOTER':'射击', 'EXPLORER':'探索', 'CASE':'推理',
+    }.get(item['pill'], item['pill'])
+    item['safe_url'] = escape(item['url'], quote=True)
+    for key in ('name','tag','desc','pill','category'):
+        item[key] = escape(item[key])
+    games.append(item)
+
+by_name = {g['name']: g for g in games}
+def pick(name):
+    return by_name[name]
+
+hero = pick('霓虹幸存者')
+feature_names = ['星港调查员', '星港调度', '量子弹珠']
+features = [pick(x) for x in feature_names]
+
+def card(g, index, compact=False):
+    extra = ' compact' if compact else ''
+    return f'''<a class="game-card cab{extra}" href="{g['safe_url']}" data-category="{g['category']}" aria-label="进入 {g['name']}">
+      <div class="card-index">{index:02d}</div>
+      <div class="card-signal"></div>
+      <div class="card-copy"><span class="card-type">{g['category']} / {g['tag']}</span><h3>{g['name']}</h3><p>{g['desc']}</p></div>
+      <span class="card-arrow" aria-hidden="true">↗</span>
+    </a>'''
+
+feature_cards = []
+for g in features:
+    feature_cards.append(f'''<a class="mini-feature cab" href="{g['safe_url']}" data-category="{g['category']}" aria-label="进入 {g['name']}">
+      <span class="mini-number">{games.index(next(x for x in games if x['name'] == g['name'])) + 1:02d}</span>
+      <div><span class="mini-type">{g['category']} · {g['tag']}</span><h3>{g['name']}</h3><p>{g['desc']}</p></div><b>↗</b>
+    </a>''')
+
+categories = []
+for g in games:
+    if g['category'] not in categories:
+        categories.append(g['category'])
+category_buttons = ''.join(f'<button class="filter" data-filter="{escape(c)}">{escape(c)}</button>' for c in categories)
+catalog = ''.join(card(g, i) for i, g in enumerate(games, 1))
+
+html = r'''<!doctype html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
@@ -77,7 +130,7 @@ body::after{content:"";position:fixed;z-index:-2;inset:0;opacity:.18;pointer-eve
         <h1 id="hero-title">今晚，玩点<br><em>不一样的</em></h1>
         <p class="lede">穿过港区最里面那条亮着橙灯的街。这里没有排行榜的喧闹，只有 <strong>一台台等你接管的游戏</strong>。</p>
         <div class="hero-actions"><a class="action primary" href="#featured">逛精选机台 <span>↓</span></a><a class="action" href="#catalog">查看全部 <span>↗</span></a></div>
-        <div class="hero-meta"><div><b>29</b><span>可玩的机台</span></div><div><b>24H</b><span>永远营业</span></div><div><b>1 COIN</b><span>进入游戏</span></div></div>
+        <div class="hero-meta"><div><b>''' + str(len(games)).zfill(2) + r'''</b><span>可玩的机台</span></div><div><b>24H</b><span>永远营业</span></div><div><b>1 COIN</b><span>进入游戏</span></div></div>
       </div>
       <div class="dock" aria-label="星港游戏厅夜景">
         <span class="dock-label">PLATFORM 09 / LIVE FEED</span><i class="star s1"></i><i class="star s2"></i><i class="star s3"></i><i class="star s4"></i>
@@ -90,169 +143,15 @@ body::after{content:"";position:fixed;z-index:-2;inset:0;opacity:.18;pointer-eve
     <section id="featured" class="featured" aria-labelledby="featured-title">
       <div class="section-head"><div><h2 id="featured-title">今晚的灯是亮着的</h2></div><p>HANDPICKED FROM THE ARCADE FLOOR</p></div>
       <div class="feature-layout">
-        <a class="feature-main cab" href="neon-survivors.html" data-category="生存" aria-label="进入霓虹幸存者"><span class="feature-kicker">NEW ARRIVAL / SURVIVAL</span><h3>霓虹幸存者</h3><p>把一艘小船开进无尽的夜，升级你的火力，撑到下一波。</p><span class="go">↗</span></a>
-        <div class="feature-side"><a class="mini-feature cab" href="https://fny666.github.io/starport-investigator.html" data-category="推理" aria-label="进入 星港调查员">
-      <span class="mini-number">29</span>
-      <div><span class="mini-type">推理 · STARPORT INVESTIGATOR</span><h3>星港调查员</h3><p>侦探推理 · 现场 / 物证 / 定案</p></div><b>↗</b>
-    </a><a class="mini-feature cab" href="https://fny666.github.io/starport-transit.html" data-category="模拟" aria-label="进入 星港调度">
-      <span class="mini-number">13</span>
-      <div><span class="mini-type">模拟 · STARPORT TRANSIT</span><h3>星港调度</h3><p>资源管理 · 航线 / 拥堵 / 枢纽</p></div><b>↗</b>
-    </a><a class="mini-feature cab" href="https://fny666.github.io/quantum-pinball.html" data-category="街机" aria-label="进入 量子弹珠">
-      <span class="mini-number">24</span>
-      <div><span class="mini-type">街机 · QUANTUM PINBALL</span><h3>量子弹珠</h3><p>物理街机 · 挡板 / 目标 / 多球</p></div><b>↗</b>
-    </a></div>
+        <a class="feature-main cab" href="''' + hero['safe_url'] + r'''" data-category="''' + hero['category'] + r'''" aria-label="进入霓虹幸存者"><span class="feature-kicker">NEW ARRIVAL / SURVIVAL</span><h3>霓虹幸存者</h3><p>把一艘小船开进无尽的夜，升级你的火力，撑到下一波。</p><span class="go">↗</span></a>
+        <div class="feature-side">''' + ''.join(feature_cards) + r'''</div>
       </div>
     </section>
 
     <section id="catalog" class="catalog" aria-labelledby="catalog-title">
-      <div class="section-head"><h2 id="catalog-title">机台目录</h2><p>29 GAMES / PICK YOUR FREQUENCY</p></div>
-      <div class="filters" role="group" aria-label="按类型筛选"><button class="filter active" data-filter="全部">全部</button><button class="filter" data-filter="格斗">格斗</button><button class="filter" data-filter="叙事">叙事</button><button class="filter" data-filter="动作">动作</button><button class="filter" data-filter="策略">策略</button><button class="filter" data-filter="节奏">节奏</button><button class="filter" data-filter="解谜">解谜</button><button class="filter" data-filter="模拟">模拟</button><button class="filter" data-filter="探索">探索</button><button class="filter" data-filter="经营">经营</button><button class="filter" data-filter="潜行">潜行</button><button class="filter" data-filter="生存">生存</button><button class="filter" data-filter="竞速">竞速</button><button class="filter" data-filter="救援">救援</button><button class="filter" data-filter="休闲">休闲</button><button class="filter" data-filter="街机">街机</button><button class="filter" data-filter="运动">运动</button><button class="filter" data-filter="射击">射击</button><button class="filter" data-filter="推理">推理</button></div>
-      <div class="catalog-grid"><a class="game-card cab" href="https://fny666.github.io/fight.html" data-category="格斗" aria-label="进入 像素乱斗">
-      <div class="card-index">01</div>
-      <div class="card-signal"></div>
-      <div class="card-copy"><span class="card-type">格斗 / PIXEL BRAWL</span><h3>像素乱斗</h3><p>格斗机台 · 连段 / 街机 / 无尽</p></div>
-      <span class="card-arrow" aria-hidden="true">↗</span>
-    </a><a class="game-card cab" href="https://fny666.github.io/fight.html" data-category="格斗" aria-label="进入 像素乱斗">
-      <div class="card-index">02</div>
-      <div class="card-signal"></div>
-      <div class="card-copy"><span class="card-type">格斗 / HARD MODE</span><h3>像素乱斗</h3><p>正式厅 · 角色 / BGM / PWA</p></div>
-      <span class="card-arrow" aria-hidden="true">↗</span>
-    </a><a class="game-card cab" href="https://fny666.github.io/fight.html?mode=pvp" data-category="格斗" aria-label="进入 双人对战">
-      <div class="card-index">03</div>
-      <div class="card-signal"></div>
-      <div class="card-copy"><span class="card-type">格斗 / 2P BATTLE</span><h3>双人对战</h3><p>本地双人 · 同屏对战</p></div>
-      <span class="card-arrow" aria-hidden="true">↗</span>
-    </a><a class="game-card cab" href="https://fny666.github.io/fight.html?mode=endless" data-category="格斗" aria-label="进入 无尽模式">
-      <div class="card-index">04</div>
-      <div class="card-signal"></div>
-      <div class="card-copy"><span class="card-type">格斗 / ENDLESS</span><h3>无尽模式</h3><p>无限波次 · 无限分数 · 冲榜</p></div>
-      <span class="card-arrow" aria-hidden="true">↗</span>
-    </a><a class="game-card cab" href="https://fny666.github.io/fight.html?mode=train" data-category="格斗" aria-label="进入 连段挑战">
-      <div class="card-index">05</div>
-      <div class="card-signal"></div>
-      <div class="card-copy"><span class="card-type">格斗 / TRAINING</span><h3>连段挑战</h3><p>帧数据 / 取消 / 教学关卡</p></div>
-      <span class="card-arrow" aria-hidden="true">↗</span>
-    </a><a class="game-card cab" href="https://fny666.github.io/novel/" data-category="叙事" aria-label="进入 星海彼岸">
-      <div class="card-index">06</div>
-      <div class="card-signal"></div>
-      <div class="card-copy"><span class="card-type">叙事 / STORY MODE</span><h3>星海彼岸</h3><p>视觉小说 · 多结局 · 叙事机台</p></div>
-      <span class="card-arrow" aria-hidden="true">↗</span>
-    </a><a class="game-card cab" href="https://fny666.github.io/?hero=cat" data-category="叙事" aria-label="进入 猫警物语">
-      <div class="card-index">07</div>
-      <div class="card-signal"></div>
-      <div class="card-copy"><span class="card-type">叙事 / KIDS HERO</span><h3>猫警物语</h3><p>童年台 · 正义快枪手</p></div>
-      <span class="card-arrow" aria-hidden="true">↗</span>
-    </a><a class="game-card cab" href="https://fny666.github.io/?hero=ultra" data-category="叙事" aria-label="进入 光侠战记">
-      <div class="card-index">08</div>
-      <div class="card-signal"></div>
-      <div class="card-copy"><span class="card-type">叙事 / ULTRA HERO</span><h3>光侠战记</h3><p>巨人台 · 光能量战斗</p></div>
-      <span class="card-arrow" aria-hidden="true">↗</span>
-    </a><a class="game-card cab" href="https://fny666.github.io/neon-shift.html" data-category="动作" aria-label="进入 霓虹跃迁">
-      <div class="card-index">09</div>
-      <div class="card-signal"></div>
-      <div class="card-copy"><span class="card-type">动作 / NEON SHIFT</span><h3>霓虹跃迁</h3><p>未来跑酷 · 跳跃 / 核心 / 冲分</p></div>
-      <span class="card-arrow" aria-hidden="true">↗</span>
-    </a><a class="game-card cab" href="https://fny666.github.io/starline-defense.html" data-category="策略" aria-label="进入 星轨防线">
-      <div class="card-index">10</div>
-      <div class="card-signal"></div>
-      <div class="card-copy"><span class="card-type">策略 / STARLINE DEFENSE</span><h3>星轨防线</h3><p>轨道防卫 · 瞄准 / 射击 / 护盾</p></div>
-      <span class="card-arrow" aria-hidden="true">↗</span>
-    </a><a class="game-card cab" href="https://fny666.github.io/neon-beat.html" data-category="节奏" aria-label="进入 霓虹节拍">
-      <div class="card-index">11</div>
-      <div class="card-signal"></div>
-      <div class="card-copy"><span class="card-type">节奏 / NEON BEAT</span><h3>霓虹节拍</h3><p>节奏机台 · 四轨 / 连击 / 音符</p></div>
-      <span class="card-arrow" aria-hidden="true">↗</span>
-    </a><a class="game-card cab" href="https://fny666.github.io/quantum-corridor.html" data-category="解谜" aria-label="进入 量子回廊">
-      <div class="card-index">12</div>
-      <div class="card-signal"></div>
-      <div class="card-copy"><span class="card-type">解谜 / QUANTUM CORRIDOR</span><h3>量子回廊</h3><p>线路解谜 · 节点 / 星门 / 航线</p></div>
-      <span class="card-arrow" aria-hidden="true">↗</span>
-    </a><a class="game-card cab" href="https://fny666.github.io/starport-transit.html" data-category="模拟" aria-label="进入 星港调度">
-      <div class="card-index">13</div>
-      <div class="card-signal"></div>
-      <div class="card-copy"><span class="card-type">模拟 / STARPORT TRANSIT</span><h3>星港调度</h3><p>资源管理 · 航线 / 拥堵 / 枢纽</p></div>
-      <span class="card-arrow" aria-hidden="true">↗</span>
-    </a><a class="game-card cab" href="https://fny666.github.io/nebula-salvage.html" data-category="探索" aria-label="进入 星骸回收">
-      <div class="card-index">14</div>
-      <div class="card-signal"></div>
-      <div class="card-copy"><span class="card-type">探索 / NEBULA SALVAGE</span><h3>星骸回收</h3><p>零重力采矿 · 资源 / 燃料 / 返航</p></div>
-      <span class="card-arrow" aria-hidden="true">↗</span>
-    </a><a class="game-card cab" href="https://fny666.github.io/orbital-exchange.html" data-category="经营" aria-label="进入 轨道商会">
-      <div class="card-index">15</div>
-      <div class="card-signal"></div>
-      <div class="card-copy"><span class="card-type">经营 / ORBITAL EXCHANGE</span><h3>轨道商会</h3><p>星际贸易 · 市场 / 燃料 / 价差</p></div>
-      <span class="card-arrow" aria-hidden="true">↗</span>
-    </a><a class="game-card cab" href="https://fny666.github.io/solar-protocol.html" data-category="策略" aria-label="进入 恒星协议">
-      <div class="card-index">16</div>
-      <div class="card-signal"></div>
-      <div class="card-copy"><span class="card-type">策略 / SOLAR PROTOCOL</span><h3>恒星协议</h3><p>卡牌战术 · 能量 / 护盾 / 星区</p></div>
-      <span class="card-arrow" aria-hidden="true">↗</span>
-    </a><a class="game-card cab" href="https://fny666.github.io/ghost-protocol.html" data-category="潜行" aria-label="进入 幽影协议">
-      <div class="card-index">17</div>
-      <div class="card-signal"></div>
-      <div class="card-copy"><span class="card-type">潜行 / GHOST PROTOCOL</span><h3>幽影协议</h3><p>潜行网格 · 视野 / 警报 / 撤离</p></div>
-      <span class="card-arrow" aria-hidden="true">↗</span>
-    </a><a class="game-card cab" href="neon-survivors.html" data-category="生存" aria-label="进入 霓虹幸存者">
-      <div class="card-index">18</div>
-      <div class="card-signal"></div>
-      <div class="card-copy"><span class="card-type">生存 / NEON SURVIVORS</span><h3>霓虹幸存者</h3><p>生存 Roguelite · 自动开火 / 构筑 / BOSS</p></div>
-      <span class="card-arrow" aria-hidden="true">↗</span>
-    </a><a class="game-card cab" href="https://fny666.github.io/neon-circuit.html" data-category="竞速" aria-label="进入 霓虹竞速">
-      <div class="card-index">19</div>
-      <div class="card-signal"></div>
-      <div class="card-copy"><span class="card-type">竞速 / NEON CIRCUIT</span><h3>霓虹竞速</h3><p>星际竞速 · 圈数 / 氮气 / 名次</p></div>
-      <span class="card-arrow" aria-hidden="true">↗</span>
-    </a><a class="game-card cab" href="https://fny666.github.io/starport-customs.html" data-category="模拟" aria-label="进入 星港检疫">
-      <div class="card-index">20</div>
-      <div class="card-signal"></div>
-      <div class="card-copy"><span class="card-type">模拟 / STARPORT CUSTOMS</span><h3>星港检疫</h3><p>审查模拟 · 协议 / 扫描 / 判断</p></div>
-      <span class="card-arrow" aria-hidden="true">↗</span>
-    </a><a class="game-card cab" href="https://fny666.github.io/deep-space-rescue.html" data-category="救援" aria-label="进入 深空救援">
-      <div class="card-index">21</div>
-      <div class="card-signal"></div>
-      <div class="card-copy"><span class="card-type">救援 / DEEP SPACE RESCUE</span><h3>深空救援</h3><p>救援调度 · 倒计时 / 燃料 / 幸存者</p></div>
-      <span class="card-arrow" aria-hidden="true">↗</span>
-    </a><a class="game-card cab" href="https://fny666.github.io/starport-diner.html" data-category="经营" aria-label="进入 星港餐站">
-      <div class="card-index">22</div>
-      <div class="card-signal"></div>
-      <div class="card-copy"><span class="card-type">经营 / STARPORT DINER</span><h3>星港餐站</h3><p>时间管理 · 订单 / 配方 / 连击</p></div>
-      <span class="card-arrow" aria-hidden="true">↗</span>
-    </a><a class="game-card cab" href="https://fny666.github.io/quantum-pet.html" data-category="休闲" aria-label="进入 量子宠物舱">
-      <div class="card-index">23</div>
-      <div class="card-signal"></div>
-      <div class="card-copy"><span class="card-type">休闲 / QUANTUM PET POD</span><h3>量子宠物舱</h3><p>休闲养成 · 喂食 / 陪玩 / 成长</p></div>
-      <span class="card-arrow" aria-hidden="true">↗</span>
-    </a><a class="game-card cab" href="https://fny666.github.io/quantum-pinball.html" data-category="街机" aria-label="进入 量子弹珠">
-      <div class="card-index">24</div>
-      <div class="card-signal"></div>
-      <div class="card-copy"><span class="card-type">街机 / QUANTUM PINBALL</span><h3>量子弹珠</h3><p>物理街机 · 挡板 / 目标 / 多球</p></div>
-      <span class="card-arrow" aria-hidden="true">↗</span>
-    </a><a class="game-card cab" href="https://fny666.github.io/zero-g-hoop.html" data-category="运动" aria-label="进入 零重力篮">
-      <div class="card-index">25</div>
-      <div class="card-signal"></div>
-      <div class="card-copy"><span class="card-type">运动 / ZERO-G HOOP</span><h3>零重力篮</h3><p>零重力投篮 · 瞄准 / 篮筐 / 连击</p></div>
-      <span class="card-arrow" aria-hidden="true">↗</span>
-    </a><a class="game-card cab" href="https://fny666.github.io/neon-fighter.html" data-category="射击" aria-label="进入 霓虹战机">
-      <div class="card-index">26</div>
-      <div class="card-signal"></div>
-      <div class="card-copy"><span class="card-type">射击 / NEON FIGHTER</span><h3>霓虹战机</h3><p>纵版射击 · 战机 / 敌潮 / 波次</p></div>
-      <span class="card-arrow" aria-hidden="true">↗</span>
-    </a><a class="game-card cab" href="https://fny666.github.io/stellar-guardians.html" data-category="策略" aria-label="进入 星域守护者">
-      <div class="card-index">27</div>
-      <div class="card-signal"></div>
-      <div class="card-copy"><span class="card-type">策略 / STELLAR GUARDIANS</span><h3>星域守护者</h3><p>塔防游戏 · 防御塔 / 敌潮 / 策略</p></div>
-      <span class="card-arrow" aria-hidden="true">↗</span>
-    </a><a class="game-card cab" href="https://fny666.github.io/quantum-treasure.html" data-category="探索" aria-label="进入 量子探宝">
-      <div class="card-index">28</div>
-      <div class="card-signal"></div>
-      <div class="card-copy"><span class="card-type">探索 / QUANTUM TREASURE</span><h3>量子探宝</h3><p>量子迷宫 · 扫描 / 收集 / 完成</p></div>
-      <span class="card-arrow" aria-hidden="true">↗</span>
-    </a><a class="game-card cab" href="https://fny666.github.io/starport-investigator.html" data-category="推理" aria-label="进入 星港调查员">
-      <div class="card-index">29</div>
-      <div class="card-signal"></div>
-      <div class="card-copy"><span class="card-type">推理 / STARPORT INVESTIGATOR</span><h3>星港调查员</h3><p>侦探推理 · 现场 / 物证 / 定案</p></div>
-      <span class="card-arrow" aria-hidden="true">↗</span>
-    </a><div class="empty" hidden>这一区还没有亮灯，换个频段看看。</div></div>
+      <div class="section-head"><h2 id="catalog-title">机台目录</h2><p>''' + str(len(games)).zfill(2) + r''' GAMES / PICK YOUR FREQUENCY</p></div>
+      <div class="filters" role="group" aria-label="按类型筛选"><button class="filter active" data-filter="全部">全部</button>''' + category_buttons + r'''</div>
+      <div class="catalog-grid">''' + catalog + r'''<div class="empty" hidden>这一区还没有亮灯，换个频段看看。</div></div>
     </section>
   </main>
   <footer class="footer"><span>STARPORT NIGHT MARKET / <b>OPEN 24 HOURS</b></span><span>SELECT A MACHINE · START YOUR OWN STORY</span></footer>
@@ -265,3 +164,6 @@ body::after{content:"";position:fixed;z-index:-2;inset:0;opacity:.18;pointer-eve
 </script>
 </body>
 </html>
+'''
+(root / 'arcade.html').write_text(html)
+print(f'generated arcade.html with {len(games)} entrances and {len(categories)} categories')
