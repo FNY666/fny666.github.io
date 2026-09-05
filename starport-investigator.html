@@ -41,7 +41,9 @@ body::before{content:"";position:fixed;inset:0;background:radial-gradient(circle
 .deduce-row .lbl{font:12px monospace;color:var(--amber);letter-spacing:.1em;margin-bottom:2px}
 .opt{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid rgba(99,247,224,.22);border-radius:10px;background:rgba(10,22,34,.7);color:#dff6ff;font:13px monospace;cursor:pointer}
 .opt.sel{border-color:var(--cyan);background:rgba(20,60,60,.7);color:var(--cyan)}
+.opt.confirmed{border-color:var(--green);box-shadow:inset 3px 0 0 var(--green)}
 .opt input{accent-color:#2bb8a6}
+.impact-status{padding:9px 10px;border-radius:9px;border:1px solid rgba(99,247,224,.22);background:rgba(8,25,30,.7);color:#9fc0ca;font:11px/1.55 monospace}.impact-status.verified{border-color:rgba(110,255,168,.55);color:var(--green)}
 select{width:100%;padding:10px;border-radius:10px;background:#0b1a26;color:#dff6ff;border:1px solid rgba(99,247,224,.3);font:13px monospace}
 .submit{margin-top:10px;padding:12px;border:none;border-radius:999px;background:linear-gradient(180deg,var(--amber),#ff9d2e);color:#1a0d05;font:14px monospace;font-weight:900;letter-spacing:.2em;cursor:pointer;box-shadow:0 4px 0 #a34c12}
 .submit:active{transform:translateY(3px);box-shadow:0 1px 0 #a34c12}
@@ -129,6 +131,7 @@ select{width:100%;padding:10px;border-radius:10px;background:#0b1a26;color:#dff6
       <div id="view-clues" class="view hidden"><div id="clueList"></div></div>
       <div id="view-suspects" class="view hidden"><div id="suspectList"></div></div>
       <div id="view-deduce" class="view hidden">
+        <div class="impact-status" id="impactStatus">证据链状态：尚未完成物证核验。</div>
         <div class="deduce-row"><span class="lbl">谁是凶手 / 责任人？</span><div id="culpritOpts"></div></div>
         <div class="deduce-row"><span class="lbl">动机是？</span><select id="motiveSel"></select></div>
         <button class="submit" id="submitVerdict">提交定案</button>
@@ -371,7 +374,7 @@ if(typeof globalThis!=='undefined')globalThis.CASES=CASES;
 let order=[], idx=0, current=null, active=false, caseClosed=false;
 let score=0, solved=0, attempts=0;
 let visited={}, cluesFound=0, clueTotal=0, clueRates=[];
-let evidence=[], selectedLocation=null, searchPlans={}, searchedActions={}, timelineSeen={}, timelines={}, evidenceInspections={}, evidenceSeen={}, activeTimeline=null, activeEvidence=null, selectedEvidenceItem=null, evidenceMessage='', searchUsed=0, searchBudget=0, sessionSeed=0;
+let evidence=[], exclusions=[], selectedLocation=null, searchPlans={}, searchedActions={}, timelineSeen={}, timelines={}, evidenceInspections={}, evidenceSeen={}, activeTimeline=null, activeEvidence=null, selectedEvidenceItem=null, evidenceMessage='', confirmedSuspectState=null, searchUsed=0, searchBudget=0, sessionSeed=0;
 let selCulprit=null, selMotive=null;
 let best=Number(localStorage.starportInvestBest||0);
 
@@ -465,7 +468,7 @@ function loadCase(){
   sessionSeed=Math.floor(Math.random()*1000000);
   current=buildCaseVariant(CASES[order[idx]],sessionSeed);
   current={...current,locations:shuffle(current.locations.map(l=>({...l,clues:shuffle([...l.clues])}))),suspects:shuffle([...current.suspects]),motives:shuffle([...current.motives])};
-  caseClosed=false; visited={}; evidence=[]; selectedLocation=null; searchedActions={}; timelineSeen={}; evidenceSeen={}; activeTimeline=null; activeEvidence=null; selectedEvidenceItem=null; evidenceMessage=''; searchUsed=0;
+  caseClosed=false; visited={}; evidence=[]; exclusions=[]; selectedLocation=null; searchedActions={}; timelineSeen={}; evidenceSeen={}; activeTimeline=null; activeEvidence=null; selectedEvidenceItem=null; evidenceMessage=''; confirmedSuspectState=null; searchUsed=0;
   searchBudget=Math.max(4,Math.min(7,current.locations.length+2));
   searchPlans={}; timelines={}; evidenceInspections={}; const timelineKey=getTimelineLocation(current); const evidenceKey=EVIDENCE_LOCATIONS[current.id]; current.locations.forEach(l=>{searchPlans[l.key]=buildSearchPlan({id:current.id,locations:[l]},sessionSeed+l.key.length); if(l.key===timelineKey)timelines[l.key]=buildTimeline(current,l.key,sessionSeed+l.key.length); if(l.key===evidenceKey)evidenceInspections[l.key]=buildEvidenceInspection(current,sessionSeed+l.key.length);});
   clueTotal=searchBudget;
@@ -502,6 +505,7 @@ function loadCase(){
     o.addEventListener('click',()=>{selCulprit=s.name;co.querySelectorAll('.opt').forEach(x=>x.classList.toggle('sel',x.dataset.name===s.name));});
     co.appendChild(o);
   });
+  updateImpactStatus();
   const ms=$('motiveSel'); ms.innerHTML='';
   const ph=document.createElement('option'); ph.value=''; ph.textContent='— 选择动机 —'; ms.appendChild(ph);
   current.motives.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;ms.appendChild(o);});
@@ -551,6 +555,23 @@ function renderEvidence(){
   const targets=$('evidenceTargets'); targets.innerHTML='<span style="color:#7897a8;font:10px monospace;width:100%">选择样本进行比对：</span>';
   current.suspects.forEach(s=>{const b=document.createElement('button');b.className='evidence-target';b.dataset.target=s.name;b.textContent=s.name+'样本';b.disabled=!!evidenceSeen[selectedLocation.key+':'+selectedEvidenceItem.id+':'+s.name];b.addEventListener('click',()=>compareCurrentEvidence(s.name));targets.appendChild(b);});
 }
+function deriveEvidenceImpact(caseData,entries=[],confirmedState=null){
+  const match=entries.find(x=>x.matched===true&&x.suspect);
+  const confirmedSuspect=confirmedState||(match?match.suspect:null);
+  const verified=!!(confirmedSuspect||match);
+  return {confirmedSuspect,evidenceStrength:verified?'verified':'unverified',ending:verified?'evidence-closed':'incomplete-chain',statusText:verified?'物证已确认：'+confirmedSuspect+'，证据链闭合。':'证据链状态：尚未完成物证核验。'};
+}
+if(typeof globalThis!=='undefined')globalThis.deriveEvidenceImpact=deriveEvidenceImpact;
+function evaluateVerdict(okC,okM,impact){
+  const correct=!!(okC&&okM);
+  return {correct,ending:correct?(impact.evidenceStrength==='verified'?'evidence-closed':'logical-only'):'incorrect',label:correct?(impact.evidenceStrength==='verified'?'证据链闭合':'逻辑定案'):'定案有误'};
+}
+if(typeof globalThis!=='undefined')globalThis.evaluateVerdict=evaluateVerdict;
+function updateImpactStatus(){
+  const impact=deriveEvidenceImpact(current,evidence,confirmedSuspectState); const node=$('impactStatus'); if(!node)return;
+  node.textContent=impact.statusText; node.classList.toggle('verified',impact.evidenceStrength==='verified');
+  document.querySelectorAll('#culpritOpts .opt').forEach(o=>o.classList.toggle('confirmed',o.dataset.name===impact.confirmedSuspect));
+}
 function selectEvidenceItem(id){
   if(!activeEvidence)return;
   selectedEvidenceItem=activeEvidence.items.find(x=>x.id===id)||null; evidenceMessage=''; renderEvidence();
@@ -560,8 +581,9 @@ function compareCurrentEvidence(suspect){
   const result=compareEvidence(selectedEvidenceItem,suspect,activeEvidence); const key=selectedLocation.key+':'+selectedEvidenceItem.id+':'+suspect;
   evidenceSeen[key]=true; evidenceMessage=(result.matched?'匹配成功：证据已归档。':'样本不匹配：仅作为排除记录。'); $('evidenceReadout').innerHTML='<b style="color:'+(result.matched?'var(--green)':'var(--pink)')+'">'+(result.matched?'匹配成功':'样本不匹配')+'</b><br>'+result.clue+'<br><span style="color:var(--amber)">'+result.variantEffect+'</span>';
   if(result.matched&&!evidence.some(x=>x.traceKey===selectedLocation.key+':'+selectedEvidenceItem.id)){
-    evidence.push({location:selectedLocation.name,action:'物证比对',clue:result.clue,effect:result.variantEffect,traceKey:selectedLocation.key+':'+selectedEvidenceItem.id}); updateEvidenceHud(); renderClues(); log('物证比对成功：匹配结果已归档。');
-  }else if(result.matched){log('这条物证已经归档。');}else{log('比对完成：排除该样本，不增加证据。');}
+    confirmedSuspectState=suspect;
+    evidence.push({location:selectedLocation.name,action:'物证比对',clue:result.clue,effect:result.variantEffect,traceKey:selectedLocation.key+':'+selectedEvidenceItem.id,matched:true,suspect}); updateEvidenceHud(); updateImpactStatus(); renderClues(); log('物证比对成功：'+suspect+'已被物证确认。');
+  }else if(result.matched){log('这条物证已经归档。');}else{exclusions.push({location:selectedLocation.name,action:'物证排除',clue:result.clue,effect:result.variantEffect,excluded:true,suspect}); evidenceMessage='样本不匹配：仅作为排除记录。'; log('比对完成：排除该样本，不增加证据。');}
   renderEvidence();
 }
 function renderSearchActions(){
@@ -618,9 +640,9 @@ function buildReviewReport(metrics){
     {name:'小屏侦查',tag:'手机玩家',rating:3,text:'信息密度可以接受，但现场、线索和定案之间需要来回切页。',want:'希望：在同一屏保留当前证据摘要和下一步动作。'}
   ];
   const experts=[
-    {name:'机制评审',tag:'玩法结构',rating:solvedRate>=.75?3:2,text:'八案都接入了录像时间轴，普通帧与关键帧已有明确差异；但观察和调取记录仍主要返回文字，玩法组合还不够丰富。',want:'优先：补一套物证放大组件，与录像形成不同的调查手感。'},
-    {name:'叙事评审',tag:'案件设计',rating:clueRate>=.9?3:2,text:'八案扩大了内容量，不过只有部分案件会改变变量，动机选项与线索结构仍然重复。',want:'优先：让每案变量都改变证据链，而不是只改变一句提示。'},
-    {name:'可用性评审',tag:'界面与移动端',rating:3,text:'搜证反馈已经出现，但现场、线索和定案仍需来回切页，行动预算的风险提示还不够醒目。',want:'优先：在工作台固定显示行动预算、当前证据和下一步动作。'}
+    {name:'机制评审',tag:'玩法结构',rating:solvedRate>=.75?3:2,text:'物证比对现在会改变证据强度和分数，闭合结案已经成立；但物证组件只覆盖少数案件。',want:'优先：把物证结果继续接入更多案件的推理状态。'},
+    {name:'叙事评审',tag:'案件设计',rating:clueRate>=.9?3:2,text:'正确匹配与错误排除终于有不同后果，但动机选项与证据链仍有重复结构。',want:'优先：让物证匹配改变具体动机、嫌疑人状态或结局。'},
+    {name:'可用性评审',tag:'界面与移动端',rating:3,text:'推理面板会显示已确认的嫌疑人，结案反馈也会区分证据闭合；调查工具仍然需要更强的视觉反馈。',want:'优先：在物证放大时加入真正的放大区域和纹路变化。'}
   ];
   const average=[...playerBase,...experts].reduce((n,x)=>n+x.rating,0)/8;
   return {players:playerBase.map(x=>({...x,kind:'player'})),experts:experts.map(x=>({...x,kind:'expert'})),average,critical:solvedRate<.75?'玩家容易在证据不足时失去方向，先修调查反馈。':clueRate<.9?'部分线索会被漏掉，先修现场引导。':'案件逻辑可解，但物证比对结果还没有进入定案判定。',next:'下一步只做一件事：让物证比对结果真正改变可选推理或结局，而不只是增加证据数量。',metrics:{total,solved,score,attempts,clueRate}};
@@ -665,16 +687,18 @@ function submitVerdict(){
   clueRates.push(clueTotal?cluesFound/clueTotal:0);
   const okC=selCulprit===current.solution.culprit;
   const okM=selMotive===current.solution.motive;
+  const impact=deriveEvidenceImpact(current,evidence,confirmedSuspectState);
+  const verdict=evaluateVerdict(okC,okM,impact);
   let gain=0;
-  if(okC&&okM){gain=100;solved++;}
-  else if(okC){gain=50;}
+  if(okC&&okM){gain=impact.evidenceStrength==='verified'?120:100;solved++;}
+  else if(okC){gain=impact.evidenceStrength==='verified'?70:50;}
   else if(okM){gain=30;}
   score+=gain;
   if(score>best){best=score;localStorage.starportInvestBest=best;}
   hud();
-  const head=okC&&okM?'真相大白':(okC?'责任人正确，动机偏差':'定案有误');
+  const head=okC&&okM?(impact.evidenceStrength==='verified'?'证据链闭合':'逻辑定案'):(okC?'责任人正确，动机偏差':'定案有误');
   $('overTitle').textContent=head;
-  $('overResult').textContent='责任人 '+(okC?'✓':'✗')+' · 动机 '+(okM?'✓':'✗')+' · 本案 +'+gain+' 分';
+  $('overResult').textContent='责任人 '+(okC?'✓':'✗')+' · 动机 '+(okM?'✓':'✗')+' · 物证 '+(impact.evidenceStrength==='verified'?'已确认':'未确认')+' · 本案 +'+gain+' 分';
   $('overTruth').innerHTML='<b style="color:var(--green)">真相：</b>'+current.truth;
   $('over').classList.remove('hidden');
 }
