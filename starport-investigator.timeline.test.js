@@ -27,4 +27,12 @@ assert.ok(decisiveResult.variantEffect && decisiveResult.variantEffect.length>5,
 const beacon=sandbox.buildTimeline(sandbox.CASES.find(x=>x.id===8),'beacon8',23);
 assert.strictEqual(beacon.length,5,'beacon timeline must expose five frames');
 assert.ok(beacon.some(x=>x.critical),'beacon timeline must contain a decisive frame');
+assert.strictEqual(typeof sandbox.getTimelineLocation,'function','every case must have a timeline location mapping');
+sandbox.CASES.forEach(c=>{
+  const key=sandbox.getTimelineLocation(c);
+  const frames=sandbox.buildTimeline(c,key,31+c.id);
+  assert.ok(key,'case '+c.id+' must map to a timeline location');
+  assert.strictEqual(frames.length,5,'case '+c.id+' timeline must expose five frames');
+  assert.ok(frames.some(x=>x.critical),'case '+c.id+' timeline must contain a decisive frame');
+});
 console.log('TIMELINE-BEHAVIOR-OK');

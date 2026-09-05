@@ -437,7 +437,7 @@ function loadCase(){
   current={...current,locations:shuffle(current.locations.map(l=>({...l,clues:shuffle([...l.clues])}))),suspects:shuffle([...current.suspects]),motives:shuffle([...current.motives])};
   caseClosed=false; visited={}; evidence=[]; selectedLocation=null; searchedActions={}; timelineSeen={}; activeTimeline=null; searchUsed=0;
   searchBudget=Math.max(4,Math.min(7,current.locations.length+2));
-  searchPlans={}; timelines={}; current.locations.forEach(l=>{searchPlans[l.key]=buildSearchPlan({id:current.id,locations:[l]},sessionSeed+l.key.length); if((current.id===1&&l.key==='ctl')||(current.id===8&&l.key==='beacon8'))timelines[l.key]=buildTimeline(current,l.key,sessionSeed+l.key.length);});
+  searchPlans={}; timelines={}; const timelineKey=getTimelineLocation(current); current.locations.forEach(l=>{searchPlans[l.key]=buildSearchPlan({id:current.id,locations:[l]},sessionSeed+l.key.length); if(l.key===timelineKey)timelines[l.key]=buildTimeline(current,l.key,sessionSeed+l.key.length);});
   clueTotal=searchBudget;
   $('caseTitle').textContent=current.title;
   $('brief').innerHTML='<b style="color:var(--cyan)">'+current.subtitle+'</b><br><span style="color:var(--amber);font-size:11px">'+current.variantLabel+'</span><br><br>'+current.brief;
@@ -557,7 +557,7 @@ function buildReviewReport(metrics){
     {name:'小屏侦查',tag:'手机玩家',rating:3,text:'信息密度可以接受，但现场、线索和定案之间需要来回切页。',want:'希望：在同一屏保留当前证据摘要和下一步动作。'}
   ];
   const experts=[
-    {name:'机制评审',tag:'玩法结构',rating:solvedRate>=.75?3:2,text:'第 1、8 案已有可操作录像时间轴，但其余案件的观察与记录仍主要返回文字，玩法差异还不够。',want:'优先：把时间轴或物证放大机制推广到其余案件。'},
+    {name:'机制评审',tag:'玩法结构',rating:solvedRate>=.75?3:2,text:'八案都接入了录像时间轴，普通帧与关键帧已有明确差异；但观察和调取记录仍主要返回文字，玩法组合还不够丰富。',want:'优先：补一套物证放大组件，与录像形成不同的调查手感。'},
     {name:'叙事评审',tag:'案件设计',rating:clueRate>=.9?3:2,text:'八案扩大了内容量，不过只有部分案件会改变变量，动机选项与线索结构仍然重复。',want:'优先：让每案变量都改变证据链，而不是只改变一句提示。'},
     {name:'可用性评审',tag:'界面与移动端',rating:3,text:'搜证反馈已经出现，但现场、线索和定案仍需来回切页，行动预算的风险提示还不够醒目。',want:'优先：在工作台固定显示行动预算、当前证据和下一步动作。'}
   ];
@@ -573,6 +573,8 @@ function renderReviewReport(report){
   $('reviewWrap').classList.remove('hidden');
 }
 
+const TIMELINE_LOCATIONS={1:'ctl',2:'med',3:'srv',4:'cryo',5:'obs',6:'maint6',7:'gate7',8:'beacon8'};
+function getTimelineLocation(caseData){return TIMELINE_LOCATIONS[caseData.id]||caseData.locations?.[0]?.key||null;}
 function buildTimeline(caseData,locationKey='ctl',seed=1){
   const loc=(caseData.locations||[]).find(x=>x.key===locationKey)||caseData.locations?.[0]||{name:'监控区',clues:[]};
   const source=loc.clues||[];
@@ -590,7 +592,7 @@ function inspectTimeline(timeline,id){
   const frame=timeline.find(x=>x.id===id)||timeline[0];
   return {frame:frame.frame,clue:frame.clue,critical:!!frame.critical,variantEffect:frame.variantEffect};
 }
-if(typeof globalThis!=='undefined'){globalThis.buildTimeline=buildTimeline;globalThis.inspectTimeline=inspectTimeline;}
+if(typeof globalThis!=='undefined'){globalThis.buildTimeline=buildTimeline;globalThis.inspectTimeline=inspectTimeline;globalThis.getTimelineLocation=getTimelineLocation;}
 function canSubmitVerdict(count=cluesFound){return Number(count)>=3;}
 function submitVerdict(){
   if(!active||caseClosed)return;
