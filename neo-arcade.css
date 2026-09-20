@@ -1,0 +1,93 @@
+/* NEO NOIR ARCADE — shared visual reboot */
+:root{
+  --neo-bg:#070a0d!important;--neo-bg-2:#0c1216!important;--neo-panel:rgba(13,19,23,.94)!important;
+  --neo-line:rgba(155,190,190,.22)!important;--neo-line-strong:rgba(103,240,208,.55)!important;
+  --neo-ink:#e1ecee!important;--neo-muted:#7b8f95!important;--neo-cyan:#67f0d0!important;
+  --neo-amber:#e7b86a!important;--neo-red:#e86a65!important;
+}
+html{background:var(--neo-bg)!important}
+body{
+  background:
+    radial-gradient(ellipse at 74% 8%,rgba(67,126,116,.13),transparent 32%),
+    radial-gradient(ellipse at 8% 92%,rgba(184,127,64,.06),transparent 26%),
+    linear-gradient(180deg,#080c0f 0%,#070a0d 72%,#050708 100%)!important;
+  color:var(--neo-ink)!important;
+  font-family:"IBM Plex Mono","SFMono-Regular",Consolas,"PingFang SC","Microsoft YaHei",monospace!important;
+}
+body:before{
+  opacity:.52!important;
+  background-image:
+    linear-gradient(rgba(103,240,208,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(103,240,208,.035) 1px,transparent 1px),
+    radial-gradient(circle at 75% 20%,rgba(103,240,208,.1),transparent 30%)!important;
+  background-size:36px 36px,36px 36px,auto!important;
+}
+body:after{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:999;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0 1px,transparent 1px 5px);
+  mix-blend-mode:screen;opacity:.45;
+}
+a{color:var(--neo-cyan)!important}
+button,.button,.btn,.tab,.place,.opt,.search-btn,.evidence-region,.evidence-target,.featured-card,.game-card,.card,.tile{
+  border-radius:3px!important;
+  font-family:inherit!important;
+  letter-spacing:.06em!important;
+}
+button,.button,.btn{
+  border-color:var(--neo-line)!important;
+  background:linear-gradient(180deg,rgba(22,31,35,.96),rgba(11,16,19,.96))!important;
+  color:var(--neo-ink)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 8px 26px rgba(0,0,0,.22)!important;
+}
+button:hover,.button:hover,.btn:hover,.tab:hover,.place:hover,.opt:hover,.featured-card:hover,.game-card:hover,.card:hover,.tile:hover{
+  border-color:var(--neo-line-strong)!important;
+  color:#fff!important;
+  background:linear-gradient(180deg,rgba(24,48,48,.98),rgba(10,22,22,.98))!important;
+  box-shadow:0 0 0 1px rgba(103,240,208,.14),0 12px 30px rgba(0,0,0,.3)!important;
+}
+button.primary,.button.primary,.btn.main,.btn.primary,.submit,.start,.cta .btn{
+  background:linear-gradient(120deg,#67f0d0,#b4e1b6)!important;
+  color:#071310!important;border-color:#67f0d0!important;
+  box-shadow:0 10px 26px rgba(103,240,208,.15)!important;
+}
+.btn.pink,.button.pink{background:linear-gradient(120deg,#e7b86a,#d77e62)!important;color:#1b1007!important}
+input,select,textarea{
+  border-radius:3px!important;border:1px solid var(--neo-line)!important;
+  background:rgba(7,12,15,.9)!important;color:var(--neo-ink)!important;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--neo-cyan)!important;box-shadow:0 0 0 3px rgba(103,240,208,.08)!important}
+.panel,.box,.card,.modal,.overlay .box,.title-shell,.search-console,.timeline-view,.evidence-view,.clue,.suspect,.notes,.stat,.chip,.toolbar,.featured-card,.game-card,.tile,.modal-content{
+  background:linear-gradient(145deg,rgba(16,25,29,.96),rgba(8,13,16,.97))!important;
+  border-color:var(--neo-line)!important;
+  box-shadow:0 24px 70px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.035)!important;
+}
+.panel h1,.panel h2,.panel h3,.title-shell h1,.hero h1,.logo,.brand b,.portal-title strong{
+  color:var(--neo-ink)!important;text-shadow:0 0 22px rgba(103,240,208,.18)!important;
+}
+h1 em,.hero h1 em,.logo,.portal-title strong{color:var(--neo-cyan)!important;background:none!important;-webkit-text-fill-color:var(--neo-cyan)!important}
+h2,h3{letter-spacing:.12em!important}
+small,.sub,.dim,.muted,.hint,.lede,.hero-lede,.description,.desc,.tagline,.micro{color:var(--neo-muted)!important}
+.badge,.pill,.kicker,.eyebrow,.open-status,.title-kicker,.stat b,.chip b{color:var(--neo-cyan)!important}
+.bar,.meter,.progress,.track{background:#182227!important;border-color:var(--neo-line)!important;border-radius:2px!important}
+.bar i,.meter i,.progress i,.fill{background:linear-gradient(90deg,#67f0d0,#d0d88b)!important;box-shadow:0 0 13px rgba(103,240,208,.35)!important}
+#hpfill,#bossfill{background:linear-gradient(90deg,#e86a65,#e7b86a)!important}
+canvas{filter:saturate(.76) contrast(1.06)!important}
+#title,#menu,#start,.overlay{background:radial-gradient(circle at 68% 28%,rgba(55,112,104,.14),transparent 34%),rgba(5,8,10,.92)!important}
+.hero-art,.portal-window,.case-preview{border-radius:3px!important;border-color:var(--neo-line)!important;box-shadow:0 30px 90px rgba(0,0,0,.56),inset 0 0 55px rgba(103,240,208,.05)!important}
+.hero-art .badge,.hero-art .play,.portal-chip,.portal-stamp{border-radius:3px!important;background:rgba(7,12,15,.86)!important;color:var(--neo-cyan)!important}
+.search input{border-radius:3px!important;background:rgba(7,12,15,.85)!important}
+header,.site-header{border-bottom-color:var(--neo-line)!important}
+.brand-mark,.mark .dot{border-radius:3px!important;filter:saturate(.65)!important}
+.mark .dot{background:linear-gradient(135deg,#67f0d0,#1b3334)!important;box-shadow:0 0 22px rgba(103,240,208,.22)!important}
+.catalog-section{border-top-color:var(--neo-line)!important}
+.featured-card.pink,.featured-card.blue,.featured-card.gold{border-top-color:var(--neo-cyan)!important}
+.featured-number,.featured-arrow{color:var(--neo-amber)!important}
+#announce{color:var(--neo-amber)!important;text-shadow:0 0 18px rgba(231,184,106,.55)!important}
+#bossname{color:var(--neo-red)!important}
+#touch .touch-btn,#stick,#dashbtn{border-radius:3px!important;border-color:rgba(103,240,208,.42)!important;background:rgba(11,25,25,.72)!important;color:var(--neo-cyan)!important}
+@media(max-width:700px){
+  .scene,.wrap{width:calc(100% - 28px)!important;padding-left:0!important;padding-right:0!important}
+  .hero{display:block!important;padding-top:28px!important}
+  .hero-art,.portal-stage{margin-top:28px!important}
+  .panel,.box,.title-shell{border-radius:3px!important}
+}
