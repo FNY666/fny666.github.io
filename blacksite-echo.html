@@ -18,8 +18,9 @@ body{display:grid;place-items:center}canvas{position:fixed;inset:0;width:100%;he
 #touch{display:none}
 @media(max-width:700px){.ui{padding:12px}.brand{font-size:11px}.readout{gap:5px}.chip{padding:6px 7px;font-size:8px}.bottom{align-items:stretch}.objective{font-size:10px}.meter{width:42vw}.box{padding:26px}.start{flex-wrap:wrap}#touch{display:block;position:fixed;inset:0;pointer-events:none}.touch-btn{pointer-events:auto;position:absolute;width:84px;height:84px;border-radius:50%;border:1px solid rgba(103,240,208,.45);background:rgba(20,50,48,.35);color:var(--cyan);display:grid;place-items:center;font:10px var(--mono)}#fire{right:24px;bottom:28px}.touch-note{position:absolute;left:18px;bottom:24px;color:rgba(216,229,232,.45);font-size:9px}}
 </style>
+<link rel="stylesheet" href="neo-arcade.css?v=1">
 </head>
-<body>
+<body class="neo-rebuild">
 <canvas id="game"></canvas>
 <div class="ui">
   <div class="top"><div class="brand">BLACKSITE / ECHO<small>OPERATION 07 · SILENT DOCK</small></div><div class="readout"><div class="chip">SECTOR <b id="sector">A-07</b></div><div class="chip">HOSTILES <b id="hostiles">0</b></div><div class="chip">CREDITS <b id="credits">000</b></div></div></div>
