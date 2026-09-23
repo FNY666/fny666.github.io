@@ -1405,38 +1405,54 @@ function drawBlob(f, t, bob) {
   const ko = f.state === 'ko';
   ctx.save();
   if (ko) { ctx.rotate(-Math.PI/2 * Math.min(1, f.stateT*3)); ctx.translate(0, -8); }
-  const B = '#3a8ad8', BD = '#2a6aa8', WHT = '#f4f4f0', SK = '#ffcf9e';
+  const OL = '#1c2634';
+  const B = '#3a8ad8', B_L = '#6ab4f0', B_D = '#245a94', WHT = '#f4f4f0', WHT_D = '#d8d8cc';
   const wobble = f.state === 'walk' ? Math.sin(f.walkPhase)*2 : 0;
 
   // 脚
-  px(-12 + wobble, -4, 10, 5, WHT);
-  px(2 - wobble, -4, 10, 5, WHT);
+  px(-13 + wobble, -5, 12, 6, OL); px(1 - wobble, -5, 12, 6, OL);
+  px(-12 + wobble, -4, 10, 5, WHT); px(2 - wobble, -4, 10, 5, WHT);
+  px(-12 + wobble, -2, 10, 3, WHT_D); px(2 - wobble, -2, 10, 3, WHT_D);
   // 身体（圆胖）
+  px(-15, -41+bob, 30, 38, OL);
   px(-14, -40+bob, 28, 36, B);
-  px(-12, -42+bob, 24, 3, B);
-  px(-14, -12, 28, 4, BD);
+  px(-14, -40+bob, 6, 36, B_L);
+  px(8, -40+bob, 6, 36, B_D);
+  px(-14, -12, 28, 4, B_D);
   // 白肚皮
+  px(-9, -27+bob, 18, 22, OL);
   px(-8, -26+bob, 16, 20, WHT);
-  px(-4, -18+bob, 8, 5, '#e8e8e0');  // 口袋
+  px(-8, -10+bob, 16, 4, WHT_D);
+  px(-4, -18+bob, 8, 5, '#d8d8cc');  // 口袋
   // 红项圈
+  px(-14, -43+bob, 28, 5, OL);
   px(-13, -42+bob, 26, 4, '#d8382a');
+  px(-13, -42+bob, 26, 1, '#f0604a');
+  px(8, -41+bob, 6, 6, OL);
   px(9, -40+bob, 4, 4, '#ffe95c');   // 铃铛
-  // 头部区域
+  // 头部
+  px(-14, -59+bob, 28, 20, OL);
   px(-13, -58+bob, 26, 18, B);
+  px(-13, -58+bob, 5, 18, B_L);
+  px(8, -58+bob, 5, 18, B_D);
   // 眼睛
   const eyeY = -54+bob;
-  if (f.state === 'hit' || f.state === 'ko') {
-    px(-10, eyeY, 6, 2, '#222'); px(-1, eyeY, 6, 2, '#222'); // >< 眼
+  if (f.state === 'hit' || ko) {
+    px(-10, eyeY, 6, 2, '#1a1a22'); px(-1, eyeY, 6, 2, '#1a1a22'); // >< 眼
   } else {
+    px(-11, eyeY-4, 9, 10, OL); px(1, eyeY-4, 9, 10, OL);
     px(-10, eyeY-3, 8, 9, WHT); px(2, eyeY-3, 8, 9, WHT);
-    px(-7, eyeY, 3, 5, '#222'); px(5, eyeY, 3, 5, '#222');
+    px(-7, eyeY, 3, 5, '#1a1a22'); px(5, eyeY, 3, 5, '#1a1a22');
+    px(-7, eyeY, 2, 2, '#fff'); px(5, eyeY, 2, 2, '#fff');
   }
   // 鼻子+胡须
+  px(-3, eyeY+7, 7, 6, OL);
   px(-2, eyeY+8, 5, 4, '#d8382a');
   px(-16, eyeY+7, 8, 1, '#333'); px(-16, eyeY+10, 8, 1, '#333');
   px(9, eyeY+7, 8, 1, '#333');  px(9, eyeY+10, 8, 1, '#333');
   // 嘴
   if (f.state === 'attack' && f.attack === 'special') {
+    px(-5, eyeY+12, 11, 8, OL);
     px(-4, eyeY+13, 9, 6, '#8a3a30'); // 张嘴发射
   } else {
     px(-4, eyeY+13, 9, 2, '#8a3a30');
@@ -1445,15 +1461,21 @@ function drawBlob(f, t, bob) {
   // 手臂
   if (f.state === 'attack' && (f.attack === 'punch' || f.attack === 'special')) {
     const ext = f.stateT > .05 ? 1 : 0;
-    px(10, -34+bob, 14*ext+6, 6, B);
+    px(9, -35+bob, 16*ext+8, 8, OL);
+    px(10, -34+bob, 14*ext+6, 6, B); px(10, -34+bob, 14*ext+6, 2, B_L);
+    px(19+8*ext, -36+bob, 9, 10, OL);
     px(20+8*ext, -35+bob, 7, 8, WHT); // 拳头
   } else {
+    px(-19, -35+bob, 8, 16, OL); px(11, -35+bob, 8, 16, OL);
     px(-18, -34+bob, 6, 14, B); px(12, -34+bob, 6, 14, B);
+    px(-20, -23+bob, 9, 8, OL); px(11, -23+bob, 9, 8, OL);
     px(-19, -22+bob, 7, 6, WHT); px(12, -22+bob, 7, 6, WHT);
   }
   // 踢腿
   if (f.state === 'attack' && f.attack === 'kick' && f.stateT > .1) {
-    px(8, -18, 18, 7, B); px(24, -19, 8, 8, WHT);
+    px(7, -19, 20, 9, OL);
+    px(8, -18, 18, 7, B); px(8, -18, 18, 2, B_L);
+    px(23, -20, 10, 10, OL); px(24, -19, 8, 8, WHT);
   }
   ctx.restore();
 }
@@ -1463,56 +1485,91 @@ function drawMartial(f, t, bob) {
   const ko = f.state === 'ko';
   ctx.save();
   if (ko) { ctx.rotate(-Math.PI/2 * Math.min(1, f.stateT*3)); ctx.translate(0, -8); }
-  const SK = '#ffcf9e', HAIR = '#22222a', GI = '#ff8b2e', GI_D = '#d86a18', BLUE = '#3a6ad8';
-
+  const OL = '#221419';                                   // 统一描边
+  const SK = '#ffcf9e', SK_D = '#cf8f60', SK_L = '#ffe9c9';
+  const HAIR = '#22222a', HAIR_L = '#5a5a66';
+  const GI = '#ff8b2e', GI_L = '#ffbd70', GI_D = '#a85410';
+  const BELT = '#3a6ad8', BELT_D = '#243f86';
+  const BAND = '#d8382a', BAND_D = '#8f1f18';
   const legSpread = f.state === 'walk' ? Math.sin(f.walkPhase)*3 : 0;
-  // 腿
-  px(-8 + legSpread, -14, 6, 14, GI);
-  px(2 - legSpread, -14, 6, 14, GI);
-  px(-9 + legSpread, -3, 8, 3, '#4a3020'); // 鞋
-  px(1 - legSpread, -3, 8, 3, '#4a3020');
-  // 躯干
-  px(-9, -34+bob, 18, 21, GI);
-  px(-9, -20+bob, 18, 3, BLUE);  // 腰带
-  px(-9, -34+bob, 18, 4, GI_D);  // 领口阴影
-  px(-2, -34+bob, 4, 14, BLUE);  // 内衬
-  // 头
-  px(-8, -50+bob, 16, 16, SK);
-  // 刺猬头
-  px(-9, -56+bob, 18, 8, HAIR);
-  px(-11, -53+bob, 3, 5, HAIR);
-  px(8, -53+bob, 3, 5, HAIR);
-  px(-5, -58+bob, 4, 4, HAIR); px(1, -58+bob, 4, 4, HAIR);
-  // 眉眼
-  if (f.state === 'hit' || f.state === 'ko') {
-    px(-6, -44+bob, 5, 2, '#222'); px(1, -44+bob, 5, 2, '#222');
-  } else if (f.state === 'attack') {
-    px(-6, -46+bob, 12, 2, '#a03020'); // 皱眉
-    px(-6, -43+bob, 4, 3, '#222'); px(2, -43+bob, 4, 3, '#222');
-  } else {
-    px(-6, -44+bob, 4, 4, '#222'); px(2, -44+bob, 4, 4, '#222');
-  }
-  // 嘴
-  px(-2, -38+bob, 5, 2, '#a05a40');
+  const atk = f.state === 'attack' ? f.attack : null;
+  const punchExt = atk === 'punch' && f.stateT > ATTACKS.punch.activeFrom ? 1 : 0;
+  const kickExt = atk === 'kick' && f.stateT > ATTACKS.kick.activeFrom;
 
-  // 手臂
-  if (f.state === 'attack' && f.attack === 'punch') {
-    const ext = f.stateT > ATTACKS.punch.activeFrom ? 1 : 0;
-    px(6, -30+bob, 12+10*ext, 5, GI);
-    px(17+10*ext, -31+bob, 6, 6, SK);
-  } else if (f.state === 'attack' && f.attack === 'special') {
-    // 双手推波
-    px(6, -30+bob, 12, 5, GI);
-    px(16, -32+bob, 6, 8, SK);
-    px(6, -26+bob, 12, 5, GI);
-    px(16, -26+bob, 6, 6, SK);
-  } else {
-    px(-13, -32+bob, 5, 13, GI); px(9, -32+bob, 5, 13, GI);
-    px(-14, -20+bob, 6, 5, SK); px(9, -20+bob, 6, 5, SK);
+  // ---- 腿（马步，前后分开） ----
+  function leg(lx, front) {
+    px(lx-1+legSpread*(front?1:-1), -15, 8, 15, OL);
+    px(lx+legSpread*(front?1:-1), -14, 6, 14, GI);
+    px(lx+legSpread*(front?1:-1), -14, 2, 14, front ? GI_L : GI_D);
+    px(lx-1+legSpread*(front?1:-1), -4, 9, 4, OL);          // 布鞋描边
+    px(lx+legSpread*(front?1:-1), -3, 7, 3, '#3a2a1c');
   }
-  // 踢腿
-  if (f.state === 'attack' && f.attack === 'kick' && f.stateT > ATTACKS.kick.activeFrom) {
-    px(2, -18, 22, 6, GI); px(22, -20, 7, 7, '#4a3020');
+  leg(-8, false); leg(2, true);
+
+  // ---- 躯干（道服：左受光 / 右背光） ----
+  px(-10, -35+bob, 20, 22, OL);
+  px(-9, -34+bob, 18, 20, GI);
+  px(-9, -34+bob, 4, 20, GI_L);
+  px(5, -34+bob, 4, 20, GI_D);
+  px(-2, -34+bob, 4, 9, GI_D);                             // 衣襟
+  px(-9, -17+bob, 18, 3, GI_D);                            // 下摆
+  px(-9, -22+bob, 18, 4, OL);                              // 腰带
+  px(-8, -21+bob, 16, 2, BELT);
+  px(3, -22+bob, 5, 6, BELT_D);                            // 带结
+
+  // ---- 头（怒目 + 头带） ----
+  px(-9, -52+bob, 18, 18, OL);
+  px(-8, -51+bob, 16, 16, SK);
+  px(-8, -51+bob, 3, 12, SK_L);                            // 面颊受光
+  px(4, -51+bob, 4, 16, SK_D);                             // 右侧背光
+  px(-8, -39+bob, 16, 4, SK_D);                            // 下颌
+  // 头带 + 飘带
+  px(-9, -54+bob, 18, 5, BAND);
+  px(-9, -54+bob, 18, 2, '#f0604a');
+  const wave = Math.round(Math.sin(t*6)*2);
+  px(-15, -53+bob+wave, 6, 3, BAND); px(-19, -52+bob-wave, 4, 2, BAND_D);
+  // 刺猬发（带高光）
+  px(-8, -60+bob, 4, 6, HAIR); px(-3, -61+bob, 4, 7, HAIR); px(2, -61+bob, 4, 7, HAIR); px(6, -59+bob, 3, 5, HAIR);
+  px(-8, -60+bob, 4, 2, HAIR_L); px(2, -61+bob, 4, 2, HAIR_L);
+  // 怒眉 + 眼
+  if (f.state === 'hit' || ko) {
+    px(-6, -45+bob, 5, 2, '#2a1a10'); px(1, -45+bob, 5, 2, '#2a1a10');
+  } else {
+    px(-7, -48+bob, 6, 2, '#401810'); px(1, -47+bob, 6, 2, '#401810');  // 倒八字眉
+    px(-6, -45+bob, 4, 3, '#180c08'); px(2, -44+bob, 4, 3, '#180c08');
+    px(-6, -45+bob, 2, 1, '#fff'); px(2, -44+bob, 2, 1, '#fff');          // 眼神光
+  }
+  px(-2, -39+bob, 5, 2, '#8a4030');                        // 抿嘴
+
+  // ---- 手臂：格斗架势（非攻击时） ----
+  if (atk === 'punch') {
+    px(5, -31+bob, 13+10*punchExt, 7, OL);
+    px(6, -30+bob, 11+10*punchExt, 5, GI);
+    px(6, -30+bob, 11+10*punchExt, 2, GI_L);
+    const fx = 17+10*punchExt;
+    px(fx-1, -32+bob, 8, 8, OL);
+    px(fx, -31+bob, 6, 6, SK); px(fx, -31+bob, 6, 2, SK_L); px(fx, -27+bob, 6, 2, SK_D);
+    // 后手护头
+    px(-13, -34+bob, 7, 12, OL); px(-12, -33+bob, 5, 10, GI);
+    px(-14, -26+bob, 8, 8, OL); px(-13, -25+bob, 6, 6, SK); px(-13, -21+bob, 6, 2, SK_D);
+  } else if (atk === 'special') {
+    px(5, -32+bob, 13, 6, OL); px(6, -31+bob, 11, 4, GI);
+    px(5, -27+bob, 13, 6, OL); px(6, -26+bob, 11, 4, GI);
+    px(15, -33+bob, 8, 9, OL); px(16, -32+bob, 6, 7, SK); px(16, -32+bob, 6, 2, SK_L);
+    px(15, -27+bob, 8, 8, OL); px(16, -26+bob, 6, 6, SK); px(16, -22+bob, 6, 2, SK_D);
+  } else {
+    // 后手护下巴
+    px(-13, -36+bob, 7, 12, OL); px(-12, -35+bob, 5, 10, GI); px(-12, -35+bob, 2, 10, GI_L);
+    px(-14, -28+bob, 8, 8, OL); px(-13, -27+bob, 6, 6, SK); px(-13, -23+bob, 6, 2, SK_D);
+    // 前手探出
+    px(4, -31+bob, 9, 7, OL); px(5, -30+bob, 7, 5, GI); px(5, -30+bob, 7, 2, GI_L);
+    px(11, -32+bob, 8, 8, OL); px(12, -31+bob, 6, 6, SK); px(12, -31+bob, 6, 2, SK_L); px(12, -27+bob, 6, 2, SK_D);
+  }
+  // ---- 踢腿 ----
+  if (kickExt) {
+    px(1, -19, 24, 8, OL);
+    px(2, -18, 22, 6, GI); px(2, -18, 22, 2, GI_L);
+    px(22, -21, 9, 9, OL); px(23, -20, 7, 7, '#3a2a1c'); px(23, -20, 7, 2, '#6a4a34');
   }
   ctx.restore();
 }
