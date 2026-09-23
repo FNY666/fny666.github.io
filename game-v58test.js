@@ -375,7 +375,7 @@ class Fighter {
     const setHp = ('hp' in opts) ? opts.hp : 100;
     Object.assign(this, {
       x: 0, y: GROUND, vx: 0, vy: 0, facing: 1,
-      type: 'blob', name: '???',
+      type: 'blob', name: '???', taunt: cfg.taunt,
       hp: setHp, maxHp: setHp,
       dmg: cfg.dmg, speed: cfg.speed,
       state: 'idle',        // idle|walk|jump|attack|hit|block|ko|win
@@ -1224,6 +1224,14 @@ function drawFighter(f, time) {
   else if (S === 'miko') drawMiko(f, t, bob);
   else if (S === 'fighter') drawMartial(f, t, bob);
   else drawCast(f, t, bob, CAST_CFG[S] || CAST_CFG.monkey);
+
+  // 立体光影罩：顶部受光 + 底部沉色（局部坐标，随翻转镜像）
+  const shade = ctx.createLinearGradient(0, -62, 0, 0);
+  shade.addColorStop(0, 'rgba(255,255,255,.08)');
+  shade.addColorStop(.55, 'rgba(0,0,0,0)');
+  shade.addColorStop(1, 'rgba(0,0,20,.22)');
+  ctx.fillStyle = shade;
+  ctx.fillRect(-22, -62, 44, 62);
 
   if (f.state === 'win') {
     // 胜利姿势：双臂上举（按角色配色）
