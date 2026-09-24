@@ -1221,28 +1221,22 @@ function drawFighter(f, time) {
   const S = f.type;
 
   if (S === 'blob') drawBlob(f, t, bob);
-  else if (S === 'miko') drawMiko(f, t, bob);
-  else if (S === 'fighter') drawMartial(f, t, bob);
-  else drawCast(f, t, bob, CAST_CFG[S] || CAST_CFG.monkey);
+  else drawHumanoid(f, t, bob);
 
   // 立体光影罩：顶部受光 + 底部沉色（局部坐标，随翻转镜像）
-  const shade = ctx.createLinearGradient(0, -62, 0, 0);
+  const shade = ctx.createLinearGradient(0, -72, 0, 0);
   shade.addColorStop(0, 'rgba(255,255,255,.08)');
   shade.addColorStop(.55, 'rgba(0,0,0,0)');
   shade.addColorStop(1, 'rgba(0,0,20,.22)');
   ctx.fillStyle = shade;
-  ctx.fillRect(-22, -62, 44, 62);
+  ctx.fillRect(-22, -72, 44, 72);
 
   if (f.state === 'win') {
     // 胜利姿势：双臂上举（按角色配色）
     const bounce = Math.round(Math.sin(time * 8) * 1) - 4;
-    if (f.type === 'blob') {
-      px(-12, -58 + bounce, 5, 24, '#3a8ad8'); px(-14, -60 + bounce, 8, 8, '#f4f4f0');
-      px(7, -58 + bounce, 5, 24, '#3a8ad8');  px(6, -60 + bounce, 8, 8, '#f4f4f0');
-    } else {
-      px(-11, -56 + bounce, 5, 22, '#ff8b2e'); px(-13, -58 + bounce, 8, 8, '#ffcf9e');
-      px(7, -56 + bounce, 5, 22, '#ff8b2e');  px(6, -58 + bounce, 8, 8, '#ffcf9e');
-    }
+    const slv = WIN_SLEEVE[f.type] || '#ff8b2e', skn = WIN_SKIN[f.type] || '#ffcf9e';
+    px(-12, -58 + bounce, 5, 24, slv); px(-14, -60 + bounce, 8, 8, skn);
+    px(7, -58 + bounce, 5, 24, slv);  px(6, -60 + bounce, 8, 8, skn);
   }
 
   if (f.blocking || f.state === 'block') {
@@ -1254,325 +1248,270 @@ function drawFighter(f, time) {
   ctx.restore();
 }
 
-function drawMiko(f, t, bob) {
+// ---------- 新版人形统一骨架 ----------
+// 网上学习结论应用：
+// 1) 头身比 5.5（头11px/身62px），避开 3.5-4.5 的"幼稚中间态"
+// 2) 侧身格斗站姿：前后脚错开、屈膝、一手前探一手护头（剪影可读）
+// 3) selout 选择性描边：描边=部位深色，受光面减淡/去掉，不用纯黑贴纸边
+// 4) 左上单光源 + hue shifting：高光偏暖、阴影偏冷
+const HUMANOID_CFG = {
+  fighter:{ skin:'#ffcf9e',skinL:'#ffe9c9',skinD:'#a86a48', hair:'#22222a',hairL:'#5a5a66',hairD:'#0e0e12', gi:'#ff8b2e',giL:'#ffc46a',giD:'#8f4a10', belt:'#3a6ad8',beltD:'#223f7a', shoe:'#3a2a1c', style:'spiky', headband:'#d8382a' },
+  miko:   { skin:'#ffe2d0',skinL:'#fff6e4',skinD:'#c08a64', hair:'#3a2a3a',hairL:'#6a4a5c',hairD:'#1a1018', gi:'#ff9ec4',giL:'#ffd2e2',giD:'#b04a7c', belt:'#6a3ac8',beltD:'#3c1f7e', shoe:'#d8382a', style:'buns', collar:true },
+  monkey: { skin:'#ffcf9e',skinL:'#ffe9c9',skinD:'#a86a48', hair:'#d8a020',hairL:'#ffe95c',hairD:'#7a5210', gi:'#ffcf5a',giL:'#ffe95c',giD:'#96702a', belt:'#e04828',beltD:'#7e2412', shoe:'#3a2a1c', style:'topknot', deco:'staff', whiskers:'#8a6a3a' },
+  nezha:  { skin:'#ffe2d0',skinL:'#fff6e4',skinD:'#c08a64', hair:'#3a2a3a',hairL:'#6a4a5c',hairD:'#1a1018', gi:'#e83838',giL:'#ff7a5c',giD:'#8e1e1e', belt:'#e0e0e0',beltD:'#8a8a8a', shoe:'#2a1a10', style:'buns', ties:true, deco:'spear' },
+  gourd:  { skin:'#ffd8b0',skinL:'#ffecd0',skinD:'#bd8452', hair:'#1c1c22',hairL:'#4a4a55',hairD:'#0c0c10', gi:'#3a8a3a',giL:'#5aae5a',giD:'#1e4e1e', belt:'#d8d8d8',beltD:'#7a7a7a', shoe:'#2a1a10', style:'gourd' },
+  demon:  { skin:'#b98a6a',skinL:'#d8a880',skinD:'#6e4a34', hair:'#14141c',hairL:'#3a3a48',hairD:'#08080c', gi:'#3a2a52',giL:'#5a3a7a',giD:'#1c1228', belt:'#7a5ae8',beltD:'#422a9e', shoe:'#1a1226', style:'horns', deco:'cape' },
+  viper:  { skin:'#d8b898',skinL:'#f0d4ae',skinD:'#8a6a4c', hair:'#4a9a4a',hairL:'#7ac87a',hairD:'#265226', gi:'#6a3a8a',giL:'#8a5aae',giD:'#3c1e52', belt:'#d8a030',beltD:'#7e5c14', shoe:'#2a1a2a', style:'flow', deco:'scales' },
+  cat:    { skin:'#f4cf9e',skinL:'#ffe9c9',skinD:'#a87848', hair:'#1a1a22',hairL:'#4a4a55',hairD:'#0c0c10', gi:'#2a4a8a',giL:'#4a6aae',giD:'#14284e', belt:'#e0b030',beltD:'#7e6214', shoe:'#1a1a22', style:'cap', whiskers:'#ffffff' },
+  ultra:  { skin:'#ffd8a8',skinL:'#ffecd0',skinD:'#bd8452', hair:'#d8e0e8',hairL:'#ffffff',hairD:'#7a8a9a', gi:'#d8e0e8',giL:'#ffffff',giD:'#7a8a9a', belt:'#e83838',beltD:'#8e1e1e', shoe:'#c8d0d8', style:'fin', deco:'timer' },
+};
+const WIN_SLEEVE = { fighter:'#ff8b2e', miko:'#ff9ec4', blob:'#2a6ad8', monkey:'#ffcf5a', nezha:'#e83838', gourd:'#3a8a3a', cat:'#2a4a8a', ultra:'#d8e0e8', demon:'#3a2a52', viper:'#6a3a8a' };
+const WIN_SKIN = { fighter:'#ffcf9e', miko:'#ffe2d0', blob:'#bfe0ff', monkey:'#ffcf9e', nezha:'#ffe2d0', gourd:'#ffd8b0', cat:'#f4cf9e', ultra:'#ffd8a8', demon:'#b98a6a', viper:'#d8b898' };
+
+function drawHumanoid(f, t, bob) {
+  const C = HUMANOID_CFG[f.type] || HUMANOID_CFG.monkey;
   const ko = f.state === 'ko';
   ctx.save();
   if (ko) { ctx.rotate(-Math.PI/2 * Math.min(1, f.stateT*3)); ctx.translate(0, -8); }
-  const SK = '#ffe2d0', HAIR = '#3a2a3a', GI = '#ff9ec4', GI_D = '#d86a9e', BELT = '#6a3ac8';
+  const atk = f.state === 'attack' ? f.attack : null;
+  const punchExt = atk === 'punch' && f.stateT > ATTACKS.punch.activeFrom ? 1 : 0;
+  const kickExt = atk === 'kick' && f.stateT > ATTACKS.kick.activeFrom;
+  const blocking = f.blocking || f.state === 'block';
+  const hitLean = f.state === 'hit' ? -3 : 0;   // 受击上身后仰
+  const crouch = blocking ? 2 : 0;              // 格挡微蹲
+  const wob = f.state === 'walk' ? Math.round(Math.sin(f.walkPhase) * 2) : 0;
+  const air = (f.state === 'jump' && !f.onGround) ? 3 : 0;  // 跳跃收腿
+  const SK=C.skin, SKL=C.skinL, SKD=C.skinD,
+        GI=C.gi, GIL=C.giL, GID=C.giD,
+        HR=C.hair, HRL=C.hairL, HRD=C.hairD;
+  const Y = bob + crouch, LX = hitLean;  // 上身位移
 
-  const legSpread = f.state === 'walk' ? Math.sin(f.walkPhase)*3 : 0;
-  // 腿（白袜）
-  px(-8 + legSpread, -14, 6, 14, '#f4f0f0');
-  px(2 - legSpread, -14, 6, 14, '#f4f0f0');
-  px(-9 + legSpread, -3, 8, 3, '#d8382a');    // 红鞋
-  px(1 - legSpread, -3, 8, 3, '#d8382a');
-  // 躯干（桃色和服）
-  px(-9, -34+bob, 18, 21, GI);
-  px(-2, -34+bob, 4, 21, '#fff8f4');          // 白襟
-  px(-9, -20+bob, 18, 3, BELT);               // 紫腰带
-  px(-9, -34+bob, 18, 4, GI_D);               // 领阴影
-  // 头
-  px(-8, -50+bob, 16, 16, SK);
-  // 丸子头（双丸）
-  px(-11, -56+bob, 7, 7, HAIR);
-  px(4, -56+bob, 7, 7, HAIR);
-  px(-9, -54+bob, 18, 6, HAIR);
-  // 眉眼
-  if (f.state === 'hit' || f.state === 'ko') {
-    px(-6, -44+bob, 5, 2, '#222'); px(1, -44+bob, 5, 2, '#222');
-  } else if (f.state === 'attack') {
-    px(-6, -46+bob, 12, 2, '#a03020');
-    px(-6, -43+bob, 4, 3, '#222'); px(2, -43+bob, 4, 3, '#222');
-  } else {
-    px(-6, -44+bob, 4, 4, '#222'); px(2, -44+bob, 4, 4, '#222');
+  // selout 部件块：描边=部位深色；左上暖高光、右冷阴影
+  function P(x, y, w, h, base, light, dark) {
+    x = Math.round(x); y = Math.round(y);
+    px(x-1, y-1, w+2, h+2, dark);
+    px(x, y, w, h, base);
+    px(x, y, w, 1, light);
+    px(x, y, 2, h, light);
+    px(x+w-2, y, 2, h, dark);
   }
-  // 嘴
-  px(-2, -38+bob, 5, 2, '#c86a5a');
 
-  // 手臂
-  if (f.state === 'attack' && f.attack === 'punch') {
-    const ext = f.stateT > ATTACKS.punch.activeFrom ? 1 : 0;
-    px(6, -30+bob, 12+10*ext, 5, GI);
-    px(17+10*ext, -31+bob, 6, 6, SK);
-  } else if (f.state === 'attack' && f.attack === 'special') {
-    px(6, -30+bob, 12, 5, GI);
-    px(16, -32+bob, 6, 8, SK);
-    px(6, -26+bob, 12, 5, GI);
-    px(16, -26+bob, 6, 6, SK);
-  } else {
-    px(-13, -32+bob, 5, 13, GI); px(9, -32+bob, 5, 13, GI);
-    px(-14, -20+bob, 6, 5, SK);  px(9, -20+bob, 6, 5, SK);
+  // ---- 背饰（身体后） ----
+  if (C.deco === 'staff') {
+    px(-12, -66+Y, 3, 40, '#8a6a20'); px(-11, -66+Y, 1, 40, '#c89a30');
+    px(-12, -68+Y, 3, 4, '#ffe95c'); px(-12, -30+Y, 3, 4, '#ffe95c');
+  } else if (C.deco === 'spear') {
+    px(-12, -62+Y, 2, 36, '#8e1e1e'); px(-11, -62+Y, 1, 36, '#e83838');
+    px(-13, -68+Y, 4, 7, '#8e1e1e'); px(-12, -67+Y, 2, 5, '#ffd8a0');
+  } else if (C.deco === 'cape') {
+    px(-14, -46+Y, 9, 28, '#1c1228'); px(-13, -46+Y, 3, 28, '#3a2a52');
+    px(-14, -22+Y, 9, 6, '#140e1e');
   }
-  // 踢腿
-  if (f.state === 'attack' && f.attack === 'kick' && f.stateT > ATTACKS.kick.activeFrom) {
-    px(2, -18, 22, 6, GI); px(22, -20, 7, 7, '#d8382a');
+
+  // ---- 后腿（远端） ----
+  P(-8, -27+bob+air, 6, 12, GI, GIL, GID);
+  P(-9+wob*0.5, -16+bob+air, 5, 12, GI, GIL, GID);
+  P(-14-wob, -4+bob, 9, 4, C.shoe, '#5a4430', '#14100c');
+
+  // ---- 躯干 ----
+  P(-5+LX, -46+Y, 11, 18, GI, GIL, GID);
+  px(-4+LX, -44+Y, 2, 12, GID);                       // 衣褶
+  px(-1+LX, -44+Y, 1, 10, GID);
+  px(-6+LX, -30+Y, 13, 3, GID);                       // 下摆
+  // 腰带
+  px(-7+LX, -33+Y, 14, 5, C.beltD);
+  px(-6+LX, -32+Y, 12, 3, C.belt);
+  px(-6+LX, -32+Y, 12, 1, GIL);
+  px(4+LX, -33+Y, 4, 7, C.beltD);                    // 带结
+  px(5+LX, -27+Y, 3, 4, C.beltD);                    // 带尾
+  if (C.collar) {                                    // 小桃白襟
+    px(-4+LX, -47+Y, 9, 3, '#fff8f4');
+    px(-1+LX, -47+Y, 3, 6, '#fff8f4');
+  }
+  if (C.deco === 'scales') {                         // 蛇姬鳞片
+    px(-2+LX, -42+Y, 3, 3, '#8ae05a'); px(2+LX, -38+Y, 3, 3, '#8ae05a'); px(-2+LX, -34+Y, 3, 3, '#5aae3a');
+  }
+  if (C.deco === 'timer') {                          // 光侠能量灯
+    px(-1+LX, -41+Y, 5, 7, '#1a2a3a'); px(0+LX, -40+Y, 3, 5, '#5ae8ff'); px(0+LX, -40+Y, 3, 1, '#d8f8ff');
+  }
+
+  // ---- 前腿（近端，站姿前探） ----
+  if (kickExt) {                                     // 侧踢：整腿前伸
+    P(0, -27+bob, 11, 7, GI, GIL, GID);
+    P(10, -26+bob, 11, 6, GI, GIL, GID);
+    P(20, -27+bob, 8, 8, C.shoe, '#5a4430', '#14100c');
+  } else {
+    P(0+wob*0.5, -27+bob+air, 6, 13, GI, GIL, GID);
+    P(3+wob, -15+bob+air, 5, 11, GI, GIL, GID);
+    P(2+wob, -4+bob, 10, 4, C.shoe, '#5a4430', '#14100c');
+  }
+
+  // ---- 脖子 + 头 ----
+  px(-2+LX, -50+Y, 4, 5, SKD);
+  P(-5+LX, -60+Y, 10, 11, SK, SKL, SKD);
+  px(-7+LX, -55+Y, 2, 4, SKD);                        // 后耳
+  // 怒眉
+  px(-4+LX, -56+Y, 4, 2, '#401810'); px(1+LX, -55+Y, 4, 2, '#401810');
+  // 眼
+  if (f.state === 'hit' || ko) {
+    px(-3+LX, -53+Y, 4, 2, '#180c08'); px(2+LX, -53+Y, 4, 2, '#180c08');
+  } else {
+    px(-3+LX, -52+Y, 3, 3, '#180c08'); px(2+LX, -51+Y, 3, 3, '#180c08');
+    px(-3+LX, -52+Y, 1, 1, '#fff'); px(2+LX, -51+Y, 1, 1, '#fff');
+  }
+  px(4+LX, -49+Y, 2, 2, SKD);                         // 鼻
+  if (atk) px(0+LX, -47+Y, 4, 3, '#5a2018');          // 张嘴
+  else px(0+LX, -46+Y, 4, 2, '#8a4030');              // 抿嘴
+  if (C.whiskers) {
+    px(-10+LX, -53+Y, 4, 1, C.whiskers); px(-10+LX, -50+Y, 4, 1, C.whiskers);
+    px(6+LX, -53+Y, 3, 1, C.whiskers); px(6+LX, -50+Y, 3, 1, C.whiskers);
+  }
+  if (C.style === 'horns') px(-4+LX, -50+Y, 3, 2, '#d83858');  // 黑煞眼疤
+
+  // ---- 发型 ----
+  if (C.style === 'spiky') {                         // 小烈刺猬头+头带
+    px(-5+LX, -67+Y, 3, 8, HRD); px(-4+LX, -67+Y, 2, 7, HR);
+    px(-1+LX, -68+Y, 3, 9, HRD); px(0+LX, -68+Y, 2, 8, HR); px(0+LX, -68+Y, 2, 2, HRL);
+    px(3+LX, -67+Y, 3, 8, HRD); px(4+LX, -67+Y, 2, 7, HR);
+    px(-8+LX, -62+Y, 3, 4, HRD);
+    px(-6+LX, -60+Y, 12, 3, C.headband); px(-6+LX, -60+Y, 12, 1, '#f0604a');
+    const wave = Math.round(Math.sin(t*6)*2);
+    px(-12+LX, -59+Y+wave, 6, 2, C.headband); px(-15+LX, -58+Y-wave, 4, 2, '#8f1f18');
+  } else if (C.style === 'buns') {                   // 双丸子
+    px(-6+LX, -63+Y, 12, 4, HRD); px(-5+LX, -62+Y, 10, 2, HR);
+    px(-12+LX, -68+Y, 7, 7, HRD); px(-11+LX, -67+Y, 5, 5, HR); px(-11+LX, -67+Y, 5, 2, HRL);
+    px(5+LX, -68+Y, 7, 7, HRD); px(6+LX, -67+Y, 5, 5, HR); px(6+LX, -67+Y, 5, 2, HRL);
+    if (C.ties) { px(-12+LX, -62+Y, 2, 4, '#e83838'); px(10+LX, -62+Y, 2, 4, '#e83838'); }
+  } else if (C.style === 'topknot') {                // 大圣冲天发髻
+    px(-6+LX, -63+Y, 12, 4, HRD); px(-5+LX, -62+Y, 10, 2, HR);
+    px(-2+LX, -69+Y, 4, 7, HRD); px(-1+LX, -68+Y, 2, 5, HR);
+    px(-6+LX, -62+Y, 12, 2, '#ffe95c');
+    px(-8+LX, -56+Y, 2, 4, SK); px(6+LX, -56+Y, 2, 4, SK);   // 猴耳
+  } else if (C.style === 'gourd') {                  // 葫芦娃头顶葫芦
+    px(-6+LX, -63+Y, 12, 4, HRD); px(-5+LX, -62+Y, 10, 2, HR);
+    px(-3+LX, -70+Y, 6, 8, '#8f5a10'); px(-2+LX, -69+Y, 4, 6, '#ff9d2e'); px(-2+LX, -69+Y, 4, 2, '#ffc46a');
+    px(-1+LX, -72+Y, 2, 3, '#3a8a3a');
+  } else if (C.style === 'horns') {                  // 黑煞双角
+    px(-6+LX, -63+Y, 12, 4, HRD); px(-5+LX, -62+Y, 10, 2, HR);
+    px(-10+LX, -69+Y, 3, 8, '#8a7ab8'); px(7+LX, -69+Y, 3, 8, '#8a7ab8');
+    px(-10+LX, -69+Y, 3, 2, '#efe8ff'); px(7+LX, -69+Y, 3, 2, '#efe8ff');
+  } else if (C.style === 'flow') {                   // 蛇姬披肩长发
+    px(-7+LX, -63+Y, 14, 4, HRD); px(-6+LX, -62+Y, 12, 2, HR);
+    px(-11+LX, -62+Y, 5, 22, HRD); px(-10+LX, -62+Y, 3, 20, HR); px(-10+LX, -62+Y, 1, 20, HRL);
+    px(4+LX, -60+Y, 3, 12, HRD); px(5+LX, -60+Y, 2, 10, HR);
+  } else if (C.style === 'cap') {                    // 猫警帽
+    px(-6+LX, -64+Y, 12, 5, HRD); px(-5+LX, -63+Y, 10, 3, HR);
+    px(2+LX, -61+Y, 9, 2, '#0c0c10');
+    px(-2+LX, -63+Y, 4, 3, '#e0b030');
+  } else if (C.style === 'fin') {                    // 光侠头镖
+    px(-6+LX, -63+Y, 12, 4, HRD); px(-5+LX, -62+Y, 10, 2, HR);
+    px(-2+LX, -70+Y, 4, 9, '#7a8a9a'); px(-1+LX, -69+Y, 2, 7, '#e8f0f8');
+  }
+
+  // ---- 后手臂（远端，护头） ----
+  if (atk === 'special') {
+    P(-2+LX, -44+Y, 12, 6, GI, GIL, GID);
+    P(9+LX, -45+Y, 6, 7, SK, SKL, SKD);
+  } else if (blocking) {
+    P(-6+LX, -42+Y, 6, 8, GI, GIL, GID);
+    P(-4+LX, -50+Y, 6, 9, SK, SKL, SKD);
+  } else {
+    P(-8+LX, -42+Y, 6, 8, GI, GIL, GID);
+    P(-6+LX, -50+Y, 5, 10, SK, SKL, SKD);
+    P(-4+LX, -55+Y, 7, 7, SK, SKL, SKD);              // 护头拳
+  }
+
+  // ---- 前手臂（近端，前探） ----
+  if (atk === 'punch') {
+    P(3+LX, -44+Y, 8+10*punchExt, 6, GI, GIL, GID);
+    P(10+LX+10*punchExt, -45+Y, 6, 7, SK, SKL, SKD);
+  } else if (atk === 'special') {
+    P(3+LX, -38+Y, 12, 6, GI, GIL, GID);
+    P(14+LX, -39+Y, 6, 7, SK, SKL, SKD);
+  } else if (blocking) {
+    P(2+LX, -44+Y, 8, 6, GI, GIL, GID);
+    P(7+LX, -49+Y, 6, 8, SK, SKL, SKD);               // 交叠格挡
+  } else {
+    P(3+LX, -44+Y, 8, 6, GI, GIL, GID);
+    P(10+LX, -45+Y, 6, 7, SK, SKL, SKD);
   }
   ctx.restore();
 }
 
-// 通用人形角色立绘模板（大圣/哪吒/娃/黑煞/蛇姬共用骨架 + 各自装饰）
-function drawCast(f, t, bob, c) {
-  const ko = f.state === 'ko';
-  ctx.save();
-  if (ko) { ctx.rotate(-Math.PI/2 * Math.min(1, f.stateT*3)); ctx.translate(0, -8); }
-
-  // 背景装饰（在身体后）：金箍棒 / 火尖枪 / 披风
-  if (c.deco === 'staff') {
-    px(10, -64+bob, 3, 30, '#c89a30'); px(10, -64+bob, 3, 4, '#ffe95c'); px(10, -38+bob, 3, 4, '#ffe95c');
-  } else if (c.deco === 'spear') {
-    px(11, -60+bob, 2, 26, '#e83838'); px(10, -62+bob, 4, 4, '#ffd8a0');
-  } else if (c.deco === 'cape') {
-    px(-13, -34+bob, 26, 20, '#5a1a2a');
-    px(-11, -18+bob, 22, 6, '#4a1220');
-  }
-
-  const legSpread = f.state === 'walk' ? Math.sin(f.walkPhase)*3 : 0;
-  // 腿
-  px(-8 + legSpread, -14, 6, 14, c.gi);
-  px(2 - legSpread, -14, 6, 14, c.gi);
-  px(-9 + legSpread, -3, 8, 3, '#2a1a10');
-  px(1 - legSpread, -3, 8, 3, '#2a1a10');
-  // 躯干 + 腰带
-  px(-9, -34+bob, 18, 21, c.gi);
-  px(-9, -20+bob, 18, 3, c.belt);
-  if (c.deco === 'scales') { px(-6, -30+bob, 3, 3, c.deco2); px(0, -26+bob, 3, 3, c.deco2); px(3, -31+bob, 3, 3, c.deco2); }
-  if (c.deco === 'timer') { px(-3, -28+bob, 6, 6, '#1a2a3a'); px(-2, -27+bob, 4, 4, c.deco2); }  // 胸前能量灯
-  // 头
-  px(-8, -50+bob, 16, 16, c.face);
-  // 发型
-  if (c.style === 'topknot') {
-    px(-9, -56+bob, 18, 7, c.hair); px(-2, -60+bob, 4, 5, c.hair);
-    px(-10, -52+bob, 2, 4, c.hair); px(8, -52+bob, 2, 4, c.hair);   // 猴耳
-    px(-9, -55+bob, 18, 2, '#ffe95c');                              // 金箍
-  } else if (c.style === 'buns') {
-    px(-10, -58+bob, 6, 6, c.hair); px(4, -58+bob, 6, 6, c.hair);
-    px(-9, -54+bob, 18, 6, c.hair);
-    px(-11, -57+bob, 2, 4, '#e83838'); px(9, -57+bob, 2, 4, '#e83838'); // 红头绳
-  } else if (c.style === 'gourd') {
-    px(-9, -54+bob, 18, 6, c.hair);
-    px(-3, -62+bob, 6, 7, '#ff9d2e'); px(-2, -64+bob, 4, 3, '#3a8a3a'); // 头顶葫芦
-  } else if (c.style === 'horns') {
-    px(-9, -55+bob, 18, 6, c.hair);
-    px(-11, -60+bob, 3, 7, '#c8b8e8'); px(8, -60+bob, 3, 7, '#c8b8e8'); // 双角
-    px(-6, -46+bob, 3, 2, '#d83858');                                    // 眼疤
-  } else if (c.style === 'flow') {
-    px(-12, -54+bob, 24, 8, c.hair);
-    px(-12, -50+bob, 4, 14, c.hair); px(8, -50+bob, 4, 14, c.hair);     // 披肩发
-  } else if (c.style === 'cap') {
-    px(-9, -55+bob, 18, 5, c.hair);
-    px(-11, -57+bob, 22, 3, c.hair);                                     // 帽檐
-    px(-3, -59+bob, 6, 4, c.belt);                                       // 帽徽
-  } else if (c.style === 'fin') {
-    px(-9, -55+bob, 18, 6, c.hair);
-    px(-2, -62+bob, 4, 10, c.hair);                                      // 头冠鳍
-    px(-1, -60+bob, 2, 7, c.deco2);                                      // 鳍光条
-  }
-  // 眉眼
-  if (f.state === 'hit' || f.state === 'ko') {
-    px(-6, -44+bob, 5, 2, '#222'); px(1, -44+bob, 5, 2, '#222');
-  } else if (f.state === 'attack') {
-    px(-6, -46+bob, 12, 2, '#802020');
-    px(-6, -43+bob, 4, 3, '#222'); px(2, -43+bob, 4, 3, '#222');
-  } else {
-    px(-6, -44+bob, 4, 4, '#222'); px(2, -44+bob, 4, 4, '#222');
-  }
-  px(-2, -38+bob, 5, 2, '#a05a40');
-  // 角色装饰（脸侧）
-  if (c.deco === 'whiskers') {
-    px(-14, -46+bob, 6, 1, c.deco2); px(-14, -43+bob, 6, 1, c.deco2);
-    px(8, -46+bob, 6, 1, c.deco2);   px(8, -43+bob, 6, 1, c.deco2);
-  }
-  // 手臂
-  if (f.state === 'attack' && f.attack === 'punch') {
-    const ext = f.stateT > ATTACKS.punch.activeFrom ? 1 : 0;
-    px(6, -30+bob, 12+10*ext, 5, c.gi);
-    px(17+10*ext, -31+bob, 6, 6, c.face);
-  } else if (f.state === 'attack' && f.attack === 'special') {
-    px(6, -30+bob, 12, 5, c.gi);  px(16, -32+bob, 6, 8, c.face);
-    px(6, -26+bob, 12, 5, c.gi);  px(16, -26+bob, 6, 6, c.face);
-  } else {
-    px(-13, -32+bob, 5, 13, c.gi); px(9, -32+bob, 5, 13, c.gi);
-    px(-14, -20+bob, 6, 5, c.face); px(9, -20+bob, 6, 5, c.face);
-  }
-  // 踢腿
-  if (f.state === 'attack' && f.attack === 'kick' && f.stateT > ATTACKS.kick.activeFrom) {
-    px(2, -18, 22, 6, c.gi); px(22, -20, 7, 7, '#2a1a10');
-  }
-  ctx.restore();
-}
-
+// 阿蓝重画：去哆啦A梦化 —— 拿掉项圈/铃铛/口袋/胡须，改为"潮汐水灵"
+// 圆滚重装体型保留（剪影区分度），怒眉 + 浪 crest + 波浪肚皮纹
 function drawBlob(f, t, bob) {
   const ko = f.state === 'ko';
   ctx.save();
   if (ko) { ctx.rotate(-Math.PI/2 * Math.min(1, f.stateT*3)); ctx.translate(0, -8); }
-  const OL = '#1c2634';
-  const B = '#3a8ad8', B_L = '#6ab4f0', B_D = '#245a94', WHT = '#f4f4f0', WHT_D = '#d8d8cc';
-  const wobble = f.state === 'walk' ? Math.sin(f.walkPhase)*2 : 0;
+  const B = '#2a6ad8', BL = '#5a9ae8', BD = '#174a8a', FOAM = '#bfe0ff';
+  const atk = f.state === 'attack' ? f.attack : null;
+  const punchExt = atk === 'punch' && f.stateT > .05 ? 1 : 0;
+  const kickExt = atk === 'kick' && f.stateT > .1;
+  const wobble = f.state === 'walk' ? Math.round(Math.sin(f.walkPhase)*2) : 0;
+
+  function P(x, y, w, h, base, light, dark) {
+    x = Math.round(x); y = Math.round(y);
+    px(x-1, y-1, w+2, h+2, dark);
+    px(x, y, w, h, base);
+    px(x, y, w, 1, light);
+    px(x, y, 2, h, light);
+    px(x+w-2, y, 2, h, dark);
+  }
 
   // 脚
-  px(-13 + wobble, -5, 12, 6, OL); px(1 - wobble, -5, 12, 6, OL);
-  px(-12 + wobble, -4, 10, 5, WHT); px(2 - wobble, -4, 10, 5, WHT);
-  px(-12 + wobble, -2, 10, 3, WHT_D); px(2 - wobble, -2, 10, 3, WHT_D);
-  // 身体（圆胖）
-  px(-15, -41+bob, 30, 38, OL);
-  px(-14, -40+bob, 28, 36, B);
-  px(-14, -40+bob, 6, 36, B_L);
-  px(8, -40+bob, 6, 36, B_D);
-  px(-14, -12, 28, 4, B_D);
-  // 白肚皮
-  px(-9, -27+bob, 18, 22, OL);
-  px(-8, -26+bob, 16, 20, WHT);
-  px(-8, -10+bob, 16, 4, WHT_D);
-  px(-4, -18+bob, 8, 5, '#d8d8cc');  // 口袋
-  // 红项圈
-  px(-14, -43+bob, 28, 5, OL);
-  px(-13, -42+bob, 26, 4, '#d8382a');
-  px(-13, -42+bob, 26, 1, '#f0604a');
-  px(8, -41+bob, 6, 6, OL);
-  px(9, -40+bob, 4, 4, '#ffe95c');   // 铃铛
-  // 头部
-  px(-14, -59+bob, 28, 20, OL);
-  px(-13, -58+bob, 26, 18, B);
-  px(-13, -58+bob, 5, 18, B_L);
-  px(8, -58+bob, 5, 18, B_D);
-  // 眼睛
-  const eyeY = -54+bob;
+  P(-13+wobble, -5, 12, 5, B, BL, BD);
+  P(1-wobble, -5, 12, 5, B, BL, BD);
+  // 身体（圆滚）
+  P(-15, -42+bob, 30, 38, B, BL, BD);
+  px(-15, -10+bob, 30, 4, BD);                        // 底部沉色
+  // 波浪肚皮纹
+  px(-10, -28+bob, 20, 2, FOAM);
+  px(-8, -26+bob, 4, 2, FOAM); px(-2, -26+bob, 4, 2, FOAM); px(4, -26+bob, 4, 2, FOAM);
+  px(-10, -20+bob, 20, 2, BL);
+  px(-6, -18+bob, 4, 2, BL); px(0, -18+bob, 4, 2, BL); px(6, -18+bob, 4, 2, BL);
+  // 头
+  P(-14, -60+bob, 28, 20, B, BL, BD);
+  // 浪 crest
+  px(-11, -67+bob, 5, 8, BD); px(-10, -66+bob, 3, 6, B); px(-10, -66+bob, 3, 2, BL);
+  px(-4, -69+bob, 5, 10, BD); px(-3, -68+bob, 3, 8, BL);
+  px(3, -67+bob, 5, 8, BD); px(4, -66+bob, 3, 6, B);
+  // 怒眉 + 眼
   if (f.state === 'hit' || ko) {
-    px(-10, eyeY, 6, 2, '#1a1a22'); px(-1, eyeY, 6, 2, '#1a1a22'); // >< 眼
+    px(-11, -55+bob, 8, 2, '#101828'); px(3, -55+bob, 8, 2, '#101828');
   } else {
-    px(-11, eyeY-4, 9, 10, OL); px(1, eyeY-4, 9, 10, OL);
-    px(-10, eyeY-3, 8, 9, WHT); px(2, eyeY-3, 8, 9, WHT);
-    px(-7, eyeY, 3, 5, '#1a1a22'); px(5, eyeY, 3, 5, '#1a1a22');
-    px(-7, eyeY, 2, 2, '#fff'); px(5, eyeY, 2, 2, '#fff');
+    px(-12, -59+bob, 9, 2, BD); px(3, -59+bob, 9, 2, BD);   // 怒眉下压
+    px(-11, -56+bob, 8, 6, '#f4f4f0'); px(3, -56+bob, 8, 6, '#f4f4f0');
+    px(-6, -54+bob, 3, 4, '#101828'); px(8, -54+bob, 3, 4, '#101828');
+    px(-6, -54+bob, 1, 1, '#fff'); px(8, -54+bob, 1, 1, '#fff');
   }
-  // 鼻子+胡须
-  px(-3, eyeY+7, 7, 6, OL);
-  px(-2, eyeY+8, 5, 4, '#d8382a');
-  px(-16, eyeY+7, 8, 1, '#333'); px(-16, eyeY+10, 8, 1, '#333');
-  px(9, eyeY+7, 8, 1, '#333');  px(9, eyeY+10, 8, 1, '#333');
   // 嘴
-  if (f.state === 'attack' && f.attack === 'special') {
-    px(-5, eyeY+12, 11, 8, OL);
-    px(-4, eyeY+13, 9, 6, '#8a3a30'); // 张嘴发射
+  if (atk === 'special') {
+    px(-6, -49+bob, 12, 9, BD);
+    px(-5, -48+bob, 10, 7, '#8a3a30'); px(-5, -48+bob, 10, 2, '#d86a5a');
   } else {
-    px(-4, eyeY+13, 9, 2, '#8a3a30');
+    px(-4, -47+bob, 8, 2, '#123a5a');
   }
 
   // 手臂
-  if (f.state === 'attack' && (f.attack === 'punch' || f.attack === 'special')) {
-    const ext = f.stateT > .05 ? 1 : 0;
-    px(9, -35+bob, 16*ext+8, 8, OL);
-    px(10, -34+bob, 14*ext+6, 6, B); px(10, -34+bob, 14*ext+6, 2, B_L);
-    px(19+8*ext, -36+bob, 9, 10, OL);
-    px(20+8*ext, -35+bob, 7, 8, WHT); // 拳头
+  if (atk === 'punch' || atk === 'special') {
+    P(8, -36+bob, 9+12*punchExt, 8, B, BL, BD);
+    P(16+12*punchExt, -38+bob, 9, 11, FOAM, '#e8f4ff', '#7a9ac8');
+    P(-21, -36+bob, 7, 14, B, BL, BD);                 // 后手
   } else {
-    px(-19, -35+bob, 8, 16, OL); px(11, -35+bob, 8, 16, OL);
-    px(-18, -34+bob, 6, 14, B); px(12, -34+bob, 6, 14, B);
-    px(-20, -23+bob, 9, 8, OL); px(11, -23+bob, 9, 8, OL);
-    px(-19, -22+bob, 7, 6, WHT); px(12, -22+bob, 7, 6, WHT);
+    P(-21, -36+bob, 7, 15, B, BL, BD);
+    P(14, -36+bob, 7, 15, B, BL, BD);
+    P(-22, -25+bob, 9, 8, FOAM, '#e8f4ff', '#7a9ac8');
+    P(13, -25+bob, 9, 8, FOAM, '#e8f4ff', '#7a9ac8');
   }
   // 踢腿
-  if (f.state === 'attack' && f.attack === 'kick' && f.stateT > .1) {
-    px(7, -19, 20, 9, OL);
-    px(8, -18, 18, 7, B); px(8, -18, 18, 2, B_L);
-    px(23, -20, 10, 10, OL); px(24, -19, 8, 8, WHT);
-  }
-  ctx.restore();
-}
-
-// 小烈：橙色武道服刺猬头
-function drawMartial(f, t, bob) {
-  const ko = f.state === 'ko';
-  ctx.save();
-  if (ko) { ctx.rotate(-Math.PI/2 * Math.min(1, f.stateT*3)); ctx.translate(0, -8); }
-  const OL = '#221419';                                   // 统一描边
-  const SK = '#ffcf9e', SK_D = '#cf8f60', SK_L = '#ffe9c9';
-  const HAIR = '#22222a', HAIR_L = '#5a5a66';
-  const GI = '#ff8b2e', GI_L = '#ffbd70', GI_D = '#a85410';
-  const BELT = '#3a6ad8', BELT_D = '#243f86';
-  const BAND = '#d8382a', BAND_D = '#8f1f18';
-  const legSpread = f.state === 'walk' ? Math.sin(f.walkPhase)*3 : 0;
-  const atk = f.state === 'attack' ? f.attack : null;
-  const punchExt = atk === 'punch' && f.stateT > ATTACKS.punch.activeFrom ? 1 : 0;
-  const kickExt = atk === 'kick' && f.stateT > ATTACKS.kick.activeFrom;
-
-  // ---- 腿（马步，前后分开） ----
-  function leg(lx, front) {
-    px(lx-1+legSpread*(front?1:-1), -15, 8, 15, OL);
-    px(lx+legSpread*(front?1:-1), -14, 6, 14, GI);
-    px(lx+legSpread*(front?1:-1), -14, 2, 14, front ? GI_L : GI_D);
-    px(lx-1+legSpread*(front?1:-1), -4, 9, 4, OL);          // 布鞋描边
-    px(lx+legSpread*(front?1:-1), -3, 7, 3, '#3a2a1c');
-  }
-  leg(-8, false); leg(2, true);
-
-  // ---- 躯干（道服：左受光 / 右背光） ----
-  px(-10, -35+bob, 20, 22, OL);
-  px(-9, -34+bob, 18, 20, GI);
-  px(-9, -34+bob, 4, 20, GI_L);
-  px(5, -34+bob, 4, 20, GI_D);
-  px(-2, -34+bob, 4, 9, GI_D);                             // 衣襟
-  px(-9, -17+bob, 18, 3, GI_D);                            // 下摆
-  px(-9, -22+bob, 18, 4, OL);                              // 腰带
-  px(-8, -21+bob, 16, 2, BELT);
-  px(3, -22+bob, 5, 6, BELT_D);                            // 带结
-
-  // ---- 头（怒目 + 头带） ----
-  px(-9, -52+bob, 18, 18, OL);
-  px(-8, -51+bob, 16, 16, SK);
-  px(-8, -51+bob, 3, 12, SK_L);                            // 面颊受光
-  px(4, -51+bob, 4, 16, SK_D);                             // 右侧背光
-  px(-8, -39+bob, 16, 4, SK_D);                            // 下颌
-  // 头带 + 飘带
-  px(-9, -54+bob, 18, 5, BAND);
-  px(-9, -54+bob, 18, 2, '#f0604a');
-  const wave = Math.round(Math.sin(t*6)*2);
-  px(-15, -53+bob+wave, 6, 3, BAND); px(-19, -52+bob-wave, 4, 2, BAND_D);
-  // 刺猬发（带高光）
-  px(-8, -60+bob, 4, 6, HAIR); px(-3, -61+bob, 4, 7, HAIR); px(2, -61+bob, 4, 7, HAIR); px(6, -59+bob, 3, 5, HAIR);
-  px(-8, -60+bob, 4, 2, HAIR_L); px(2, -61+bob, 4, 2, HAIR_L);
-  // 怒眉 + 眼
-  if (f.state === 'hit' || ko) {
-    px(-6, -45+bob, 5, 2, '#2a1a10'); px(1, -45+bob, 5, 2, '#2a1a10');
-  } else {
-    px(-7, -48+bob, 6, 2, '#401810'); px(1, -47+bob, 6, 2, '#401810');  // 倒八字眉
-    px(-6, -45+bob, 4, 3, '#180c08'); px(2, -44+bob, 4, 3, '#180c08');
-    px(-6, -45+bob, 2, 1, '#fff'); px(2, -44+bob, 2, 1, '#fff');          // 眼神光
-  }
-  px(-2, -39+bob, 5, 2, '#8a4030');                        // 抿嘴
-
-  // ---- 手臂：格斗架势（非攻击时） ----
-  if (atk === 'punch') {
-    px(5, -31+bob, 13+10*punchExt, 7, OL);
-    px(6, -30+bob, 11+10*punchExt, 5, GI);
-    px(6, -30+bob, 11+10*punchExt, 2, GI_L);
-    const fx = 17+10*punchExt;
-    px(fx-1, -32+bob, 8, 8, OL);
-    px(fx, -31+bob, 6, 6, SK); px(fx, -31+bob, 6, 2, SK_L); px(fx, -27+bob, 6, 2, SK_D);
-    // 后手护头
-    px(-13, -34+bob, 7, 12, OL); px(-12, -33+bob, 5, 10, GI);
-    px(-14, -26+bob, 8, 8, OL); px(-13, -25+bob, 6, 6, SK); px(-13, -21+bob, 6, 2, SK_D);
-  } else if (atk === 'special') {
-    px(5, -32+bob, 13, 6, OL); px(6, -31+bob, 11, 4, GI);
-    px(5, -27+bob, 13, 6, OL); px(6, -26+bob, 11, 4, GI);
-    px(15, -33+bob, 8, 9, OL); px(16, -32+bob, 6, 7, SK); px(16, -32+bob, 6, 2, SK_L);
-    px(15, -27+bob, 8, 8, OL); px(16, -26+bob, 6, 6, SK); px(16, -22+bob, 6, 2, SK_D);
-  } else {
-    // 后手护下巴
-    px(-13, -36+bob, 7, 12, OL); px(-12, -35+bob, 5, 10, GI); px(-12, -35+bob, 2, 10, GI_L);
-    px(-14, -28+bob, 8, 8, OL); px(-13, -27+bob, 6, 6, SK); px(-13, -23+bob, 6, 2, SK_D);
-    // 前手探出
-    px(4, -31+bob, 9, 7, OL); px(5, -30+bob, 7, 5, GI); px(5, -30+bob, 7, 2, GI_L);
-    px(11, -32+bob, 8, 8, OL); px(12, -31+bob, 6, 6, SK); px(12, -31+bob, 6, 2, SK_L); px(12, -27+bob, 6, 2, SK_D);
-  }
-  // ---- 踢腿 ----
   if (kickExt) {
-    px(1, -19, 24, 8, OL);
-    px(2, -18, 22, 6, GI); px(2, -18, 22, 2, GI_L);
-    px(22, -21, 9, 9, OL); px(23, -20, 7, 7, '#3a2a1c'); px(23, -20, 7, 2, '#6a4a34');
+    P(6, -21, 19, 9, B, BL, BD);
+    P(23, -22, 9, 10, FOAM, '#e8f4ff', '#7a9ac8');
   }
   ctx.restore();
 }
+
 
 // ---------- HUD ----------
 function drawBigPortrait(cx, cy, type) {
@@ -1615,10 +1554,13 @@ function drawPortrait(x, y, type) {
   ctx.translate(x, y);
   if (type === 'blob') {
     px(0,0,26,26,'#2a3a55');
-    px(3,3,20,20,'#3a8ad8');
-    px(6,8,6,7,'#f4f4f0'); px(14,8,6,7,'#f4f4f0');
-    px(8,10,3,4,'#222'); px(16,10,3,4,'#222');
-    px(11,17,5,3,'#d8382a');
+    px(8,0,4,5,'#174a8a'); px(13,0,4,6,'#5a9ae8');
+    px(3,3,20,20,'#2a6ad8');
+    px(3,3,20,3,'#5a9ae8');
+    px(5,6,7,2,'#174a8a'); px(14,6,7,2,'#174a8a');
+    px(6,9,6,6,'#f4f4f0'); px(14,9,6,6,'#f4f4f0');
+    px(8,11,3,4,'#101828'); px(16,11,3,4,'#101828');
+    px(10,18,6,2,'#123a5a');
   } else if (CAST_CFG[type]) {
     const c = CAST_CFG[type];
     px(0,0,26,26,'#2a3a55');
