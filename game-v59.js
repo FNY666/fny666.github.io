@@ -423,7 +423,7 @@ class Fighter {
     const setHp = ('hp' in opts) ? opts.hp : 100;
     Object.assign(this, {
       x: 0, y: GROUND, vx: 0, vy: 0, facing: 1,
-      type: 'blob', name: '???',
+      type: 'blob', name: '???', taunt: cfg.taunt, side: cfg.side,
       hp: setHp, maxHp: setHp,
       dmg: cfg.dmg, speed: cfg.speed,
       state: 'idle',        // idle|walk|jump|attack|hit|block|ko|win
