@@ -868,9 +868,18 @@ class Fighter {
           const sup = this.meter >= 100;
           this.attack = sup ? 'super' : 'special'; this.stateT = 0; this.hitDone = false;
           this.cd.special = ATTACKS[this.attack].cd;
+          this.critSuper = sup && this.hp < this.maxHp * 0.25;   // v64 fix: 取消路径同样判定低血绝杀
           this.meter -= sup ? 100 : 35;
           sfx(sup ? 'super' : 'shot');
-          if (sup) goldenFlash();
+          if (sup) {
+            if (this.critSuper) {
+              // v64 fix: 取消路径的 CRITICAL 仪式（与 startAttack 一致）
+              G.critCine = 1.1; addTrauma(.5);
+              eventTag('CRITICAL', '#ff5a2e', this === G.p1 ? 1 : 2);
+              critFlash();
+              spawnSuperBurst(this.x, this.y - 30);
+            } else goldenFlash();
+          }
           this.atkLog.push(this.attack);
         }
         else if (punchP && this.attack === 'punch') {   // 拳→拳→上踢 连段链
