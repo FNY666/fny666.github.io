@@ -1730,7 +1730,7 @@ function endMatch() {
   } else {
     rt.textContent = 'MATCH WIN';
     rt.style.color = ANCHOR[charOf(winner)] || '#ffe95c';   // v64 胜者锚色（P1 橙红 / P2 冷蓝）
-    rd.textContent = (winner === G.p1 ? '你赢了！' : '阿蓝 获胜') + ' · 比分 ' + G.wins.p1 + ' : ' + G.wins.p2 +
+    rd.textContent = (winner === G.p1 ? '你赢了！' : winner.name + ' 获胜') + ' · 比分 ' + G.wins.p1 + ' : ' + G.wins.p2 +
       ' · ' + matchStatsLine(rec, newComboBest);  // v73
   }
   document.getElementById('result').classList.remove('hidden');
